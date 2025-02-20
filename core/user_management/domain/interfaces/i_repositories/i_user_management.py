@@ -1,4 +1,4 @@
-from .....utils.infrastructure.base_repository import BaseRepository
+from .....utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 from core.user_management.domain.entities.user_management import User as UserEntity
 
 from abc import abstractmethod

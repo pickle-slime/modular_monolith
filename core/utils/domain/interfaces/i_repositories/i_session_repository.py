@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from ....infrastructure.base_repository import BaseRepository
+from .base_repository import BaseRepository
 
 class ISessionRepository(BaseRepository):
     @abstractmethod

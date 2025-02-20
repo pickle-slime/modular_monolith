@@ -173,31 +173,6 @@ AUTH_USER_MODEL = 'user_management.CustomUser'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-dotenv_file = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(dotenv_file):
-    dotenv.load_dotenv(dotenv_file)
-
-#API's
-
-MAILCHIMP_API_KEY = os.environ['MAILCHIMP_SECRET_KEY'] #d3b13f9f12393845e6d16a9b88b667b5-us14
-MAILCHIMP_SERVER_PREFIX = "us14"
-MAILCHIMP_AUDIENCE_ID = "39b91bfe2d"
-
-STRIPE_PUBLISHABLE_KEY = 'pk_test_51Ot6RcP3PWsPMy1XKoc5BRUC4z4ebbGJpJn0FRRcHGtj1Cvw3KdU1jKzYqdN4lk0xn3h8VXmN1KUjSleR4bdqpaP00q9Mj9BsF'
-STRIPE_SECRET_KEY = os.environ['STRIPE_SECRET_KEY'] #sk_test_51Ot6RcP3PWsPMy1XdZL2vn9ReDYnx6NJZF8u7IcoyiPu0iTnvidlNUQF3wOlI1GcOQc3pC1b9UYJ1OSYmvMUfQZo00wWC4yOqR
-
-SHIPPO_API_KEY = os.environ['SHIPPO_SECRET_KEY'] #shippo_test_b1afce01f233283edb22361a6316e0a2cb617e74
-
-#CELERY
-
-#celery -A your_project_name worker --loglevel=info
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-
 #REDIS
 
 #redis-server

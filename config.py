@@ -2,9 +2,10 @@ from pathlib import Path
 import os
 import dotenv
 
-BASE_DIR = Path(__file__).resolve()
+BASE_DIR = Path(__file__).parent.resolve()
 
 dotenv_file = os.path.join(BASE_DIR, '.env')
+
 if os.path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
 
@@ -35,13 +36,13 @@ CELERY_TIMEZONE = 'UTC'
 JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
 
 #openssl rsa -in private_encrypted.key -out private.key
-JWT_PUBLIC_KEY = """MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtvHpagy2k5cQ6O5JSODp
-                    cS24KLDvXWrbQTm02b0a+8Yg/FrktkJdhVINZhGcx9VKihkPPfpoJC3adYIY9wei
-                    QrsJKxFv63CYv3HhdIeYlcS8J4RIKM6hpojHDjUgrcFMYC4+O5S4vQZq9nlYSZa4
-                    KPLyEW1K889Lh4jmBOfnNAos+VynTXzO7/BaEBiT4i0TXo2YJlQ5Tk2FiVXjB/Ay
-                    qXfHX7HOEP6p1PPj5QAxzQPnRPkz+DC5j23sbO6ohUOF9oEf52hiUV9veemVpkwZ
-                    SPxqrLoz3HXAwm0mCHjp6CBl7ERd9JFxRX+zsdBWMUCV+XPt7g+7s6fhh1d/cO4T
-                    DQIDAQAB"""
+JWT_PUBLIC_KEY = """MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0XfbwnAICqX2XYVUNyDR
+                    nip5K+16Veb+sS9lBkKb7QgWfft6cucaC1XLq5FwLuD8N3ZjL/XFw6BFgLAQlgez
+                    PMZ+FHA76NTR6LqFjR1IfmjK/9azQWE1mXiP3epDwWPeHRsF4D0jzbIlKJlNFFym
+                    f0KI4wA31GEnmzmnqE5MkYCpznsOJGguKX39G2qdz6jA0JsPym80hNHLVn+ER2VS
+                    rBTygv8woveKZB36WaNI+8HhmNNPwU1pHgmOKTgauZQRCkTn1phZwqcmWuJk63xj
+                    W+R6TL6AZdkMyo4veUEyqokxUKOu6NHRdc0xDSz/cKvdBag5Fm599yrQHP/Wzp6N
+                    LwIDAQAB"""
 
 #set expiry of json web tokens by mins
 ACCESS_JWTOKEN_EXPIRY = 15

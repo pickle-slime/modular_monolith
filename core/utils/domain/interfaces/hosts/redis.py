@@ -1,4 +1,4 @@
-from ....infrastructure.base_host import BaseHost
+from .base_host import BaseHost
 
 from abc import abstractmethod
 

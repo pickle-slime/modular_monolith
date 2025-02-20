@@ -15,25 +15,29 @@ from core.shop_management.application.services.internal.shop_management import *
 from core.utils.application.base_view_mixin import BaseViewMixin
 from core.utils.application.base_factories import BaseServiceFactory
 from core.shop_management.infrastructure.repositories.shop_management import DjangoProductRepository, DjangoCategoryRepository, DjangoBrandRepository, DjangoProductImagesRepository
+from core.cart_management.presentation.cart_management.forms import AddToCartForm, AddToWishlistForm
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
 from core.user_management.presentation.acl_factory import UserManagementACLFactory
 from core.review_management.infrastructure.repositories.review_management import DjangoProductRatingRepository, DjangoReviewRepository, DjangoReviewReadModel
 from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.utils.infrastructure.adapters.dj_url_mapping import DjangoURLAdapter
-#from core.utils.application.base_service import BaseTemplateService
 from ...application.services.base_service import BaseTemplateService
 
 SERVICE_FACTORY = BaseServiceFactory(
     services={
-        "template_service": BaseTemplateService,
+        "cart_acl": None,
+        "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
+        "user_acl": UserManagementACLFactory.create_user_acl(),
     },
     repositories={
+        "category_repository": DjangoCategoryRepository,
         "product_repository": DjangoProductRepository,
         "brand_repository": DjangoBrandRepository,
         "product_images_repository": DjangoProductImagesRepository,
     },
     adapters={
         "url_mapping_adapter": DjangoURLAdapter,
+        "session_adapter": None
     }
 )
 
@@ -41,15 +45,6 @@ class HomePage(ListView, BaseViewMixin):
     model = Product
     service_class = HomePageService
     service_factory = SERVICE_FACTORY
-    service_args = {
-        "template_service": {
-            "category_repository": DjangoCategoryRepository(),
-            "cart_acl": None,
-            "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
-            "user_acl": UserManagementACLFactory.create_user_acl(),
-            "session_adapter": None,
-        }
-    }
     template_name = 'shop/index.html'
     context_object_name = 'products'
 
@@ -68,15 +63,6 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
     model = Product
     service_class = StorePageService
     service_factory = SERVICE_FACTORY
-    service_args = {
-        "template_service": {
-            "category_repository": DjangoCategoryRepository(),
-            "cart_acl": None,
-            "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
-            "user_acl": UserManagementACLFactory.create_user_acl(),
-            "session_adapter": None,
-        }
-    }
     template_name = 'shop/store.html'
     slug_url_kwargs = 'category'
     paginate_by = 9
@@ -84,15 +70,16 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        context["filters_aside"] = self.form_class
         request_data = {}
         request_data["method"] = self.request.POST.get('sort_by')
         request_data["category"] = self.request.POST.getlist('category', [])
         request_data["brand"] = self.request.POST.getlist('brand', [])
 
-        return self.service.get_context_data(
-            request_data, 
-            context, 
-            )
+        service_context = self.service.get_context_data(request_data)
+        
+        service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
+        return {**context, **service_context}
     
     def get_queryset(self):
         if self.request.method == "POST":
@@ -118,7 +105,7 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
         self.object_list = self.get_queryset()
         context = self.get_context_data()
 
-        self.service.post(request)
+        self.service.post()
         
         return self.render_to_response(context)
     
@@ -130,15 +117,6 @@ class ProductPage(DetailView, BaseViewMixin):
     model = Product
     service_class = ProductPageService
     service_factory = SERVICE_FACTORY
-    service_args = {
-        "template_service": {
-            "category_repository": DjangoCategoryRepository(),
-            "cart_acl": None,
-            "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
-            "user_acl": UserManagementACLFactory.create_user_acl(),
-            "session_adapter": None,
-        }
-    }
     repository_classes = {
         "product_rating_repository": DjangoProductRatingRepository,
         "review_repository": DjangoReviewRepository,
@@ -151,12 +129,12 @@ class ProductPage(DetailView, BaseViewMixin):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super(ProductPage, self).get_context_data(**kwargs)
 
-        return self.service.get_context_data(
-            context, 
-            self.object,
-            )
+        service_context = self.service.get_context_data()
     
-    def get_object(self, queryset=None):
+        service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
+        return {**context, **service_context}
+    
+    def get_object(self, queryset=None) -> ProductDTO:
         if queryset is None:
             queryset = self.get_queryset()
 
@@ -166,7 +144,12 @@ class ProductPage(DetailView, BaseViewMixin):
         self.object = self.get_object()
         self.get_context_data(object=self.object)
 
-        self.service.post(request, self.object)
+        data = request.POST.copy()
+        data['product'] = self.object.pk
+        data['cart'] = request.user.cart.pk
+        form = AddToCartForm(data, object=self.object, cart_pk=request.user.cart.pk)
+        if form.is_valid():
+            self.service.post()
 
         return HttpResponseRedirect(self.object.get_absolute_url())
     

@@ -1,16 +1,20 @@
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service, BaseTemplateService
 
-from core.shop_management.application.dtos.shop_management import CategoryDTO
+from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
 from core.cart_management.application.dtos.cart_management import CartDTO, WishlistDTO
-from core.user_management.application.dtos.user_management import UserDTO
 
-from core.shop_management.domain.interfaces.i_repositories.i_shop_management import ICategoryRepository
+from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
+from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
+
+from core.shop_management.domain.interfaces.i_repositories.i_shop_management import ICategoryRepository, IBrandRepository, IProductRepository
 from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL
 from core.user_management.domain.interfaces.i_acls import IUserACL
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
+from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 from typing import TypeVar, Generic
+import uuid
 
 T = TypeVar("T")
 
@@ -48,7 +52,7 @@ class BaseService(Generic[Service]):
         return self._is_authorized
     
 
-class BaseTemplateService(BaseService["BaseTemplateService"]):
+class BaseTemplateService(BaseService["BaseTemplateService"], BaseCachingMixin):
     '''
     Base service for TempleServices. It handles heander and footer
     '''
@@ -59,9 +63,16 @@ class BaseTemplateService(BaseService["BaseTemplateService"]):
         category_repository: ICategoryRepository,
         cart_acl: ICartACL,
         wishlist_acl: IWishlistACL,
+
+        brand_repository: IBrandRepository,
+        product_repository: IProductRepository,
+        url_mapping_adapter: URLHost,
         **kwargs,
     ):
         super().__init__(**kwargs)
+        self.brand_rep = brand_repository
+        self.product_rep = product_repository
+        self.url_mapping = url_mapping_adapter
         self.category_rep = category_repository
         self.cart_acl = cart_acl
         self.wishlist_acl = wishlist_acl
@@ -78,3 +89,26 @@ class BaseTemplateService(BaseService["BaseTemplateService"]):
             self.context['cart'] = CartDTO.from_entity(self.cart_acl.fetch_cart())#CartOrderProduct.objects.filter(cart=request.user.cart.pk).select_related('size__product__category')
             self.context['wishlist'] = WishlistDTO.from_entity(self.wishlist_acl.fetch_wishlist(public_uuid=self.user.uuid)) #WishListOrderProduct.objects.filter(wishlist=request.user.wishlist.pk).select_related('size__product__category')
         return self.context
+
+    #@BaseCachingMixin.cache_result(key_template="top_selling_{amount}_{indent}", dtos=[ProductDTO])
+    def get_top_selling(self, amount=5, indent=0) -> list[ProductDTO]:
+        return self.create_product_dtos(self.product_rep.fetch_top_selling(amount, indent))
+    
+    def create_product_dtos(self, entities: list[ProductEntity]) -> list[ProductDTO]:
+        '''
+        Creates a list of specific ProductDTO instances
+        Populates these instances with a CategoryDTO and a BrandDTO
+        '''
+        dtos = []
+        for entity in entities:
+            category = self._fetch_category(entity.category.public_uuid)
+            brand = self._fetch_brand(entity.brand.public_uuid)
+            dto = ProductDTO.from_entity(entity, category=category, brand=brand, url_mapping_adapter=self.url_mapping)
+            dtos.append(dto)
+        return dtos
+    
+    def _fetch_category(self, public_uuid: uuid.UUID) -> CategoryEntity | None:
+        return self.category_rep.fetch_by_uuid(public_uuid) 
+
+    def _fetch_brand(self, public_uuid: uuid.UUID) -> BrandEntity | None:
+        return self.brand_rep.fetch_by_uuid(public_uuid)

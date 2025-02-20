@@ -60,11 +60,13 @@ class BaseCachingMixin:
         return f"{prefix}_{key}"
 
     @staticmethod
-    def cache_result(key_template: str, dtos: list[type[DTO]]) -> Callable:
+    def cache_result(key_template: str, prefix: str = "{self.__class__.__name__}.{func.__name__}", dtos: list[type[DTO]] | None = None) -> Callable:
         """
         Retrieve data from cache or compute it if not cached.
 
-        :key_template - is the dynamic part of the cached key.
+        :key_template - is the dynamic part of the cached key. The key itself is built with key_template and names of class and func of the wrapped method.
+        :prefix - is non-encoded part of the cache key
+        :dtos - expects pydantic data transfer objects that will be serialized into json
         """
         def decorator(func: Callable):
             @wraps(func)
@@ -77,8 +79,10 @@ class BaseCachingMixin:
                 # combine args and kwargs and exclude 'self' from the arguments
                 bound_arguments = {k: v for k, v in bound_args.arguments.items() if k != 'self'}
 
-                key = f"{self.__class__.__name__}.{func.__name__}." + key_template.format(self=self, **bound_arguments)
-                cache_key = BaseCachingMixin._cache_key(key, f"{self.__class__.__name__}.{func.__name__}")
+                _key = f"{self.__class__.__name__}.{func.__name__}." + key_template.format(self=self, func=func, **bound_arguments)
+                _prefix = prefix.format(self=self, func=func, **bound_arguments)
+                cache_key = BaseCachingMixin._cache_key(_key, _prefix)
+                
                 cached_data = cache.get(cache_key)
                 if not cached_data:
                     cached_data = json.dumps(func(self, *args, **kwargs), cls=PydanticJSONEncoder)
@@ -87,18 +91,10 @@ class BaseCachingMixin:
             return wrapper
         return decorator
     
-    # def get_cached_query(self, key: str, query: BaseManager[Any], prefix: str = "query") -> list[Any] | Any:
-    #     cache_key = self._cache_key(key, prefix=prefix)
-    #     cached_data = cache.get(cache_key)
-    #     if not cached_data or cached_data != query:
-    #         cached_data = list(query)
-    #         cache.set(cache_key, cached_data, self.cache_timeout)
-    #     return cached_data
-    
     def get_cached_entities(self, key: str, entities: BaseEntityCollection[EntityType] | list[EntityType], prefix: str = "entities") -> BaseEntityCollection | Any:
         cache_key = self._cache_key(key, prefix=prefix)
         cached_data = cache.get(cache_key)
-        if not cached_data or cached_data != entities:
+        if not cached_data:
             cached_data = BaseEntityCollection(entities)
-            cache.set(cache_key, cached_data, self.cache_timeout)
+            cache.set(key=cache_key, value=cached_data, timeout=self.cache_timeout)
         return cached_data

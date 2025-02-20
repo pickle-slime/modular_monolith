@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from .....utils.infrastructure.base_host import BaseHost
+from .....utils.domain.interfaces.hosts.base_host import BaseHost
 
 class PasswordHasherHost(BaseHost):
     @abstractmethod

@@ -5,7 +5,7 @@ import uuid
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from core.utils.domain.value_objects.common import ForeignUUID
-from .....utils.infrastructure.base_repository import BaseRepository
+from .....utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 
 class ICategoryRepository(BaseRepository):
     @abstractmethod

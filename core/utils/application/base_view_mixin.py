@@ -1,8 +1,8 @@
 from core.exceptions import MissingRepositoryError
-from core.utils.infrastructure.base_repository import BaseRepository
-from core.utils.infrastructure.base_host import BaseHost
-from core.utils.application.base_factories import BaseServiceFactory
-from core.utils.application.base_service import Service
+from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository, Repository
+from core.utils.domain.interfaces.hosts.base_host import BaseHost, Host
+from .base_factories import BaseServiceFactory
+from .base_service import Service
 
 from typing import Any
 import logging
@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 class BaseViewMixin:
     service_class: type[Service] | None = None
 
-    repository_classes: dict[str, type[BaseRepository]] = {}
-    adapter_classes: dict[str, type[BaseHost]] = {}
-    service_classes: dict[str, type[Service]] = {}
+    repository_classes: dict[str, type[Repository]] | dict[str, Repository] = {}
+    adapter_classes: dict[str, type[Host]] | dict[str, Host] = {}
+    service_classes: dict[str, type[Service]] | dict[str, Service] = {}
+
     service_args: dict[str, dict[str, Any]] = {}
     adapter_args: dict[str, dict[str, Any]] = {}
     repository_args: dict[str, dict[str, Any]] = {}
@@ -44,7 +45,7 @@ class BaseViewMixin:
             
             return self._service_instances
 
-    def update_repositories(self) -> dict[str, BaseRepository]:  
+    def update_repositories(self) -> dict[str, Repository]:  
         if not hasattr(self, "_repository_instances"):
             self._repository_instances = {}
             for name, repo_class in self.repository_classes.items():
@@ -55,7 +56,7 @@ class BaseViewMixin:
                 
             return self._repository_instances
         
-    def update_adapters(self) -> dict[str, BaseHost]:    
+    def update_adapters(self) -> dict[str, Host]:    
         if not hasattr(self, "_adapter_instances"):
             self._adapter_instances = {}
             for name, repo_class in self.adapter_classes.items():
@@ -74,10 +75,10 @@ class BaseViewMixin:
         if not self.service_factory:
             raise ValueError(f"{self.__class__.__name__}: Service factory is not defined.")
 
-        if self.repository_classes and hasattr(self.service_factory, "repositories"):
-            self.service_factory.repositories |= self.repository_classes
-        if self.adapter_classes and hasattr(self.service_factory, "adapters"):
-            self.service_factory.adapters |= self.adapter_classes
+        if self.repository_classes and hasattr(self.service_factory, "_repositories"):
+            self.service_factory._repositories |= self.repository_classes
+        if self.adapter_classes and hasattr(self.service_factory, "_adapters"):
+            self.service_factory._adapters |= self.adapter_classes
 
         if self.service_factory_method_name:
             service_method = getattr(self.service_factory, self.service_factory_method_name, None)
@@ -112,3 +113,6 @@ class BaseViewMixin:
                     raise ValueError(f"{self.__class__.__name__}: '{key}' not found in service_args['{instance_name}']")
             else:
                 raise ValueError(f"{self.__class__.__name__}: There is no {instance_name} in repository_args, adapter_args, and service_args")
+
+    def initiate_dependency(self, instance_name: str, instance: Repository | Host | Service) -> None:
+        pass

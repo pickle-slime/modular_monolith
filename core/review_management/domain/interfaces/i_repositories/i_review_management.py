@@ -1,4 +1,4 @@
-from .....utils.infrastructure.base_repository import BaseRepository
+from .....utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 from core.review_management.domain.aggregates.review_management import ProductRating as ProductRatingEntity
 from core.review_management.domain.entities.review_management import Review as ReviewEntity
 from core.review_management.domain.value_objects.review_management import ReviewCollection

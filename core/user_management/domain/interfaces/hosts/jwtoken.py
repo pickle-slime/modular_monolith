@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Any
 import uuid
 
-from .....utils.infrastructure.base_host import BaseHost
+from .....utils.domain.interfaces.hosts.base_host import BaseHost
 
 class TokenHost(BaseHost):
     @abstractmethod

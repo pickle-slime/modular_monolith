@@ -1,10 +1,10 @@
 import shippo
 from shippo.models import components
-from django.conf import settings
+from config import SHIPPO_API_KEY
 
 
 class ShippoService:
-    shippo_sdk = shippo.Shippo(api_key_header=settings.SHIPPO_API_KEY)
+    shippo_sdk = shippo.Shippo(api_key_header=SHIPPO_API_KEY)
 
     @staticmethod
     def create_shipment(from_address: dict, to_address: dict, parcels:list[dict]):
