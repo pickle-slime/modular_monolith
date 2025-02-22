@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from ..base_service import BaseTemplateService
@@ -10,7 +10,7 @@ from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.review_management.application.dtos.review_management import ProductRatingDTO
 
 
-class HomePageService(BaseTemplateService):
+class HomePageService(BaseTemplateService['HomePageService']):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -37,7 +37,7 @@ class HomePageService(BaseTemplateService):
     def get_context_data(self) -> dict[str: Any]:
         return {**self.get_header_and_footer(), **self._get_context_data()}
 
-class StorePageService(BaseTemplateService):
+class StorePageService(BaseTemplateService['StorePageService']):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
@@ -111,7 +111,7 @@ class StorePageService(BaseTemplateService):
         """Whole workflow goes through get_context_data and get_queryset"""
         pass
     
-class ProductPageService(BaseTemplateService):
+class ProductPageService(BaseTemplateService['ProductPageService']):
     def __init__(
             self, 
             product_images_repository: IProductImagesRepository, 

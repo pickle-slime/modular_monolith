@@ -1,11 +1,11 @@
 # myapp/middleware.py
 from core.user_management.infrastructure.adapters.jwtoken import JWTokenAdapter
+from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.user_management.application.services.internal.user_management import AuthenticationUserMiddlewareService
 from config import JWT_SECRET_KEY, ACCESS_JWTOKEN_EXPIRY, REFRESH_JWTOKEN_EXPIRY
 from django.utils.deprecation import MiddlewareMixin
 
 from core.user_management.presentation.user_management.views import logout_user
-
 
 class JWTMiddleware:
     def __init__(self, get_response):
@@ -90,19 +90,42 @@ class JWTMiddleware:
 
 
 class SessionPopulatedMiddleware(MiddlewareMixin):
-    def process_request(self, request):
-        #request.session["initialized"] = True
-        request.session['path'] = request.path
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.session_adapter = RedisSessionAdapter(RedisAdapter())
+
+    def __call__(self, request):
+        self._process_request(request)
+        response = self.get_response(request)
+        self._handle_response(request, response)
+
+        return response
+
+    def _process_request(self, request):   
+        session_key = request.COOKIES.get("session_key")
+        
+        if not session_key:
+            request.session_key = self.session_adapter.session_key
+        else:
+            self.session_adapter.hand_over_session_key(session_key)
+            request.session_key = session_key
+        self.session_adapter.set(key="path", value=request.path)
 
         if hasattr(request, 'jwt'):
             is_authorized = request.jwt.get('authorized', False)
-            request.session['is_authorized'] = is_authorized
+            self.session_adapter.set(key='is_authorized', value=is_authorized)
 
-            if is_authorized:
-                user_public_uuid = request.jwt["decoded_token"]['user_public_uuid']
-                if user_public_uuid:
-                    request.session['user_public_uuid'] = user_public_uuid
+            if not request.jwt['decoded_token'] is None:
+                user_public_uuid = request.jwt['decoded_token'].get('user_public_uuid', None)
 
-        request.session.save()
+            if is_authorized and user_public_uuid:
+                self.session_adapter.set(key='user_public_uuid', value=user_public_uuid)
 
-        return None
+    def _handle_response(self, request, response):
+        response.set_cookie(
+            key="session_key",
+            value=request.session_key,
+            httponly=True,
+            secure=True,
+            samesite="Strict"
+        )

@@ -10,7 +10,7 @@ class CartItem(Entity):
     color: str = field(default=None)
     qty: int = field(default=None)
 
-    size: ForeignUUID | uuid.UUID = field(default=None)
+    size: uuid.UUID = field(default=None)
     size_snapshot: dict = field(default=None)
 
     def to_snapshot(self, size_details):
@@ -29,7 +29,7 @@ class WishlistItem(Entity):
     color: str = field(default=None)
     qty: int = field(default=None)
 
-    size: ForeignUUID | uuid.UUID = field(default=None)
+    size: uuid.UUID = field(default=None)
     size_snapshot: dict[
         'length': Decimal,
         'width': Decimal,

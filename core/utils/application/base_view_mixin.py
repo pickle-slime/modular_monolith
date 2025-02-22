@@ -41,30 +41,33 @@ class BaseViewMixin:
         if not hasattr(self, "_service_instances"):
             self._service_instances = {}
             for name, repo_class in self.service_classes.items():
-                self._service_instances[name] = repo_class(**self.service_args[name]) if name in self.service_args else repo_class()
-            
+                try:
+                    self._service_instances[name] = repo_class(**self.service_args[name]) if name in self.service_args else repo_class()
+                except TypeError:
+                    self._service_instances[name] = repo_class
+
             return self._service_instances
 
     def update_repositories(self) -> dict[str, Repository]:  
         if not hasattr(self, "_repository_instances"):
             self._repository_instances = {}
             for name, repo_class in self.repository_classes.items():
-                if issubclass(repo_class, BaseRepository):
+                try:
                     self._repository_instances[name] = repo_class(**self.repository_args[name]) if name in self.repository_args else repo_class()
-                else:
-                    raise MissingRepositoryError(message=f"{self.__class__.__name__}: repository_classes got non-repository instance {repo_class}")
-                
+                except TypeError:
+                    self._repository_instances[name] = repo_class
+
             return self._repository_instances
         
     def update_adapters(self) -> dict[str, Host]:    
         if not hasattr(self, "_adapter_instances"):
             self._adapter_instances = {}
             for name, repo_class in self.adapter_classes.items():
-                if issubclass(repo_class, BaseHost):
+                try:
                     self._adapter_instances[name] = repo_class(**self.adapter_args[name]) if name in self.adapter_args else repo_class()
-                else:
-                    raise ValueError(f"{self.__class__.__name__}: adapter_classes got non-adapter instance {repo_class}")
-                
+                except TypeError:
+                    self._adapter_instances[name] = repo_class
+
             return self._adapter_instances
     
     def update_factory(self) -> type[Service]:
@@ -113,6 +116,3 @@ class BaseViewMixin:
                     raise ValueError(f"{self.__class__.__name__}: '{key}' not found in service_args['{instance_name}']")
             else:
                 raise ValueError(f"{self.__class__.__name__}: There is no {instance_name} in repository_args, adapter_args, and service_args")
-
-    def initiate_dependency(self, instance_name: str, instance: Repository | Host | Service) -> None:
-        pass

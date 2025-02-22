@@ -45,5 +45,9 @@ JWT_PUBLIC_KEY = """MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0XfbwnAICqX2XYVU
                     LwIDAQAB"""
 
 #set expiry of json web tokens by mins
-ACCESS_JWTOKEN_EXPIRY = 15
+ACCESS_JWTOKEN_EXPIRY = 10
 REFRESH_JWTOKEN_EXPIRY = 600
+
+#set expiry of Redis storage by mins
+SESSIONS_EXPIRY = 60
+HASH_NAME_EXPIRY = 60

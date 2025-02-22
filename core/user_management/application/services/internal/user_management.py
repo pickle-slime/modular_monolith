@@ -1,10 +1,11 @@
-from typing import Any
-
-from core.utils.application.base_service import TemplateService
 from core.user_management.domain.interfaces.hosts.jwtoken import TokenHost
-from core.user_management.domain.interfaces.hosts.password_hasher import PasswordHasherHost
+from ..base_service import BaseTemplateService
 
-class AuthenticationUserMiddlewareService:
+from core.utils.application.base_service import Service
+
+from typing import Generic
+
+class AuthenticationUserMiddlewareService(Generic[Service]):
     def __init__(self, token_adapter: TokenHost):
         self.token_adapter = token_adapter
 
@@ -21,26 +22,10 @@ class AuthenticationUserMiddlewareService:
     
     def is_token_expired(self, token):
         return self.token_adapter.is_token_expired(token)
-
-class AuthenticationUserService:
-    def __init__(self, token_adapter: TokenHost, template_service: TemplateService):
-        self.template_service = template_service
-        self.token_adapter = token_adapter
-
-    def authenticate(self, email, password, password_hasher: PasswordHasherHost) -> tuple[str, str]:
-        ''' Returns refresh token and access token accordingly '''
-        user = self.template_service.user_rep.find_by_email(email)
-        if not user or not user.check_password(password, password_hasher):
-            raise ValueError("Invalid credentials")
-        refresh_token = self.token_adapter.refresh_token(user.public_uuid)
-        access_token = self.token_adapter.generate_access_token(user.public_uuid)
-        return refresh_token, access_token
     
-    def get_context_data(self, context: dict[str: Any]) -> dict[str: Any]:
-        return {**self.template_service.get_header_and_footer(), **context}
     
-class AuthenticationRegisterUserService(AuthenticationUserService):
+class AuthenticationRegisterUserService(BaseTemplateService['AuthenticationRegisterUserService']):
     pass
 
-class AuthenticationLoginUserService(AuthenticationUserService):
+class AuthenticationLoginUserService(BaseTemplateService['AuthenticationLoginUserService']):
     pass

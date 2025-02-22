@@ -3,7 +3,6 @@ from ..interfaces.hosts.password_hasher import PasswordHasherHost
 
 from dataclasses import dataclass, field
 from datetime import datetime
-import uuid
 
 @dataclass(kw_only=True)
 class User(Entity):
@@ -18,3 +17,7 @@ class User(Entity):
 
     def check_password(self, password: str, password_hasher: PasswordHasherHost):
         return password_hasher.verify(password, self.hashed_password)
+
+    @staticmethod
+    def guest() -> 'User':
+        return User(inner_uuid=None, public_uuid=None, role='guest')

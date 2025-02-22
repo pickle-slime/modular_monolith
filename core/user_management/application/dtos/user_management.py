@@ -12,6 +12,7 @@ class UserDTO(BaseModel):
     last_name: str | None = Field(default=None)
     date_joined: datetime | None = Field(default=None)
     last_login: datetime | None = Field(default=None)
+    role: str | None = Field(default=None)
 
     @staticmethod
     def from_entity(entity: UserEntity) -> 'UserDTO':
@@ -23,4 +24,5 @@ class UserDTO(BaseModel):
             last_name=entity.last_name,
             date_joined=entity.date_joined,
             last_login=entity.last_login,
+            role=entity.role,
         )

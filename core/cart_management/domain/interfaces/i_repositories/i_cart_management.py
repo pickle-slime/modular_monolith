@@ -7,7 +7,7 @@ import uuid
 
 class IWishlistRepository(BaseRepository):
     @abstractmethod
-    def fetch_wishlist_by_user(self, inner_uuid: uuid.UUID = None, public_uuid: uuid.UUID = None) -> WishlistEntity:
+    def fetch_wishlist_by_user(self, public_uuid: uuid.UUID = None) -> WishlistEntity:
         pass
 
 class IWishlistItemRepository(BaseRepository):

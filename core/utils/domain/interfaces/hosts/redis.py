@@ -1,4 +1,5 @@
 from .base_host import BaseHost
+from config import SESSIONS_EXPIRY
 
 from abc import abstractmethod
 
@@ -10,21 +11,29 @@ class RedisHost(BaseHost):
         pass
 
     @abstractmethod
-    def get(self, key: str) -> Any:
+    def hget(self, hash_name: str, key: str):
         pass
 
     @abstractmethod
-    def set(self, key: str, value, expire: int = None):
+    def hset(self, hash_name: str, key: str, value, expire: int = None):
         pass
 
     @abstractmethod
-    def delete(self, key: str):
+    def hdel(self, hash_name: str, key: str):
+        pass
+
+    @abstractmethod
+    def expire(self, hash_name: str, expire: int):
         pass
 
 
 class RedisSessionHost(BaseHost):
     @abstractmethod
-    def __init__(self, redis_adapter: RedisHost, session_key: str):
+    def __init__(self, redis_adapter: RedisHost, session_key: str | None):
+        pass
+
+    @abstractmethod
+    def hand_over_session_key(self, session_key: str) -> None:
         pass
 
     @abstractmethod
@@ -32,11 +41,11 @@ class RedisSessionHost(BaseHost):
         pass
 
     @abstractmethod
-    def set(self, data, expire: int = None):
+    def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY):
         pass
 
     @abstractmethod
-    def delete(self):
+    def delete(self, key):
         pass
 
     @abstractmethod

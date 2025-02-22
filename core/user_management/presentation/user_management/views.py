@@ -6,7 +6,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 
-from core.shop_management.presentation.shop_management.session_helper import inject_session_dependencies
+from core.utils.presentation.session_helper import inject_session_dependencies_into_view
 
 from typing import Any
 
@@ -16,10 +16,8 @@ from core.user_management.application.services.internal.user_management import A
 from core.user_management.infrastructure.repositories.user_management import DjangoUserRepository
 from core.user_management.infrastructure.adapters.jwtoken import JWTokenAdapter
 from core.utils.application.base_view_mixin import BaseViewMixin
-from core.shop_management.infrastructure.repositories.shop_management import DjangoCategoryRepository
-from core.cart_management.infrastructure.repositories.cart_management import DjangoWishlistRepository
-from core.user_management.infrastructure.repositories.user_management import DjangoUserRepository
-from core.utils.application.base_service import BaseTemplateService
+from core.shop_management.presentation.acl_factory import ShopManagementACLFactory
+from core.cart_management.presentation.acl_factory import CartManagementACLFactory
 
 from core.user_management.infrastructure.adapters.dj_password_hasher import DjangoPasswordHasherAdapter
 from config import JWT_SECRET_KEY, ACCESS_JWTOKEN_EXPIRY, REFRESH_JWTOKEN_EXPIRY
@@ -28,19 +26,16 @@ class RegisterUser(CreateView, BaseViewMixin):
     form_class = RegisterUserForm
     service_class = AuthenticationRegisterUserService
     service_classes = {
-        "template_service": BaseTemplateService,
+        "category_acl": ShopManagementACLFactory.create_category_acl(),
+        "cart_acl": None,
+        "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
     }
     adapter_classes = {
         "token_adapter": JWTokenAdapter,
+        "session_adapter": None,
     }
-    service_args = {
-        "template_service": {
-            "category_repository": DjangoCategoryRepository(),
-            "cart_repository": None,
-            "wishlist_repository": DjangoWishlistRepository(),
-            "user_repository": DjangoUserRepository(),
-            "session_adapter": None,
-        }
+    repository_classes = {
+        "user_repository": DjangoUserRepository,
     }
     adapter_args = {
         "token_adapter": {
@@ -82,28 +77,25 @@ class RegisterUser(CreateView, BaseViewMixin):
         return super().form_invalid(form)
     
     def get(self, request, *args, **kwargs):
-        inject_session_dependencies(self, request)
+        inject_session_dependencies_into_view(self, request)
         return super().get(request, *args, **kwargs)
     
 class LoginUser(LoginView, BaseViewMixin):
     form_class = LoginUserForm
     service_class = AuthenticationLoginUserService
     service_classes = {
-        "template_service": BaseTemplateService,
+        "category_acl": ShopManagementACLFactory.create_category_acl(),
+        "cart_acl": None,
+        "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
     }
     adapter_classes = {
         "token_adapter": JWTokenAdapter,
+        "session_adapter": None,
     }
-    service_args = {
-        "template_service": {
-            "category_repository": DjangoCategoryRepository(),
-            "cart_repository": None,
-            "wishlist_repository": DjangoWishlistRepository(),
-            "user_repository": DjangoUserRepository(),
-            "session_adapter": None,
-        }
+    repository_classes = {
+        "user_repository": DjangoUserRepository,
     }
-    adapter_args={
+    adapter_args = {
         "token_adapter": {
             "secret_key": JWT_SECRET_KEY,
             "access_token_expiry": ACCESS_JWTOKEN_EXPIRY,
@@ -144,7 +136,7 @@ class LoginUser(LoginView, BaseViewMixin):
         return reverse_lazy('home')
     
     def get(self, request, *args, **kwargs):
-        inject_session_dependencies(self, request)
+        inject_session_dependencies_into_view(self, request)
         return super().get(request, *args, **kwargs)
     
 def logout_user(request):

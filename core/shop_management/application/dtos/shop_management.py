@@ -1,5 +1,5 @@
 from pydantic import field_validator
-from typing import Type, Optional, Generic
+from typing import Type, Optional
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID

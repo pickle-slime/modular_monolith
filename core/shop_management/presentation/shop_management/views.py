@@ -6,7 +6,7 @@ from django.views.generic.edit import FormMixin
 from django.utils.translation import gettext as _
 from django.http import HttpResponseRedirect
 
-from core.shop_management.presentation.shop_management.session_helper import inject_session_dependencies
+from core.utils.presentation.session_helper import inject_session_dependencies_into_factory
 
 from .forms import *
 from .models import Product
@@ -55,7 +55,7 @@ class HomePage(ListView, BaseViewMixin):
         return {**context, **service_context}
     
     def dispatch(self, request, *args, **kwargs):
-        inject_session_dependencies(self, request)
+        inject_session_dependencies_into_factory(self, request)
         return super().dispatch(request, *args, **kwargs)
     
 
@@ -110,7 +110,7 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
         return self.render_to_response(context)
     
     def dispatch(self, request, *args, **kwargs):
-        inject_session_dependencies(self, request)
+        inject_session_dependencies_into_factory(self, request)
         return super().dispatch(request, *args, **kwargs)
 
 class ProductPage(DetailView, BaseViewMixin):
@@ -154,7 +154,7 @@ class ProductPage(DetailView, BaseViewMixin):
         return HttpResponseRedirect(self.object.get_absolute_url())
     
     def dispatch(self, request, *args, **kwargs):
-        inject_session_dependencies(self, request)
+        inject_session_dependencies_into_factory(self, request)
         return super().dispatch(request, *args, **kwargs)
 
 

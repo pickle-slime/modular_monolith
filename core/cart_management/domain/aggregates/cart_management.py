@@ -10,7 +10,7 @@ class Cart(Entity):
     total_price: int = field(default=0)
     quantity: int = field(default=0)
 
-    user: ForeignUUID | uuid.UUID = field(default=None)
+    user: uuid.UUID = field(default=None)
 
     items: list[CartItem] = field(default_factory=list)
 
@@ -19,6 +19,6 @@ class Wishlist(Entity):
     total_price: int = field(default=0)
     quantity: int = field(default=0)
 
-    user: ForeignUUID | uuid.UUID = field(default=None)
+    user: uuid.UUID = field(default=None)
 
     items: list[WishlistItem] = field(default_factory=list)

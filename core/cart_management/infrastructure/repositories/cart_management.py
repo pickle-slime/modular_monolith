@@ -33,12 +33,12 @@ class DjangoCartRepository(ICartRepository):
     def __init__(self, session_adapter: RedisSessionAdapter):
         self.session_adapter = session_adapter
 
-    def map_session_into_entity(self, session_cart: dict[str, Any], user_inner_uuid: uuid.UUID = None) -> CartEntity:
+    def map_session_into_entity(self, session_cart: dict[str, Any]) -> CartEntity:
         return CartEntity(
             total_price=session_cart.get("total_price"),
             quantity=session_cart.get("quantity"),
             items=DjangoCartItemRepository.map_cart_items_into_entities(session_cart.get("items")),
-            user=ForeignUUID(user_inner_uuid, self.session_adapter.get("user_public_uuid")) if user_inner_uuid else self.session_adapter.get("user_public_uuid")
+            user=self.session_adapter.get("user_public_uuid")
         )
 
     def fetch_cart(self) -> CartEntity:
@@ -63,7 +63,7 @@ class DjangoWishlistItemRepository(IWishlistItemRepository):
         return WishlistItemEntity(
             color=item.color,
             qty=item.qty,
-            size=ForeignUUID(size.inner_uuid, size.public_uuid),
+            size=size.public_uuid,
             size_snapshot=size_snapshot,
         )
 
@@ -74,21 +74,17 @@ class DjangoWishlistItemRepository(IWishlistItemRepository):
 class DjangoWishlistRepository(IWishlistRepository):
     @staticmethod
     def map_wishlist_into_entity(wishlist: WishlistModel):
-        user = wishlist.customer
         return WishlistEntity(
             inner_uuid=wishlist.inner_uuid,
             public_uuid=wishlist.public_uuid,
             total_price=wishlist.total_price,
             quantity=wishlist.quantity,
-            user=ForeignUUID(user.inner_uuid, user.public_uuid),
+            user=wishlist.customer.public_uuid,
             items=DjangoWishlistItemRepository.map_wishlist_items_into_entities(wishlist.orderproduct_set.all().select_related('size__product__category')),
         )
 
-    def fetch_wishlist_by_user(self, inner_uuid: uuid.UUID = None, public_uuid: uuid.UUID = None) -> WishlistEntity:
-        if inner_uuid:
-            wishlist = WishlistModel.objects.filter(customer__inner_uuid=inner_uuid).first()
-        elif public_uuid:
-            wishlist = WishlistModel.objects.filter(customer__public_uuid=public_uuid).first()
+    def fetch_wishlist_by_user(self, public_uuid: uuid.UUID = None) -> WishlistEntity:
+        wishlist = WishlistModel.objects.filter(customer__public_uuid=public_uuid).first()
             
         if wishlist:
             return self.map_wishlist_into_entity(wishlist)
