@@ -4,10 +4,13 @@ from abc import ABC, abstractmethod
 from typing import TypeVar
 from pydantic import BaseModel
 
-class BaseDTO(BaseModel, ABC):
+
+DTO = TypeVar("DTO")
+
+class BaseEntityDTO(BaseModel, ABC):
     @classmethod
     @abstractmethod
     def from_entity(cls: type['DTO'], entity: EntityType) -> 'DTO':
         pass
 
-DTO = TypeVar("DTO", bound=BaseDTO)
+ENTITY_DTO = TypeVar("DTO", bound=BaseEntityDTO)

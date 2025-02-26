@@ -1,10 +1,10 @@
-from core.utils.application.base_dto import BaseDTO
+from core.utils.application.base_dto import BaseEntityDTO
 from core.cart_management.domain.aggregates.cart_management import Cart as CartEntity, CartItem as CartItemEntity, Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
 
 from pydantic import Field
 import uuid
 
-class BaseItemDTO(BaseDTO):
+class BaseItemDTO(BaseEntityDTO):
     pub_uuid: uuid.UUID | None = Field(default=None)
     color: str = Field(default='Black')
     qty: int = Field(default=0)
@@ -32,7 +32,7 @@ class WishlistItemDTO(BaseItemDTO):
             size_snapshot=entity.size_snapshot,
         )
 
-class BaseItemCollectionDTO(BaseDTO):
+class BaseItemCollectionDTO(BaseEntityDTO):
     pub_uuid: uuid.UUID | None = Field(default=None)
     total_price: int = Field(default=0)
     quantity: int = Field(default=0)

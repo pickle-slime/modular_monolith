@@ -1,23 +1,23 @@
-from pydantic import field_validator
+from pydantic import field_validator, Field
 from typing import Type, Optional
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from core.utils.application.base_dto import BaseDTO
+from core.utils.application.base_dto import BaseEntityDTO
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductImage as ProductImageEntity, ProductSize as ProductSizeEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from core.utils.domain.value_objects.common import CommonNameField, CommonSlugField
 from core.shop_management.domain.value_objects.shop_management import ImageField, PercentageField, ProductSizesCollection, ProductImagesCollection
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
-class CategoryDTO(BaseDTO):
-    uuid: UUID
-    name: str
-    slug: str
-    count_of_deals: int
+class CategoryDTO(BaseEntityDTO):
+    uuid: UUID | None = Field(default=None)
+    name: str | None = Field(default=None)
+    slug: str | None = Field(default=None) 
+    count_of_deals: int = Field(default=0)
 
-    get_absolute_url: str | None = None
+    get_absolute_url: str | None = Field(default=None)
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):
@@ -45,11 +45,11 @@ class CategoryDTO(BaseDTO):
     class Config:
         from_attributes = True
 
-class BrandDTO(BaseDTO):
-    uuid: UUID
-    name: str
-    slug: str
-    count_of_deals: int
+class BrandDTO(BaseEntityDTO):
+    uuid: UUID = Field(default=None)
+    name: str | None = Field(default=None)
+    slug: str | None = Field(default=None)
+    count_of_deals: int = Field(default=0)
 
     get_absolute_url: str | None = None
 
@@ -83,19 +83,19 @@ class BrandDTO(BaseDTO):
     class Config:
         from_attributes = True
 
-class ProductSizeDTO(BaseDTO):
-    size: str
-    length: Decimal
-    width: Decimal
-    height: Decimal
-    weight: Decimal
+class ProductSizeDTO(BaseEntityDTO):
+    size: str | None = Field(default=None)
+    length: Decimal = Field(default=Decimal(0.0))
+    width: Decimal = Field(default=Decimal(0.0))
+    height: Decimal = Field(default=Decimal(0.0))
+    weight: Decimal = Field(default=Decimal(0.0))
 
-    entity: UUID
+    product: UUID | None = Field(default=None)
 
-    uuid: UUID
+    uuid: UUID | None = Field(default=None)
 
     @classmethod
-    def from_entity(cls: type['ProductSizeDTO'], entity: ProductSizeEntity, url_mapping_adapter: Optional[URLHost] = None) -> 'ProductSizeDTO':
+    def from_entity(cls: type['ProductSizeDTO'], entity: ProductSizeEntity) -> 'ProductSizeDTO':
         return cls(
             uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
             size=entity.size,
@@ -103,7 +103,7 @@ class ProductSizeDTO(BaseDTO):
             width=entity.weight,
             height=entity.height,
             weight=entity.weight,
-            entity=entity.product.public_uuid
+            product=entity.product.public_uuid
         )
     
     @classmethod
@@ -114,17 +114,17 @@ class ProductSizeDTO(BaseDTO):
         from_attributes = True
 
 
-class ProductImageDTO(BaseDTO):
-    image: str
-    entity: UUID
-    uuid: UUID
+class ProductImageDTO(BaseEntityDTO):
+    image: str | None = Field(default=None)
+    product: UUID | None = Field(default=None)
+    uuid: UUID | None = Field(default=None)
 
     @classmethod
-    def from_entity(cls: type['ProductImageDTO'], entity: ProductImageEntity, url_mapping_adapter: Optional[URLHost] = None) -> 'ProductImageDTO':
+    def from_entity(cls: type['ProductImageDTO'], entity: ProductImageEntity) -> 'ProductImageDTO':
         return cls(
             uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
             image=entity.image,
-            entity=entity.product.public_uuid
+            product=entity.product.public_uuid
         )
     
     @classmethod
@@ -140,29 +140,29 @@ class ProductImageDTO(BaseDTO):
     class Config:
         from_attributes = True
 
-class ProductDTO(BaseDTO):
-    name: str
-    slug: str
-    description: str
-    details: str
-    image: str
-    price: int
-    discount: int
-    color: list[str]
-    in_stock: int
-    count_of_selled: int
-    time_created: datetime
-    time_updated: datetime
+class ProductDTO(BaseEntityDTO):
+    name: str | None = Field(default=None)
+    slug: str | None = Field(default=None)
+    description: str | None = Field(default=None)
+    details: str | None = Field(default=None)
+    image: str | None = Field(default=None)
+    price: int = Field(default=0)
+    discount: int = Field(default=0)
+    color: list[str] | None = Field(default=None)
+    in_stock: int = Field(default=0)
+    count_of_selled: int = Field(default=0)
+    time_created: datetime | None = Field(default=None)
+    time_updated: datetime | None = Field(default=None)
 
-    brand: Optional[BrandDTO] = None
-    category: Optional[CategoryDTO] = None
-    seller: None = None
-    entity_sizes: Optional[list[ProductSizeDTO]] = None
-    entity_images: Optional[list[ProductImageDTO]] = None
+    brand: BrandDTO | None = Field(default=None)
+    category: CategoryDTO | None = Field(default=None)
+    seller: UUID | None = Field(default=None)
+    entity_sizes: list[ProductSizeDTO] | None = Field(default=None)
+    entity_images: list[ProductImageDTO] | None = Field(default=None)
 
-    uuid: UUID
+    uuid: UUID | None = Field(default=None)
 
-    get_absolute_url: str | None = None
+    get_absolute_url: str = Field(default="/")
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):
@@ -188,6 +188,9 @@ class ProductDTO(BaseDTO):
             return int(v)
         return v  
 
+    @field_validator("get_absolute_url", mode="before")
+    def validate_get_absolute_url(cls, v):
+        return v if v is not None else "/"
 
     @classmethod
     def from_entity(
@@ -196,7 +199,6 @@ class ProductDTO(BaseDTO):
         category: Optional[CategoryEntity] = None,
         brand: Optional[BrandEntity] = None,
         url_mapping_adapter: Optional[URLHost] = None,
-        user = None,
     ) -> 'ProductDTO':
         absolute_url = url_mapping_adapter.get_absolute_url_of_product(category.slug, entity.slug) if url_mapping_adapter and isinstance(category, CategoryEntity) else None
         return cls(
@@ -216,7 +218,7 @@ class ProductDTO(BaseDTO):
 
             brand=BrandDTO.from_entity(brand, url_mapping_adapter) if brand else None,
             category=CategoryDTO.from_entity(category, url_mapping_adapter) if category else None,
-            #seller=entity.seller.public_uuid,
+            seller=entity.seller,
             entity_sizes=ProductSizeDTO.from_entities(entity.sizes) if entity.sizes else None,
             entity_images=ProductImageDTO.from_entities(entity.images) if entity.images else None,
 

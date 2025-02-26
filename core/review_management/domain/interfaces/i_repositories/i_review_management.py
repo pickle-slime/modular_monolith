@@ -9,7 +9,7 @@ import uuid
 
 class IProductRatingRepository(BaseRepository):
     @abstractmethod
-    def fetch_rating_by_product_uuid(self, product_inner_uuid: uuid.UUID) -> ProductRatingEntity:
+    def fetch_rating_by_product_uuid(self, product_public_uuid: uuid.UUID) -> ProductRatingEntity:
         pass
 
 class IReviewRepository(BaseRepository):
@@ -27,5 +27,9 @@ class IReviewReadModel(BaseRepository):
     A read model (from CQRS context) that handles complex queries within review bounded context
     """
     @abstractmethod
-    def fetch_rating_product_stars(self, product_rating_inner_uuid: uuid.UUID) -> tuple[list[Any | int], int]:
+    def fetch_rating_product_stars(
+        self, 
+        product_rating_inner_uuid: uuid.UUID = None, 
+        product_rating_public_uuid: uuid.UUID = None
+    ) -> tuple[list[Any | int], int]:
         pass

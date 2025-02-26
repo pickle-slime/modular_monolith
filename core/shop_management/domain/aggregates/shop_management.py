@@ -25,7 +25,7 @@ class Product(Entity):
 
     brand: ForeignUUID | uuid.UUID = field(default=None)
     category: ForeignUUID | uuid.UUID = field(default=None)
-    seller: ForeignUUID | uuid.UUID = field(default=None)
+    seller: uuid.UUID = field(default=None)
 
     sizes: ProductSizesCollection[ProductSize] = field(default=ProductSizesCollection)
     images: ProductImagesCollection[ProductImage] = field(default=ProductImagesCollection)

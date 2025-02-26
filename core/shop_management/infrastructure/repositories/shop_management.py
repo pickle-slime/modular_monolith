@@ -143,7 +143,7 @@ class DjangoProductRepository(IProductRepository):
         images = None
         if load_images:
             images = DjangoProductImagesRepository.map_images_into_entities(queryset=model.product_images.all())
-
+        
         return ProductEntity(
             name=model.name,
             slug=model.slug,
@@ -159,8 +159,7 @@ class DjangoProductRepository(IProductRepository):
             time_updated=model.time_updated,
             brand=ForeignUUID(brand.inner_uuid, brand.public_uuid),
             category=ForeignUUID(category.inner_uuid, category.public_uuid),
-            #seller=model.seller.inner_uuid,
-            seller=None,
+            seller=model.seller.public_uuid,
             inner_uuid=model.inner_uuid,
             public_uuid=model.public_uuid,
             sizes=sizes,

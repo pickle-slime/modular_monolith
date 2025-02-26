@@ -6,7 +6,7 @@ from django.views.generic.edit import FormMixin
 from django.utils.translation import gettext as _
 from django.http import HttpResponseRedirect
 
-from core.utils.presentation.session_helper import inject_session_dependencies_into_factory
+from core.utils.presentation.session_helper import inject_session_dependencies_into_view
 
 from .forms import *
 from .models import Product
@@ -18,14 +18,14 @@ from core.shop_management.infrastructure.repositories.shop_management import Dja
 from core.cart_management.presentation.cart_management.forms import AddToCartForm, AddToWishlistForm
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
 from core.user_management.presentation.acl_factory import UserManagementACLFactory
-from core.review_management.infrastructure.repositories.review_management import DjangoProductRatingRepository, DjangoReviewRepository, DjangoReviewReadModel
+from core.review_management.presentation.acl_factory import ReivewManagementACLFactory
 from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.utils.infrastructure.adapters.dj_url_mapping import DjangoURLAdapter
 from ...application.services.base_service import BaseTemplateService
 
 SERVICE_FACTORY = BaseServiceFactory(
     services={
-        "cart_acl": None,
+        "cart_acl": None, #requires session adapter
         "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
         "user_acl": UserManagementACLFactory.create_user_acl(),
     },
@@ -37,7 +37,7 @@ SERVICE_FACTORY = BaseServiceFactory(
     },
     adapters={
         "url_mapping_adapter": DjangoURLAdapter,
-        "session_adapter": None
+        "session_adapter": None #requires session_key which is restored in request.session_key
     }
 )
 
@@ -55,7 +55,7 @@ class HomePage(ListView, BaseViewMixin):
         return {**context, **service_context}
     
     def dispatch(self, request, *args, **kwargs):
-        inject_session_dependencies_into_factory(self, request)
+        inject_session_dependencies_into_view(self, request)
         return super().dispatch(request, *args, **kwargs)
     
 
@@ -110,7 +110,7 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
         return self.render_to_response(context)
     
     def dispatch(self, request, *args, **kwargs):
-        inject_session_dependencies_into_factory(self, request)
+        inject_session_dependencies_into_view(self, request)
         return super().dispatch(request, *args, **kwargs)
 
 class ProductPage(DetailView, BaseViewMixin):
@@ -118,9 +118,7 @@ class ProductPage(DetailView, BaseViewMixin):
     service_class = ProductPageService
     service_factory = SERVICE_FACTORY
     repository_classes = {
-        "product_rating_repository": DjangoProductRatingRepository,
-        "review_repository": DjangoReviewRepository,
-        "review_read_model": DjangoReviewReadModel,
+        "product_rating_acl": ReivewManagementACLFactory.create_product_rating_acl(),
     }
     template_name = 'shop/product.html'
     slug_field = "slug" 
@@ -154,7 +152,7 @@ class ProductPage(DetailView, BaseViewMixin):
         return HttpResponseRedirect(self.object.get_absolute_url())
     
     def dispatch(self, request, *args, **kwargs):
-        inject_session_dependencies_into_factory(self, request)
+        inject_session_dependencies_into_view(self, request)
         return super().dispatch(request, *args, **kwargs)
 
 

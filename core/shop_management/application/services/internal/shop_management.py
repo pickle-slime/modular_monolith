@@ -4,7 +4,7 @@ from core.utils.application.base_cache_mixin import BaseCachingMixin
 from ..base_service import BaseTemplateService
 
 from core.shop_management.domain.interfaces.i_repositories.i_shop_management import IProductImagesRepository
-from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewRepository, IReviewReadModel
+from core.review_management.domain.interfaces.i_acl import IProductRatingACL
 from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.review_management.application.dtos.review_management import ProductRatingDTO
@@ -115,16 +115,12 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
     def __init__(
             self, 
             product_images_repository: IProductImagesRepository, 
-            product_rating_repository: IProductRatingRepository, 
-            review_repository: IReviewRepository, 
-            review_read_model: IReviewReadModel, 
+            product_rating_acl: IProductRatingACL,
             **kwargs
         ):
         super().__init__(**kwargs)
-        self.rating_rep = product_rating_repository
-        self.review_rep = review_repository
+        self.product_rating_acl = product_rating_acl
         self.product_images_rep = product_images_repository
-        self.review_read_model = review_read_model
 
     #@BaseCachingMixin.cache_result("get_object_{url_parameters}")
     def get_object(self, url_parameters: Any) -> ProductDTO:
@@ -141,14 +137,13 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
 
     def get_context_data(self) -> dict[str: Any]:
         header_and_footer = self.get_header_and_footer()
-        product_rating = self.rating_rep.fetch_rating_by_product_uuid(self.entity.inner_uuid)
-        product_rating_dto = ProductRatingDTO.from_entity(product_rating)
+        product_rating_dto = self.product_rating_acl.fetch_rating_by_product_uuid(self.entity.public_uuid)
         
         context = dict()
         context['product_images'] = self.entity.images
         context['related_products'] = self.product_rep.fetch_related_products(brand=self.entity.brand.inner_uuid, limit=10, select_related='category')
         context['product_rating'] = product_rating_dto
-        context['stars'], context['reviews_count'] = self.review_read_model.fetch_rating_product_stars(product_rating.inner_uuid)
+        context['stars'], context['reviews_count'] = self.product_rating_acl.fetch_rating_product_stars(product_rating_dto.uuid)
 
         # if self.is_authorized:
         #     context['add_to_cart'] = AddToCartForm(object_entity=ProductDTO.from_entity(entity), cart_pk=request.user.cart.pk)

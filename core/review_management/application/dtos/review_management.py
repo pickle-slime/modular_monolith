@@ -4,12 +4,13 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-from core.utils.application.base_dto import BaseDTO, DTO
+from core.utils.application.base_dto import BaseEntityDTO, DTO
 from core.review_management.domain.value_objects.review_management import ReviewCollection
 from core.review_management.domain.entities.review_management import Review as ReviewEntity
 from core.review_management.domain.aggregates.review_management import ProductRating as ProductRatingEntity
+from .infrastructure import PaginatedReviewsDTO
 
-class ReviewDTO(BaseDTO):
+class ReviewDTO(BaseEntityDTO):
     text: str
     rating: int
     date_created: datetime
@@ -42,20 +43,17 @@ class ReviewCollectionDTO(BaseModel, Generic[DTO]):
     total_count: int = Field(default=0)
 
     @staticmethod
-    def from_paginated_data(reviews: list['ReviewEntity'], pagination: dict) -> 'ReviewCollectionDTO':
-        if not reviews or not isinstance(reviews, list) or len(reviews) == 0:
-            return ReviewCollectionDTO()
-        
+    def from_paginated_data(paginated_reviews: PaginatedReviewsDTO) -> 'ReviewCollectionDTO':
         return ReviewCollectionDTO(
-            reviews=ReviewDTO.from_entities(reviews),
-            current_page=pagination['current_page'],
-            num_pages=pagination['num_pages'],
-            has_previous=pagination['has_previous'],
-            has_next=pagination['has_next'],
-            total_count=pagination['total_count']
+            reviews=ReviewDTO.from_entities(paginated_reviews.reviews),
+            current_page=paginated_reviews.current_page,
+            num_pages=paginated_reviews.num_pages,
+            has_previous=paginated_reviews.has_previous,
+            has_next=paginated_reviews.has_next,
+            total_count=paginated_reviews.total_count,
         )
 
-class ProductRatingDTO(BaseDTO):
+class ProductRatingDTO(BaseEntityDTO):
     rating: Decimal | None = Decimal("0.0")
     reviews: ReviewCollection[ReviewDTO] | list[ReviewDTO] | None
     product: uuid.UUID | None
@@ -64,12 +62,12 @@ class ProductRatingDTO(BaseDTO):
 
     @staticmethod
     def from_entity(product_rating: ProductRatingEntity | None, pagination: dict | None = None) -> 'ProductRatingDTO':
-        if not product_rating or product_rating.inner_uuid is None and product_rating.public_uuid is None:
-            return None
+        # if not product_rating or product_rating.inner_uuid is None and product_rating.public_uuid is None:
+        #     return None
         
         return ProductRatingDTO(
             rating=product_rating.rating,
             reviews=ReviewCollectionDTO.from_paginated_data(product_rating.reviews, pagination) if pagination else ReviewDTO.from_entities(product_rating.reviews),
-            product=product_rating.product.public_uuid,
+            product=product_rating.product,
             uuid=product_rating.public_uuid,
         )

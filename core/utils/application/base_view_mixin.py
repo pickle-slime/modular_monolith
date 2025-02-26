@@ -82,6 +82,8 @@ class BaseViewMixin:
             self.service_factory._repositories |= self.repository_classes
         if self.adapter_classes and hasattr(self.service_factory, "_adapters"):
             self.service_factory._adapters |= self.adapter_classes
+        if self.service_classes and hasattr(self.service_factory, "_services"):
+            self.service_factory._services |= self.service_classes
 
         if self.service_factory_method_name:
             service_method = getattr(self.service_factory, self.service_factory_method_name, None)

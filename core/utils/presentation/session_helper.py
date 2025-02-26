@@ -4,23 +4,11 @@ from core.cart_management.presentation.acl_factory import CartManagementACLFacto
 
 def inject_session_dependencies_into_view(view_instance, request: HttpRequest) -> None:
     """
-    Helper function to inject session-related dependencies dynamically into a view instance.
+    Helper function to inject session-related dependencies dynamically into a view instance that has the BaseViewMixin.
     """
-    session_adapter = RedisSessionAdapter(RedisAdapter(), session_key=request.session.session_key)
+    session_adapter = RedisSessionAdapter(RedisAdapter(), session_key=request.session_key)
     cart_acl = CartManagementACLFactory.create_cart_acl(session_adapter)
     
     view_instance.service_classes["cart_acl"] = cart_acl
 
     view_instance.adapter_classes["session_adapter"] = session_adapter
-
-
-def inject_session_dependencies_into_factory(view_instance, request: HttpRequest) -> None:
-    """
-    Helper function to inject session-related dependencies dynamically into a service factory.
-    """
-    session_adapter = RedisSessionAdapter(RedisAdapter(), session_key=request.session_key)
-    cart_acl = CartManagementACLFactory.create_cart_acl(session_adapter)
-    
-    view_instance.service_factory._services["cart_acl"] = cart_acl
-
-    view_instance.service_factory._adapters["session_adapter"] = session_adapter

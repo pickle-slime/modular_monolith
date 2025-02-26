@@ -20,6 +20,10 @@ def load_reviews(request, category, product):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if is_ajax and request.method == 'GET':
-        product_rating_pub_uuid = request.GET.get("product_rating_uuid")
-        page_number = request.GET.get('page')
+        product_rating_pub_uuid = request.GET.get("product_rating_uuid", None)
+        page_number = request.GET.get('page', None)
+
+        if product_rating_pub_uuid == "" or "null": product_rating_pub_uuid = None
+        if page_number == "" or "null": page_number = None
+
         return JsonResponse(service.load_reviews(product_rating_pub_uuid, page_number))

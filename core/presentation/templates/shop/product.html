@@ -177,7 +177,7 @@
 								<div class="col-md-3">
 									<div id="rating">
 										<div id="rating-avg" class="rating-avg">
-											<input type="hidden" id="product-rating-uuid" value="{{product_rating.uuid}}">
+											<input type="hidden" id="product-rating-uuid" value="{% if product_rating.uuid %}{{product_rating.uuid}}{% endif %}">
 											<span>{{ product_rating.rating }}</span>
 											<div class="rating-stars"> 
 												<i class="fa fa-star-o"></i>

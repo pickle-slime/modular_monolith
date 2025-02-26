@@ -23,9 +23,6 @@ class ProductPageReviewsService:
         return response_data
         
     def load_reviews(self, product_rating_pub_uuid: uuid.UUID | str, page_number: int) -> dict[str, Any]:
-        if product_rating_pub_uuid:
-            review_entities, pagination = self.review_rep.fetch_paginated_reviews(product_rating_pub_uuid, page_number)
-        else:
-            review_entities, pagination = list(), 0
+        paginated_reviews = self.review_rep.fetch_paginated_reviews(product_rating_pub_uuid, page_number)
 
-        return ReviewCollectionDTO.from_paginated_data(review_entities, pagination).model_dump(mode="json")
+        return ReviewCollectionDTO.from_paginated_data(paginated_reviews).model_dump(mode="json")
