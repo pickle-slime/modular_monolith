@@ -55,3 +55,7 @@ class RedisSessionHost(BaseHost):
     @abstractmethod
     def _get_session_key(self) -> str:
         pass
+
+    @abstractmethod
+    def cache_key(self, key: str, prefix: str = "cache") -> str:
+        pass

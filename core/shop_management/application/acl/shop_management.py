@@ -1,6 +1,6 @@
 from ...domain.interfaces.i_repositories.i_shop_management import IBrandRepository, ICategoryRepository, IProductRepository
 from ...domain.interfaces.i_acls import IBrandACL, ICategoryACL, IProductACL
-from ..dtos.shop_management import CategoryDTO, ProductDTO
+from ..dtos.shop_management import CategoryDTO, ProductDTO, ProductSizeDTO
 
 import uuid
 
@@ -8,8 +8,8 @@ class ProductACL(IProductACL):
     def __init__(self, product_repository: IProductRepository):
         self.product_rep = product_repository
 
-    def fetch_product_by_uuid(self, public_uuid: uuid.UUID | None, load_sizes: bool, load_images: bool) -> ProductDTO:
-        return ProductDTO.from_entity(self.product_rep.fetch_product_by_uuid(public_uuid=public_uuid, load_sizes=load_sizes, load_images=load_images))
+    def fetch_first_sample(self, public_uuid: uuid.UUID | None) -> ProductDTO:
+        return ProductDTO.from_entity(self.product_rep.fetch_first_sample(public_uuid=public_uuid))
 
 class CategoryACL(ICategoryACL):
     def __init__(self, category_repository: ICategoryRepository):

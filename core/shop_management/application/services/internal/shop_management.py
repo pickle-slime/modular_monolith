@@ -3,12 +3,9 @@ from typing import Any
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from ..base_service import BaseTemplateService
 
-from core.shop_management.domain.interfaces.i_repositories.i_shop_management import IProductImagesRepository
 from core.review_management.domain.interfaces.i_acl import IProductRatingACL
 from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
-from core.review_management.application.dtos.review_management import ProductRatingDTO
-
 
 class HomePageService(BaseTemplateService['HomePageService']):
     def __init__(self, **kwargs):
@@ -114,20 +111,18 @@ class StorePageService(BaseTemplateService['StorePageService']):
 class ProductPageService(BaseTemplateService['ProductPageService']):
     def __init__(
             self, 
-            product_images_repository: IProductImagesRepository, 
             product_rating_acl: IProductRatingACL,
             **kwargs
         ):
         super().__init__(**kwargs)
         self.product_rating_acl = product_rating_acl
-        self.product_images_rep = product_images_repository
 
     #@BaseCachingMixin.cache_result("get_object_{url_parameters}")
     def get_object(self, url_parameters: Any) -> ProductDTO:
         category_slug = url_parameters.get('category', None)
         product_slug = url_parameters.get('product', None)
 
-        self.entity = self.product_rep.fetch_by_slugs(product_slug=product_slug, category_slug=category_slug, load_images=True, load_sizes=True)
+        self.entity = self.product_rep.fetch_by_slugs(product_slug=product_slug, category_slug=category_slug)
         return ProductDTO.from_entity(
             self.entity,
             self.category_rep.fetch_by_uuid(self.entity.category.public_uuid),
@@ -148,7 +143,7 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
         # if self.is_authorized:
         #     context['add_to_cart'] = AddToCartForm(object_entity=ProductDTO.from_entity(entity), cart_pk=request.user.cart.pk)
         #     context['add_to_wishlist'] = AddToWishlistForm(object_entity=ProductDTO.from_entity(entity), wishlist_pk=request.user.wishlist.pk) 
- 
+
         return {**header_and_footer, **context}
 
     def post() -> None:

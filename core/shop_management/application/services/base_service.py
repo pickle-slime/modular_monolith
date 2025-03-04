@@ -19,13 +19,13 @@ import uuid
 
 T = TypeVar("T")
 
-class BaseService(Generic[Service]):
+class BaseService(Generic[Service], BaseCachingMixin):
     def __init__(
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_acl: IUserACL | type[IUserACL],
         ) -> 'BaseService':
-        
+        super().__init__(session_adapter)
         self.session = self._resolve_dependency(session_adapter)
         self.user_acl = self._resolve_dependency(user_acl)
 
@@ -53,7 +53,7 @@ class BaseService(Generic[Service]):
         return self._is_authorized
     
 
-class BaseTemplateService(BaseService[Service], BaseCachingMixin):
+class BaseTemplateService(BaseService[Service]):
     '''
     Base service for TempleServices. It handles heander and footer
     '''

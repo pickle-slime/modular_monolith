@@ -4,7 +4,7 @@ from core.review_management.domain.entities.review_management import Review as R
 from core.review_management.domain.value_objects.review_management import ReviewCollection
 from core.utils.domain.value_objects.common import ForeignUUID
 from core.review_management.presentation.review_management.models import ProductRating as ProductRatingModel, Review as ReviewModel
-from core.review_management.application.dtos.infrastructure import PaginatedReviewsDTO
+from core.review_management.infrastructure.dtos.review_management import PaginatedReviewsDTO
 
 from django.db.models import Count
 from django.core.paginator import Paginator

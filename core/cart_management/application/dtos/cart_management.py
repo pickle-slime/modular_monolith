@@ -1,5 +1,6 @@
 from core.utils.application.base_dto import BaseEntityDTO
-from core.cart_management.domain.aggregates.cart_management import Cart as CartEntity, CartItem as CartItemEntity, Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
+from core.cart_management.domain.aggregates.cart_management import CartItem as CartItemEntity, Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
+from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 
 from pydantic import Field
 import uuid
@@ -18,7 +19,7 @@ class CartItemDTO(BaseItemDTO):
         return CartItemDTO(
             color=entity.color,
             qty=entity.qty,
-            size=entity.size.public_uuid,
+            size=entity.size,
             size_snapshot=entity.size_snapshot,
         )
 
@@ -28,7 +29,7 @@ class WishlistItemDTO(BaseItemDTO):
         return WishlistItemDTO(
             color=entity.color,
             qty=entity.qty,
-            size=entity.size.public_uuid,
+            size=entity.size,
             size_snapshot=entity.size_snapshot,
         )
 

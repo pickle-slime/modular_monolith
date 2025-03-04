@@ -1,9 +1,10 @@
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, IWishlistItemRepository, ICartRepository, ICartItemRepository
-from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity, Cart as CartEntity, CartItem as CartItemEntity
+from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity, CartItem as CartItemEntity
+from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 from core.cart_management.presentation.cart_management.models import WishList as WishlistModel, WishListOrderProduct as WishlistItemModel
-from core.utils.domain.value_objects.common import ForeignUUID
+from ..dtos.cart_management import RedisCartDTO
 
-from ....utils.infrastructure.adapters.redis import RedisSessionAdapter
+from ....utils.domain.interfaces.hosts.redis import RedisSessionHost
 
 from django.db.models import Manager
 from typing import Any
@@ -11,7 +12,7 @@ import uuid
 
 
 class DjangoCartItemRepository(ICartItemRepository):
-    def __init__(self, session_adapter: RedisSessionAdapter):
+    def __init__(self, session_adapter: RedisSessionHost):
         self.session_adapter = session_adapter
 
     @staticmethod
@@ -28,9 +29,10 @@ class DjangoCartItemRepository(ICartItemRepository):
     @staticmethod
     def map_cart_items_into_entities(items: dict[str, Any]) -> list[CartItemEntity]:
         return [DjangoCartItemRepository.map_session_into_entity(entity) for entity in items]
+        
 
 class DjangoCartRepository(ICartRepository):
-    def __init__(self, session_adapter: RedisSessionAdapter):
+    def __init__(self, session_adapter: RedisSessionHost):
         self.session_adapter = session_adapter
 
     def map_session_into_entity(self, session_cart: dict[str, Any]) -> CartEntity:
@@ -44,9 +46,13 @@ class DjangoCartRepository(ICartRepository):
     def fetch_cart(self) -> CartEntity:
         raw_cart = self.session_adapter.get("cart")
         if raw_cart:
-            return self.map_session_into_entity(raw_cart)
+            return self.map_session_into_entity(RedisCartDTO)
         else:
             return CartEntity(inner_uuid=None, public_uuid=None)
+        
+    def save(self, cart_entity: CartEntity) -> None:
+        dto = RedisCartDTO.from_entity(cart_entity)
+        self.session_adapter.set("cart", dto.model_dump())
 
 
 class DjangoWishlistItemRepository(IWishlistItemRepository):
@@ -63,7 +69,7 @@ class DjangoWishlistItemRepository(IWishlistItemRepository):
         return WishlistItemEntity(
             color=item.color,
             qty=item.qty,
-            size=size.public_uuid,
+            size=size,
             size_snapshot=size_snapshot,
         )
 

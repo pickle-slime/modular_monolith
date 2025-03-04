@@ -39,8 +39,6 @@ class IProductRepository(BaseRepository):
         self,
         inner_uuid: uuid.UUID | None,
         public_uuid: uuid.UUID | None,
-        load_sizes: bool | None = None,
-        load_images: bool | None = None,
     ) -> ProductEntity:
         pass
 
@@ -60,7 +58,7 @@ class IProductRepository(BaseRepository):
         pass
 
     @abstractmethod
-    def fetch_by_slugs(self, category_slug: str, product_slug: str, load_sizes: bool, load_images: bool) -> ProductEntity:
+    def fetch_by_slugs(self, category_slug: str, product_slug: str) -> ProductEntity:
         pass
 
     @abstractmethod
@@ -84,12 +82,11 @@ class IProductRepository(BaseRepository):
     ) -> list[ProductEntity]:
         pass
 
-class IProductSizesRepository(BaseRepository):
     @abstractmethod
-    def get_sizes_by_product_uuid(self, product_inner_uuid: Union[ForeignUUID, uuid.UUID]) -> list[ProductSizeEntity]:
-        pass
-
-class IProductImagesRepository(BaseRepository):
-    @abstractmethod
-    def get_images_by_product_uuid(self, product_inner_uuid: Union[ForeignUUID, uuid.UUID]) -> list[ProductImageEntity]:
+    def fetch_first_sample(
+        self,
+        inner_uuid: uuid.UUID | None,
+        public_uuid: uuid.UUID | None,
+    ) -> ProductEntity:
+        '''Fetches the Product entity with the first found size and image'''
         pass

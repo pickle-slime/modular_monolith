@@ -8,7 +8,8 @@ from core.utils.application.base_dto import BaseEntityDTO
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductImage as ProductImageEntity, ProductSize as ProductSizeEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from core.utils.domain.value_objects.common import CommonNameField, CommonSlugField
-from core.shop_management.domain.value_objects.shop_management import ImageField, PercentageField, ProductSizesCollection, ProductImagesCollection
+from core.shop_management.domain.value_objects.shop_management import ImageField, PercentageField
+from core.shop_management.domain.structures import ProductSizesCollection, ProductImagesCollection
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 class CategoryDTO(BaseEntityDTO):
@@ -157,8 +158,8 @@ class ProductDTO(BaseEntityDTO):
     brand: BrandDTO | None = Field(default=None)
     category: CategoryDTO | None = Field(default=None)
     seller: UUID | None = Field(default=None)
-    entity_sizes: list[ProductSizeDTO] | None = Field(default=None)
-    entity_images: list[ProductImageDTO] | None = Field(default=None)
+    sizes: list[ProductSizeDTO] | None = Field(default=None)
+    images: list[ProductImageDTO] | None = Field(default=None)
 
     uuid: UUID | None = Field(default=None)
 
@@ -219,8 +220,8 @@ class ProductDTO(BaseEntityDTO):
             brand=BrandDTO.from_entity(brand, url_mapping_adapter) if brand else None,
             category=CategoryDTO.from_entity(category, url_mapping_adapter) if category else None,
             seller=entity.seller,
-            entity_sizes=ProductSizeDTO.from_entities(entity.sizes) if entity.sizes else None,
-            entity_images=ProductImageDTO.from_entities(entity.images) if entity.images else None,
+            sizes=ProductSizeDTO.from_entities(entity.sizes) if entity.sizes else None,
+            images=ProductImageDTO.from_entities(entity.images) if entity.images else None,
 
             get_absolute_url=absolute_url,
         )

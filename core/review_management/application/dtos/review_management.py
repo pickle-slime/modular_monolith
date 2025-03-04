@@ -8,7 +8,7 @@ from core.utils.application.base_dto import BaseEntityDTO, DTO
 from core.review_management.domain.value_objects.review_management import ReviewCollection
 from core.review_management.domain.entities.review_management import Review as ReviewEntity
 from core.review_management.domain.aggregates.review_management import ProductRating as ProductRatingEntity
-from .infrastructure import PaginatedReviewsDTO
+from ...infrastructure.dtos.review_management import PaginatedReviewsDTO
 
 class ReviewDTO(BaseEntityDTO):
     text: str

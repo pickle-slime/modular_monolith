@@ -5,7 +5,7 @@ import uuid
 
 class IProductACL(ABC):
     @abstractmethod
-    def fetch_product_by_uuid(self, public_uuid: uuid.UUID | None, load_sizes: bool, load_images: bool) -> ProductDTO:
+    def fetch_first_sample(self, public_uuid: uuid.UUID | None) -> ProductDTO:
         pass
 
 class ICategoryACL(ABC):

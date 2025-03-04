@@ -4,6 +4,7 @@ from config import SESSIONS_EXPIRY, HASH_NAME_EXPIRY
 from typing import Any
 from redis import Redis
 import secrets
+import hashlib
 import json
 import pickle
 
@@ -100,3 +101,9 @@ class RedisSessionAdapter(RedisSessionHost):
         if not self.session_key:
             raise ValueError("Session key is not initialized. Ensure the session is created.")
         return f"electro:user:session:{self.session_key}"
+    
+    def cache_key(self, key: str, prefix: str = "cache") -> str:
+        """Generate a cache key."""
+        key = hashlib.md5(key.encode("utf-8")).hexdigest()
+        return f"{prefix}_{key}"
+    

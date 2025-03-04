@@ -1,5 +1,5 @@
 from ....utils.domain.value_objects.common import CommonNameField, CommonSlugField, ForeignUUID
-from ..value_objects.shop_management import ProductSizesCollection, ProductImagesCollection
+from ..structures import ProductSizesCollection, ProductImagesCollection
 from ..value_objects.shop_management import ImageField, PercentageField
 from ..entities.shop_management import ProductSize, ProductImage
 from ....utils.domain.entity import Entity

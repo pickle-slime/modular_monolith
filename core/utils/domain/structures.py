@@ -46,11 +46,3 @@ class ProductImagesEntityList(ProductEntityListBase):
             raise ValueError(f"{self.__class__.__name__} contains fewer than {min_length} entities.")
         if max_length is not None and len(self._entities) > max_length:
             raise ValueError(f"{self.__class__.__name__} contains more than {max_length} entities.")
-
-
-def has_select_related(queryset: Manager, field_name: str) -> Union[str, False]:
-        '''This function should be out of the domain layer'''
-        related_fields = getattr(queryset.query, '_select_related', None)
-        if related_fields is None:
-            return False
-        return field_name in related_fields
