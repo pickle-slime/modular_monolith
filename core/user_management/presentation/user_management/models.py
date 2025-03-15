@@ -12,7 +12,7 @@ class CustomUser(AbstractUser):
     '''
 
     #tipical fields, other fields already in AbstractUser
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     email = models.EmailField(_('email address'), unique=True, blank=False, null=False)
 

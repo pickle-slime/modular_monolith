@@ -177,7 +177,7 @@
 								<div class="col-md-3">
 									<div id="rating">
 										<div id="rating-avg" class="rating-avg">
-											<input type="hidden" id="product-rating-uuid" value="{% if product_rating.uuid %}{{product_rating.uuid}}{% endif %}">
+											<input type="hidden" id="product-rating-uuid" value="{% if product_rating.pub_uuid %}{{product_rating.pub_uuid}}{% endif %}">
 											<span>{{ product_rating.rating }}</span>
 											<div class="rating-stars"> 
 												<i class="fa fa-star-o"></i>
@@ -254,8 +254,8 @@
 													<input id="star1" name="rating" value="1" type="radio"><label for="star1"></label>
 												</div>
 											</div>
-											<input type="hidden" name="review-product-rating" value="{{product_rating.uuid}}">
-											<input type="hidden" name="review-user" value="{{request.user.pk}}">
+											<input type="hidden" name="review-product-rating" value="{{product_rating.pub_uuid}}">
+											<input type="hidden" name="review-user" value="{{user.pub_uuid}}">
 											<button class="primary-btn">Submit</button>
 										</form>
 									</div>
@@ -295,7 +295,7 @@
 			<div class="col-md-3 col-xs-6">
 				<div class="product">
 					<div class="product-img">
-						<img src="{{ i.image.url }}" alt="">
+						<img src="{{ i.image }}" alt="">
 						<div class="product-label">
 							{% if i.discount %}
 							<span class="sale">-{{ i.discount }}%</span>
@@ -306,10 +306,10 @@
 						</div>
 					</div>
 					<div class="product-body">
-						<p class="product-category">{{ i.category }}</p>
+						<p class="product-category">{{ i.category.name }}</p>
 						<h3 class="product-name"><a href="{{ i.get_absolute_url }}">{{ i.name }}</a></h3>
 						{% if i.discount %}
-						<h4 class="product-price">${{ i.get_price_with_discount }} <del class="product-old-price">${{ i.price }}</del></h4>
+						<h4 class="product-price">${% get_price_with_discount i.price i.discount %} <del class="product-old-price">${{ i.price }}</del></h4>
 						{% else %}
 						<h4 class="product-price">${{ i.price }}</h4>
 						{% endif %}

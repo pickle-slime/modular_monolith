@@ -4,7 +4,7 @@ from core.utils.application.base_cache_mixin import BaseCachingMixin
 from ..base_service import BaseTemplateService
 
 from core.review_management.domain.interfaces.i_acl import IProductRatingACL
-from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO
+from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO, ProductImageDTO
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 
 class HomePageService(BaseTemplateService['HomePageService']):
@@ -22,7 +22,7 @@ class HomePageService(BaseTemplateService['HomePageService']):
 
         return slick_tablet
 
-    @BaseCachingMixin.cache_result("{self.user.uuid}", dtos=[ProductDTO, CategoryDTO])
+    @BaseCachingMixin.cache_result("{self.user.pub_uuid}", dtos=[ProductDTO, CategoryDTO])
     def _get_context_data(self) -> dict[str: Any]:
         context = dict()
         context['hot_deals'] = self._get_hot_deals()
@@ -48,8 +48,8 @@ class StorePageService(BaseTemplateService['StorePageService']):
     
     def _fetch_aside_data(self) -> dict[str: Any]:
         return {
-            'category_aside': [CategoryDTO.from_entity(entity) for entity in self.category_rep.fetch_categories(limit=6)],
-            'brands': [BrandDTO.from_entity(brand) for brand in self.brand_rep.fetch_brands(limit=6)],
+            'category_aside': [CategoryDTO.from_entity(entity).populate_none_fields() for entity in self.category_rep.fetch_categories(limit=6)],
+            'brands': [BrandDTO.from_entity(brand).populate_none_fields() for brand in self.brand_rep.fetch_brands(limit=6)],
             'tablet_aside': self.get_top_selling(3),
         }
     
@@ -135,10 +135,10 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
         product_rating_dto = self.product_rating_acl.fetch_rating_by_product_uuid(self.entity.public_uuid)
         
         context = dict()
-        context['product_images'] = self.entity.images
-        context['related_products'] = self.product_rep.fetch_related_products(brand=self.entity.brand.inner_uuid, limit=10, select_related='category')
-        context['product_rating'] = product_rating_dto
-        context['stars'], context['reviews_count'] = self.product_rating_acl.fetch_rating_product_stars(product_rating_dto.uuid)
+        context['product_images'] = ProductImageDTO.from_entities(self.entity.images)
+        context['related_products'] = self.create_product_dtos(self.product_rep.fetch_related_products(brand=self.entity.brand.inner_uuid, limit=10, select_related='category'))
+        context['product_rating'] = product_rating_dto.populate_none_fields()
+        context['stars'], context['reviews_count'] = self.product_rating_acl.fetch_rating_product_stars(product_rating_dto.pub_uuid)
 
         # if self.is_authorized:
         #     context['add_to_cart'] = AddToCartForm(object_entity=ProductDTO.from_entity(entity), cart_pk=request.user.cart.pk)

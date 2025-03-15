@@ -1,33 +1,24 @@
 from core.utils.domain.entity import Entity
-from ..value_objects.cart_management import CartItem, Size
+from ..value_objects.cart_management import CartItem as CartItemVO, Size as SizeVO
 
+from decimal import Decimal
 from dataclasses import dataclass, field
 import uuid
     
 @dataclass(kw_only=True)
 class Cart(Entity):
-    total_price: int = field(default=0)
-    quantity: int = field(default=0)
+    total_price: Decimal = field(default=None)
+    quantity: int = field(default=None)
 
     user: uuid.UUID = field(default=None)
 
-    items: list[CartItem] = field(default_factory=list)
+    items: dict[CartItemVO] = field(default=None)
 
 @dataclass(kw_only=True)
 class WishlistItem(Entity):
     color: str = field(default=None)
     qty: int = field(default=None)
+    image: str = field(default=None)
+    price: Decimal = field(default=None)
 
-    size: uuid.UUID = field(default=None)
-    size_snapshot: Size = field(default_factory=Size)
-
-    def to_snapshot(self, size_details):
-        """
-        Capture a snapshot of size details at the time of wishlist addition.
-        """
-        self.size_snapshot = {
-            "length": size_details.length,
-            "width": size_details.width,
-            "height": size_details.height,
-            "weight": size_details.weight,
-        }
+    size: SizeVO = field(default=None)

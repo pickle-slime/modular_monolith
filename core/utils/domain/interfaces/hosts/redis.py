@@ -29,7 +29,7 @@ class RedisHost(BaseHost):
 
 class RedisSessionHost(BaseHost):
     @abstractmethod
-    def __init__(self, redis_adapter: RedisHost, session_key: str | None):
+    def __init__(self, session_key: str | None = None):
         pass
 
     @abstractmethod

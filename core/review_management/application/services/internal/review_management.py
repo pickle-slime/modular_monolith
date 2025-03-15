@@ -2,7 +2,7 @@ from django.http import HttpRequest, JsonResponse
 from django.core.paginator import Paginator
 
 from core.review_management.presentation.review_management.forms import ReviewForm
-from core.review_management.domain.interfaces.i_repositories.i_review_management import IReviewRepository
+from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewReadModel
 from core.review_management.application.dtos.review_management import ReviewCollectionDTO
 
 from typing import Any
@@ -10,19 +10,23 @@ import json
 import uuid
 
 class ProductPageReviewsService:
-    def __init__(self, review_repository: IReviewRepository):
-        self.review_rep = review_repository
+    def __init__(self, product_rating_repository: IProductRatingRepository, product_rating_read_model: IReviewReadModel):
+        self.pr_rep = product_rating_repository
+        self.read_model = product_rating_read_model
 
     def create_review(self, review: dict[str, Any]) -> dict[str, Any]:
-        rating_list = self.review_rep.fetch_rating_counts_as_list(review.product_rating)
+        product_rating = self.pr_rep.fetch_rating_by_product_uuid(review.get("product_rating", None))
+        product_rating.update_rating()
+        rating_list, rating = self.read_model.fetch_rating_product_stars(product_rating_public_uuid=review.get("product_rating", None))
         
         response_data = {
-            'rating': review.product_rating.rating,
+            'rating': rating,
             'rating_list': rating_list,
         }
+
         return response_data
         
     def load_reviews(self, product_rating_pub_uuid: uuid.UUID | str, page_number: int) -> dict[str, Any]:
-        paginated_reviews = self.review_rep.fetch_paginated_reviews(product_rating_pub_uuid, page_number)
+        paginated_reviews = self.pr_rep.fetch_paginated_reviews(product_rating_pub_uuid, page_number)
 
         return ReviewCollectionDTO.from_paginated_data(paginated_reviews).model_dump(mode="json")

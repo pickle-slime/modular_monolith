@@ -106,4 +106,3 @@ class RedisSessionAdapter(RedisSessionHost):
         """Generate a cache key."""
         key = hashlib.md5(key.encode("utf-8")).hexdigest()
         return f"{prefix}_{key}"
-    

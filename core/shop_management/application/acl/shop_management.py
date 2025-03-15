@@ -8,8 +8,8 @@ class ProductACL(IProductACL):
     def __init__(self, product_repository: IProductRepository):
         self.product_rep = product_repository
 
-    def fetch_first_sample(self, public_uuid: uuid.UUID | None) -> ProductDTO:
-        return ProductDTO.from_entity(self.product_rep.fetch_first_sample(public_uuid=public_uuid))
+    def fetch_sample_of_size(self, product_uuid: uuid.UUID | None = None, size_uuid: uuid.UUID | None = None) -> ProductDTO:
+        return ProductDTO.from_entity(self.product_rep.fetch_sample_of_size(public_uuid=product_uuid, size_public_uuid=size_uuid))
 
 class CategoryACL(ICategoryACL):
     def __init__(self, category_repository: ICategoryRepository):

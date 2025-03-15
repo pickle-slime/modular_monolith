@@ -7,9 +7,9 @@ import uuid
 
 @dataclass(kw_only=True)
 class Category(Entity):
-    name: CommonNameField | str
-    slug: CommonSlugField | str
-    count_of_deals: int = 0
+    name: CommonNameField | str = field(default=None)
+    slug: CommonSlugField | str = field(default=None)
+    count_of_deals: int = field(default=None)
 
     def __post_init__(self):
         if isinstance(self.name, str):
@@ -21,23 +21,23 @@ class Category(Entity):
 
 @dataclass(kw_only=True)
 class Brand(Entity):
-    name: CommonNameField
-    slug: CommonSlugField
-    count_of_deals: int = 0
+    name: CommonNameField = field(default=None)
+    slug: CommonSlugField = field(default=None)
+    count_of_deals: int = field(default=None)
 
 
 @dataclass(kw_only=True)
 class ProductSize(Entity):
-    size: str
-    length: Decimal
-    width: Decimal
-    height: Decimal
-    weight: Decimal
+    size: str = field(default=None)
+    length: Decimal = field(default=None)
+    width: Decimal = field(default=None)
+    height: Decimal = field(default=None)
+    weight: Decimal = field(default=None)
 
-    product: ForeignUUID | uuid.UUID
+    product: ForeignUUID | uuid.UUID = field(default=None)
 
 @dataclass(kw_only=True)
 class ProductImage(Entity):
-    image: ImageField
+    image: ImageField = field(default=None)
 
-    product: ForeignUUID | uuid.UUID
+    product: ForeignUUID | uuid.UUID = field(default=None)

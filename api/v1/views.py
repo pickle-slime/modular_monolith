@@ -67,36 +67,6 @@ class CustomObtainAuthToken(ObtainAuthToken):
             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#CART MANAGEMENT
-
-class UserCartView(generics.RetrieveAPIView):
-    serializer_class = CartSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user.cart
-
-class CartItemViewSet(viewsets.ModelViewSet):
-    serializer_class = CartOrderProductSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user.pk
-        return CartOrderProduct.objects.filter(cart__customer=user)
-
-    def perform_create(self, serializer):
-        serializer.save(cart=self.request.user.cart)
-
-    def perform_update(self, serializer):
-        cart = self.request.user.cart
-        serializer.save(cart=cart)
-
-    def perform_destroy(self, instance):
-        if instance.cart.customer.pk == self.request.user.pk:
-            instance.delete()
-        else:
-            self.permission_denied(self.request)
-    
     
 class UserWishListView(generics.RetrieveAPIView):
     serializer_class = WishListSerializer

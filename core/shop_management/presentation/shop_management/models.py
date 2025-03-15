@@ -9,7 +9,7 @@ from shippo import components
 import uuid
 
 class Category(models.Model):
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=225)
     slug = models.SlugField(unique=True, editable=False)
@@ -32,7 +32,7 @@ class Category(models.Model):
         return self.name
 
 class Brand(models.Model):
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     name = models.CharField(max_length=225)
@@ -67,7 +67,7 @@ class Product(models.Model):
         BLUE: "blue",
     } 
 
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=225)
     slug = models.SlugField(unique=True, editable=False)
@@ -116,7 +116,7 @@ class Product(models.Model):
         ordering = ['-time_created', 'name']
 
 class ProductSizes(models.Model):
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     size = models.CharField(max_length=225)  
 
@@ -141,7 +141,7 @@ class ProductSizes(models.Model):
         return self.size
 
 class MultipleProductImages(models.Model):
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     image = models.ImageField(upload_to="shop/gallery_images/%y%m%d", null=True, blank=True)
     product = models.ForeignKey("shop_management.Product", related_name="product_images", on_delete=models.CASCADE)

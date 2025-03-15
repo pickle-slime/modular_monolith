@@ -3,7 +3,7 @@ from rest_framework import serializers
 from core.shop_management.presentation.shop_management.models import Product, Category
 from core.user_management.presentation.user_management.models import CustomUser
 from core.order_management.presentation.order_management.models import Order, BillingAddress
-from core.cart_management.presentation.cart_management.models import Cart, WishList, CartOrderProduct, WishListOrderProduct
+from core.cart_management.presentation.cart_management.models import WishList, WishListOrderProduct
 from core.review_management.presentation.review_management.models import Review
 
 #USER MANAGEMENT
@@ -40,16 +40,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 #CART MANAGEMENT
-
-class CartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cart
-        fields = '__all__'
-
-class CartOrderProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CartOrderProduct
-        exclude = ['cart']
 
 class WishListSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,10 +1,10 @@
-from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewRepository, IReviewReadModel
+from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewReadModel
 from core.review_management.domain.aggregates.review_management import ProductRating as ProductRatingEntity
 from core.review_management.domain.entities.review_management import Review as ReviewEntity
-from core.review_management.domain.value_objects.review_management import ReviewCollection
-from core.utils.domain.value_objects.common import ForeignUUID
+from core.review_management.domain.structures import ReviewCollection
 from core.review_management.presentation.review_management.models import ProductRating as ProductRatingModel, Review as ReviewModel
 from core.review_management.infrastructure.dtos.review_management import PaginatedReviewsDTO
+from ..mappers.review_management import ReviewMapper, ProductRatingMapper
 
 from django.db.models import Count
 from django.core.paginator import Paginator
@@ -12,15 +12,15 @@ from django.core.paginator import Paginator
 from typing import Any
 import uuid
 
-class DjangoReviewRepository(IReviewRepository):
-    @staticmethod
-    def map_review_into_entity(model: ReviewModel) -> ReviewEntity:
-        return ReviewEntity(
-            text=model.text,
-            rating=model.rating,
-            date_created=model.date_created
-        )
-    
+
+class DjangoProductRatingRepository(IProductRatingRepository):    
+    def fetch_rating_by_product_uuid(self, product_public_uuid: uuid.UUID) -> ProductRatingEntity:
+        try:
+            model = ProductRatingModel.objects.get(product__public_uuid=product_public_uuid)
+            reviews = self.fetch_reviews_of_product_rating(model.public_uuid)
+            return ProductRatingMapper.map_product_rating_into_entity(model, reviews)
+        except ProductRatingModel.DoesNotExist:
+            return ProductRatingEntity(inner_uuid=None, public_uuid=None)
 
     def fetch_reviews_of_product_rating(self, product_rating_public_uuid: uuid.UUID, amount: int | None = None) -> ReviewCollection[ReviewEntity]:
         try:
@@ -29,7 +29,7 @@ class DjangoReviewRepository(IReviewRepository):
             if amount:
                 queryset[:amount+1]
 
-            return ReviewCollection([self.map_review_into_entity(model) for model in queryset])
+            return ReviewCollection([ReviewMapper.map_review_into_entity(model) for model in queryset])
         except ReviewModel.DoesNotExist:
             raise ValueError(f"Review with product rating UUID {product_rating_public_uuid} does not exist.")
 
@@ -55,7 +55,7 @@ class DjangoReviewRepository(IReviewRepository):
         paginator = Paginator(reviews_queryset, page_size)
         page_obj = paginator.get_page(page_number)
 
-        reviews = [self.map_review_into_entity(model) for model in page_obj.object_list]
+        reviews = [ReviewMapper.map_review_into_entity(model) for model in page_obj.object_list]
         
         return PaginatedReviewsDTO(
             reviews=reviews,
@@ -66,32 +66,12 @@ class DjangoReviewRepository(IReviewRepository):
             total_count=page_obj.paginator.count,
         )
 
-class DjangoProductRatingRepository(IProductRatingRepository):
-    @staticmethod
-    def map_product_rating_into_entity(model: ProductRatingModel) -> ProductRatingEntity:
-        reviews = DjangoReviewRepository()
-        product = model.product
-        return ProductRatingEntity(
-            rating=model.rating,
-            reviews=reviews.fetch_reviews_of_product_rating(model.public_uuid),
-            product=ForeignUUID(product.inner_uuid, product.public_uuid),
-            inner_uuid=model.inner_uuid,
-            public_uuid=model.public_uuid,
-        )
-    
-    def fetch_rating_by_product_uuid(self, product_public_uuid: uuid.UUID) -> ProductRatingEntity:
-        try:
-            model = ProductRatingModel.objects.get(product__public_uuid=product_public_uuid)
-            return self.map_product_rating_into_entity(model)
-        except ProductRatingModel.DoesNotExist:
-            return ProductRatingEntity(inner_uuid=None, public_uuid=None)
-
 
 # CQRS models
 
 class DjangoReviewReadModel(IReviewReadModel):
     """
-    A read model (from CQRS context) that handles complex queries within review bounded context
+    A read CQRS model that handles complex queries within review bounded context
     """
     def fetch_rating_product_stars(
         self, 

@@ -18,7 +18,10 @@ class PydanticJSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         
-        if isinstance(obj, str) or isinstance(obj, int) or obj == None:
-            return obj
+        # if isinstance(obj, str) or isinstance(obj, int) or obj == None:
+        #     return obj
         
-        return super().default(obj)
+        try:
+            return super().default(obj)
+        except TypeError:
+            return str(obj)

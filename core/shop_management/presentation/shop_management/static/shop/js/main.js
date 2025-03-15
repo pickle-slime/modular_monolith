@@ -214,16 +214,12 @@
 		e.preventDefault();
 
 		var email = $('#email-id');
-		var Fname = $('#Fname-newsletter');
-		var Lname = $('#Lname-newsletter');
 		var request = $(this).attr('action');
 		var csrf = $(this).find('input[name=csrfmiddlewaretoken]');
 
 		var data = {
 			csrfmiddlewaretoken: csrf.val(),
 			email: email.val(),
-			Fname: Fname.val(),
-			Lname: Lname.val(),
 			reqdata: request,
 		}
 

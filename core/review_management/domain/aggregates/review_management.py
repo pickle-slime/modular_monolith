@@ -1,7 +1,6 @@
-from ....utils.domain.entity import Entity
+from core.utils.domain.entity import Entity
 from ..entities.review_management import Review
-from ..value_objects.review_management import ReviewCollection
-from ....utils.domain.value_objects.common import ForeignUUID
+from ..structures import ReviewCollection
 
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -9,9 +8,13 @@ import uuid
 
 @dataclass(kw_only=True)
 class ProductRating(Entity):
-    rating: Decimal = field(default=Decimal("0.0"))
-    reviews: ReviewCollection[Review] = field(default_factory=ReviewCollection)
-    product: ForeignUUID | uuid.UUID = field(default=None)
+    rating: Decimal = field(default=None)
+    reviews: ReviewCollection[Review] = field(default=None)
+    product: uuid.UUID = field(default=None)
+
+    def add_review(self, review: Review):
+        self.reviews.append(review)
+        self.update_rating()
 
     def update_rating(self):
         if not self.reviews:

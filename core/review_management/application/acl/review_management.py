@@ -1,4 +1,4 @@
-from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewRepository, IReviewReadModel
+from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewReadModel
 from core.review_management.application.dtos.review_management import ProductRatingDTO
 
 from typing import Any
@@ -14,7 +14,3 @@ class ProductRatingACL:
     
     def fetch_rating_product_stars(self, product_rating_public_uuid) -> tuple[list[Any | int], int]:
         return self.review_read_model.fetch_rating_product_stars(product_rating_public_uuid=product_rating_public_uuid)
-
-class ReviewACL:
-    def __init__(self, review_repository: IReviewRepository):
-        self.review_rep = review_repository

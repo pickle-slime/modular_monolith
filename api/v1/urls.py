@@ -7,7 +7,6 @@ router = DefaultRouter()
 
 router.register(r'api/v1/users', MyUserViewSet, basename='users')
 
-router.register(r'api/v1/cart-items', CartItemViewSet, basename='cart-items')
 router.register(r'api/v1/wishlist-items', WishListItemViewSet, basename='wishlist-items')
 
 router.register(r'api/v1/categories', CategoryViewSet, basename='categories')
@@ -22,8 +21,6 @@ urlpatterns = [
     path('api/v1/logout/', LogoutView.as_view(), name='logout'),
     path('api/v1/api-token-auth/', CustomObtainAuthToken.as_view(), name='api_token_auth'),
 
-    #cart_management
-    path('api/v1/cart/', UserCartView.as_view(), name='user\'s cart'),
     path('api/v1/wishlist/', UserWishListView.as_view(), name='user\'s wishlist'),
     
     #shop

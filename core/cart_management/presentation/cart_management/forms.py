@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import CartOrderProduct, WishListOrderProduct
+from .models import WishListOrderProduct
 
 class BaseProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -44,8 +44,9 @@ class AddToCartForm(BaseProductForm):
     qty = forms.IntegerField(widget=forms.NumberInput(attrs={'value': '1'}))
 
     class Meta:
-        model = CartOrderProduct
-        fields = ['size', 'color', 'qty', 'cart']
+        pass
+    #     model = CartOrderProduct
+    #     fields = ['size', 'color', 'qty', 'cart']
 
 class AddToWishlistForm(BaseProductForm):
     def __init__(self, *args, **kwargs):
@@ -60,4 +61,4 @@ class AddToWishlistForm(BaseProductForm):
 
     class Meta:
         model = WishListOrderProduct
-        fields = ['size', 'color', 'qty', 'wishlist']
+        fields = ['size', 'color', 'qty'] #'wishlist'

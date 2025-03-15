@@ -32,7 +32,7 @@
 					<div class="checkbox-filter">
 						{% for i in category_aside %}
 						<div class="input-checkbox">
-							<input type="checkbox" id="category-{{ forloop.counter }}" value="{{ i.uuid }}" name="category" {% if i.uuid|stringformat:"s" in checkbox_categories %} checked {% endif %}>
+							<input type="checkbox" id="category-{{ forloop.counter }}" value="{{ i.pub_uuid }}" name="category" {% if i.pub_uuid|stringformat:"s" in checkbox_categories %} checked {% endif %}>
 							<label for="category-{{ forloop.counter }}">
 								<span></span>
 								{{ i.name }}
@@ -70,7 +70,7 @@
 					<div class="checkbox-filter">
 						{% for i in brands %}
 						<div class="input-checkbox">
-							<input type="checkbox" id="brand-{{ forloop.counter }}" value="{{ i.uuid }}" name="brand" {% if i.uuid|stringformat:"s" in checkbox_brands %} checked {% endif %}>
+							<input type="checkbox" id="brand-{{ forloop.counter }}" value="{{ i.pub_uuid }}" name="brand" {% if i.pub_uuid|stringformat:"s" in checkbox_brands %} checked {% endif %}>
 							<label for="brand-{{ forloop.counter }}">
 								<span></span>
 								{{ i.name }}

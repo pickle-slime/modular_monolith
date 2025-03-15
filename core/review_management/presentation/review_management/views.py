@@ -2,10 +2,10 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 
 from core.review_management.application.services.internal.review_management import *
-from core.review_management.infrastructure.repositories.review_management import DjangoReviewRepository
+from core.review_management.infrastructure.repositories.review_management import DjangoProductRatingRepository, DjangoReviewReadModel
 
 def create_review(request, category, product):
-    service = ProductPageReviewsService(DjangoReviewRepository())
+    service = ProductPageReviewsService(DjangoProductRatingRepository(), DjangoReviewReadModel())
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if is_ajax and request.method == 'POST':
@@ -16,7 +16,7 @@ def create_review(request, category, product):
     return redirect('home')
 
 def load_reviews(request, category, product):
-    service = ProductPageReviewsService(DjangoReviewRepository())
+    service = ProductPageReviewsService(DjangoProductRatingRepository(), DjangoReviewReadModel())
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if is_ajax and request.method == 'GET':

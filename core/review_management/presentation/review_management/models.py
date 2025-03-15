@@ -6,7 +6,7 @@ from .managers import ProductRatingManager
 import uuid
 
 class ProductRating(models.Model):
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     rating = models.DecimalField(max_digits=3, decimal_places=1, editable=False, null=True)
     product = models.OneToOneField('shop_management.Product', on_delete=models.CASCADE, related_name='product_rating')
@@ -18,7 +18,7 @@ class Review(models.Model):
     '''
     Model of reviews for products
     '''
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     text = models.TextField()
     rating = models.PositiveSmallIntegerField()

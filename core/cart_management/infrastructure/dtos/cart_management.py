@@ -1,6 +1,6 @@
 from core.utils.application.base_dto import BaseEntityDTO
-from core.cart_management.domain.aggregates.cart_management import CartItem as CartItemEntity, Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
+from core.cart_management.domain.value_objects.cart_management import CartItem as CartItemVO
 
 from pydantic import Field
 import uuid
@@ -18,7 +18,7 @@ class RedisCartItemDTO(BaseEntityDTO):
     size_snapshot: dict | None = Field(default=None)
 
     @staticmethod
-    def from_entity(entity: CartItemEntity) -> 'RedisCartItemDTO':
+    def from_entity(entity: CartItemVO) -> 'RedisCartItemDTO':
         return RedisCartItemDTO(
             color=entity.color,
             qty=entity.qty,
@@ -26,7 +26,7 @@ class RedisCartItemDTO(BaseEntityDTO):
             size_snapshot=entity.size_snapshot,
         )
     
-    def to_entity(self) -> CartItemEntity:
+    def to_entity(self) -> CartItemVO:
         return RedisCartItemDTO(
             public_uuid=self.public_uuid,
             color=self.color,

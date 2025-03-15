@@ -4,7 +4,7 @@ from core.shop_management.presentation.shop_management.models import Category as
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from core.utils.domain.value_objects.common import ForeignUUID
-from core.utils.domain.structures import ProductImagesEntityList, ProductSizesEntityList
+from core.shop_management.domain.structures import ProductImagesEntityList, ProductSizesEntityList
 
 
 class DjangoCategoryMapper:
@@ -105,7 +105,7 @@ class DjangoProductMapper:
         if sizes_queryset is None:
             return None
         if isinstance(sizes_queryset, ProductSizesModel):
-            return DjangoProductSizesMapper.map_size_into_entity(sizes_queryset)
+            return ProductSizesEntityList(DjangoProductSizesMapper.map_size_into_entity(sizes_queryset))
         return DjangoProductSizesMapper.map_sizes_into_entities(sizes_queryset)
 
     @staticmethod
@@ -114,5 +114,5 @@ class DjangoProductMapper:
         if images_queryset is None:
             return None
         if isinstance(images_queryset, MultipleProductImagesModel):
-            return DjangoProductImagesMapper.map_image_into_entity(images_queryset)
+            return ProductImagesEntityList(DjangoProductImagesMapper.map_image_into_entity(images_queryset))
         return DjangoProductImagesMapper.map_images_into_entities(images_queryset)

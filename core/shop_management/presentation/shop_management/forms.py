@@ -12,7 +12,7 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         categories = kwargs.pop('categories', [])
         super().__init__(*args, **kwargs)
-        self.fields['category'].choices = [(0, 'category')] + [(cat.uuid, cat.name) for cat in categories]
+        self.fields['category'].choices = [(0, 'category')] + [(cat.pub_uuid, cat.name) for cat in categories]
 
 class FiltersAside(forms.Form):
     category = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, required=False)

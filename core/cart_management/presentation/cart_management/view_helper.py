@@ -21,7 +21,7 @@ SERVICE_FACTORY = BaseServiceFactory(
 )
 
 def initiate_item_collection_service(request: HttpRequest) -> ItemCollectionService:
-    session_adapter = RedisSessionAdapter(RedisAdapter(), session_key=request.session.session_key)
+    session_adapter = RedisSessionAdapter(session_key=request.session.session_key)
     SERVICE_FACTORY._services["cart_acl"] = DjangoCartRepository(session_adapter)
     SERVICE_FACTORY._adapters["session_adapter"] = session_adapter
     return SERVICE_FACTORY.create_service(ItemCollectionService)

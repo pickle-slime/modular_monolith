@@ -116,13 +116,13 @@
 										</div>
 										{% endif %}
 										<div class="product-btns">
-											<button class="add-to-wishlist" default-color="{{i.color.0}}" default-size="{{i.product_sizes.0.uuid}}" item-public-uuid="{{ i.uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+											<button class="add-to-wishlist" default-color="{{i.color.0}}" default-size="{{i.product_sizes.0.pub_uuid}}" item-public-uuid="{{ i.pub_uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
 											<button class="add-to-compare" data-product-url="{{ i.get_absolute_url }}" csrf-token="{{ csrf_token }}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
 											<button class="quick-view openModalButton" image-url="{{i.image.url}}" description="{{i.description}}"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
 										</div>
 									</div>
 									<div class="add-to-cart">
-										<button default-color="{{i.color.0}}" default-size="{{i.product_sizes.0.uuid}}" item-public-uuid="{{ i.uuid }}" data-action-by-default="{% url 'add_to_cart' %}" csrf-token="{{ csrf_token }}" class="add-to-cart-btn add-to-cart-flag"><i class="fa fa-shopping-cart"></i> add to cart</button>
+										<button default-color="{{i.color.0}}" default-size="{{i.product_sizes.0.pub_uuid}}" item-public-uuid="{{ i.pub_uuid }}" data-action-by-default="{% url 'add_to_cart' %}" csrf-token="{{ csrf_token }}" class="add-to-cart-btn add-to-cart-flag"><i class="fa fa-shopping-cart"></i> add to cart</button>
 									</div>
 								</div>
 								<!-- /product -->
@@ -249,7 +249,7 @@
 										</div>
 										{% endif %}
 										<div class="product-btns">
-											<button class="add-to-wishlist" type-collection="WishListItem" default-size="{{i.product_sizes.0.uuid}}" item-public-uuid="{{ i.uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+											<button class="add-to-wishlist" type-collection="WishListItem" default-size="{{i.product_sizes.0.pub_uuid}}" item-public-uuid="{{ i.pub_uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
 											<button class="add-to-compare" data-product-url="{{ i.get_absolute_url }}" csrf-token="{{ csrf_token }}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
 											<button class="quick-view openModalButton" image-url="{{i.image.url}}" description="{{i.description}}"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
 										</div>

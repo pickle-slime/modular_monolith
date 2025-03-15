@@ -1,18 +1,7 @@
-from ....utils.domain.entity import Entity
+from core.utils.domain.entity import Entity
 
 from decimal import Decimal
 from dataclasses import dataclass
-
-@dataclass(kw_only=True)
-class BillingAddress(Entity):
-    first_name: str
-    last_name: str
-    address: str
-    city: str
-    state: str
-    country: str
-    zip_code: str
-    telephone: str
 
 @dataclass(kw_only=True)
 class Shipment(Entity):

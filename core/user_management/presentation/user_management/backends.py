@@ -1,13 +1,26 @@
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 
-import jwt
 from django.conf import settings
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework.exceptions import AuthenticationFailed
 
+import jwt
+import uuid
 
 User = get_user_model()
+
+class UUIDAuthenticationBackend(ModelBackend):
+    def get_user(self, user_id):
+        try:
+            # Try to cast user_id to UUID
+            user_id = uuid.UUID(user_id)
+            return get_user_model().objects.get(pk=user_id)
+        except (ValueError, TypeError):
+            return None
+        except ObjectDoesNotExist:
+            return None
 
 class EmailBackend(ModelBackend):
     """

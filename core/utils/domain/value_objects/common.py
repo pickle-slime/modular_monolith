@@ -1,7 +1,5 @@
 from core.exceptions import InvalidForeignUUIDException
-from ..entity import EntityType
 
-from typing import Iterable, Optional, Generic
 from dataclasses import dataclass, field
 import uuid
 import re
@@ -9,7 +7,7 @@ import re
 
 @dataclass(frozen=True)
 class CommonNameField:
-    value: str = field(default=None)
+    value: str = field(default="")
 
     def __post_init__(self):
         if len(self.value) > 225:
@@ -20,7 +18,7 @@ class CommonNameField:
         
 @dataclass(frozen=True)
 class CommonSlugField:
-    value: str = field(default=None)
+    value: str = field(default="")
     _slug_pattern: str = r"[!@#$%^&*(){}[]|~`,;:'\"<>?/] "
 
     def __post_init__(self):
@@ -55,16 +53,3 @@ class ForeignUUID:
             "inner_uuid": self.inner_uuid,
             "public_uuid": self.public_uuid,
         }
-
-@dataclass(frozen=True)
-class BaseEntityCollection(Iterable[EntityType], Generic[EntityType]):
-    _entities: list[EntityType] = field(default_factory=list)
-
-    def __len__(self):
-        return len(self._entities)
-
-    def __iter__(self):
-        return iter(self._entities)
-
-    def __getitem__(self, index):
-        return self._entities[index]

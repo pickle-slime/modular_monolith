@@ -96,7 +96,7 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
         session_data = self.service.get_session_data()
         if self.request.GET.get("clear_session", "false").lower() == "true":
             return self.service.handle_get_request(**self.kwargs)
-        if session_data["query"] or session_data["category_id"] != '0':
+        elif session_data["query"] or session_data["category_id"] != '0':
             return self.service.handle_session_data(session_data)
         return self.service.handle_get_request(**self.kwargs)
     

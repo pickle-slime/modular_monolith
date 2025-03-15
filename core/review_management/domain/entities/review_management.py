@@ -1,5 +1,4 @@
-from ....utils.domain.entity import Entity
-from ....utils.domain.value_objects.common import ForeignUUID
+from core.utils.domain.entity import Entity
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -9,9 +8,9 @@ import uuid
 class Review(Entity):
     text: str = field(default=None)
     rating: int = field(default=None)
-    date_created: datetime = field(default=datetime.now())
+    date_created: datetime = field(default=None)
 
-    user: ForeignUUID | uuid.UUID = field(default=None)
+    user: uuid.UUID = field(default=None)
 
     def format_date(self, format_str: str = "%d %B %Y, %-I:%M %p") -> str:
         return self.date_created.strftime(format_str)

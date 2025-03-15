@@ -13,7 +13,7 @@ class User(Entity):
     last_name: str = field(default=None)
     date_joined: datetime = field(default=None)
     last_login: datetime = field(default=None)
-    role: str = field(default="user")
+    role: str = field(default=None)
 
     def check_password(self, password: str, password_hasher: PasswordHasherHost):
         return password_hasher.verify(password, self.hashed_password)

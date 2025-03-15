@@ -1,7 +1,7 @@
-from .....utils.domain.interfaces.i_repositories.base_repository import BaseRepository
+from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 from core.review_management.domain.aggregates.review_management import ProductRating as ProductRatingEntity
 from core.review_management.domain.entities.review_management import Review as ReviewEntity
-from core.review_management.domain.value_objects.review_management import ReviewCollection
+from core.review_management.domain.structures import ReviewCollection
 
 from abc import abstractmethod
 from typing import Any
@@ -12,7 +12,6 @@ class IProductRatingRepository(BaseRepository):
     def fetch_rating_by_product_uuid(self, product_public_uuid: uuid.UUID) -> ProductRatingEntity:
         pass
 
-class IReviewRepository(BaseRepository):
     @abstractmethod
     def fetch_reviews_of_product_rating(self, product_rating_public_uuid: uuid.UUID, amount: int | None = None) -> ReviewCollection[ReviewEntity]:
         pass
@@ -24,7 +23,7 @@ class IReviewRepository(BaseRepository):
 
 class IReviewReadModel(BaseRepository):
     """
-    A read model (from CQRS context) that handles complex queries within review bounded context
+    A CQRS read model that handles complex queries within review bounded context
     """
     @abstractmethod
     def fetch_rating_product_stars(

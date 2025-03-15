@@ -118,7 +118,7 @@
 												</div>
 												<form method="post" class="delete-wishlist-item-form" action="{% url 'delete_button_wishlist' %}">
 												{% csrf_token %}
-												<input type="hidden" name="item-public-uuid" value="{{i.uuid}}">
+												<input type="hidden" name="item-public-uuid" value="{{i.pub_uuid}}">
 												<button class="delete" id="delete-wishlist-item-button" type="submit"><i class="fa fa-close"></i></button>
 												</form>
 											</div>
@@ -162,7 +162,7 @@
 												</div>
 												<form method="post" class="delete-cart-item-form" action="{% url 'delete_button_cart' %}">
 												{% csrf_token %}
-												<input type="hidden" name="item-public-uuid" value="{{i.uuid}}">
+												<input type="hidden" name="item-public-uuid" value="{{i.pub_uuid}}">
 												<button class="delete" id="delete-cart-item-button" type="submit"><i class="fa fa-close"></i></button>
 												</form>
 											</div>
@@ -260,8 +260,6 @@
 							<p>Sign Up for the <strong>NEWSLETTER</strong></p>
 							<form method="post" id="newsletter-form" action="{% url 'newsletter' %}">
 								{% csrf_token %}
-								<input type="hidden" id="Fname-newsletter" value="{{ user.first_name }}">
-								<input type="hidden" id="Lname-newsletter" value="{{ user.last_name }}">
 								<input class="input" id="email-id" type="email" placeholder="Enter Your Email">
 								<button id="newsletter-id" class="newsletter-btn" type="submit"><i class="fa fa-envelope"></i> Subscribe</button>
 							</form>

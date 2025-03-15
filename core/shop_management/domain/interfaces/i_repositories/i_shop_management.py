@@ -83,10 +83,10 @@ class IProductRepository(BaseRepository):
         pass
 
     @abstractmethod
-    def fetch_first_sample(
+    def fetch_sample_of_size(
         self,
-        inner_uuid: uuid.UUID | None,
         public_uuid: uuid.UUID | None,
+        size_public_uuid: uuid.UUID | None,
     ) -> ProductEntity:
         '''Fetches the Product entity with the first found size and image'''
         pass

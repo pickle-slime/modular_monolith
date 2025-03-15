@@ -7,10 +7,8 @@ from django.utils import timezone
 from django.http import Http404
 
 from core.shop_management.presentation.shop_management.models import Category as CategoryModel, Brand as BrandModel, Product as ProductModel, ProductSizes as ProductSizesModel, MultipleProductImages as MultipleProductImagesModel
-from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity
+from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
-from core.utils.domain.value_objects.common import ForeignUUID
-from core.utils.domain.structures import ProductImagesEntityList, ProductSizesEntityList
 from ...domain.interfaces.i_repositories.i_shop_management import *
 
 from ..mappers.shop_management import DjangoCategoryMapper, DjangoBrandMapper, DjangoProductMapper
@@ -143,7 +141,7 @@ class DjangoProductRepository(IProductRepository):
         if isinstance(select_related, str):
             queryset = queryset.select_related(select_related)
 
-        return queryset
+        return [DjangoProductMapper.map_product_into_entity(product) for product in queryset]
 
     def fetch_top_selling(self, amount: int, indent: int = 0) -> list[ProductEntity]:
         queryset = ProductModel.objects.select_related('category').prefetch_related(
@@ -157,21 +155,17 @@ class DjangoProductRepository(IProductRepository):
 
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
     
-    def fetch_first_sample(
-            self,
-            inner_uuid: uuid.UUID | None,
-            public_uuid: uuid.UUID | None,
-        ) -> ProductEntity:
+    def fetch_sample_of_size(
+        self,
+        public_uuid: uuid.UUID | None,
+        size_public_uuid: uuid.UUID | None,
+    ) -> ProductEntity:
+        '''Fetches the product by public uuid with size by size's public uuid, the image is first one'''
 
-        if inner_uuid:
-            product_model = ProductModel.objects.get(inner_uuid=inner_uuid)
-            size = ProductSizesModel.objects.get(product__inner_uuid=inner_uuid)
-            image = MultipleProductImagesModel.objects.get(product__inner_uuid=inner_uuid)
-        elif public_uuid:
-            product_model = ProductModel.objects.get(public_uuid=public_uuid)
-            size = ProductSizesModel.objects.get(product__public_uuid=public_uuid)
-            image = MultipleProductImagesModel.objects.get(product__public_uuid=public_uuid)
-        else:
+        try:
+            product = ProductModel.objects.get(public_uuid=public_uuid)
+            size = ProductSizesModel.objects.get(public_uuid=size_public_uuid)
+        except (ProductModel.DoesNotExist, ProductSizesModel.DoesNotExist):
             return ProductEntity(inner_uuid=None, public_uuid=None)
 
-        return DjangoProductMapper.map_product_into_entity(product_model, sizes_queryset=size, images_queryset=image)
+        return DjangoProductMapper.map_product_into_entity(product, sizes_queryset=size)

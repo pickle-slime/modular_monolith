@@ -9,7 +9,7 @@ class BillingAddress(models.Model):
     Model for orders
     '''
 
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     first_name = models.CharField(max_length=225)
     last_name = models.CharField(max_length=225)
@@ -46,7 +46,7 @@ class Order(models.Model):
         DELIVERED: "Delivered",
     } 
     
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     stripe_payment_intent_id = models.CharField(max_length=100)
@@ -62,7 +62,7 @@ class Order(models.Model):
     
 
 class Shipment(models.Model):
-    inner_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    inner_uuid = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='shipment')
     tracking_number = models.CharField(max_length=100, blank=True, null=True)

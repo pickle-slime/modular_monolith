@@ -6,7 +6,7 @@ from django.forms import BaseForm
 from core.order_management.presentation.order_management.models import *
 
 from core.utils.application.base_service import BaseService
-from .....payment_management.application.services.external.payment_management import create_payment_intent
+from core.payment_management.application.services.external.payment_management import create_payment_intent
 from ..external.order_management import ShippoService
 
 

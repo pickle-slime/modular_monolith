@@ -1,24 +1,24 @@
 from pydantic import field_validator, Field
-from typing import Type, Optional
+from typing import Optional
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
+import uuid
 
 from core.utils.application.base_dto import BaseEntityDTO
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductImage as ProductImageEntity, ProductSize as ProductSizeEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from core.utils.domain.value_objects.common import CommonNameField, CommonSlugField
 from core.shop_management.domain.value_objects.shop_management import ImageField, PercentageField
-from core.shop_management.domain.structures import ProductSizesCollection, ProductImagesCollection
+from core.shop_management.domain.structures import ProductImagesEntityList, ProductSizesEntityList
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 class CategoryDTO(BaseEntityDTO):
-    uuid: UUID | None = Field(default=None)
-    name: str | None = Field(default=None)
-    slug: str | None = Field(default=None) 
-    count_of_deals: int = Field(default=0)
+    pub_uuid: uuid.UUID | None = Field(default=None)
+    name: str | None = Field(default=None, min_length=5, max_length=100, title="Category Name")
+    slug: str | None = Field(default=None, min_length=5, max_length=100, title="Category Name")
+    count_of_deals: int | None = Field(default=None, ge=0, title="Count of Deals", alias="countOfDeals")
 
-    get_absolute_url: str | None = Field(default=None)
+    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page", alias="absoluteUrl")
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):
@@ -33,10 +33,10 @@ class CategoryDTO(BaseEntityDTO):
         return v  
 
     @classmethod
-    def from_entity(cls: Type["CategoryDTO"], entity: CategoryEntity, url_mapping_adapter: Optional[URLHost] = None) -> "CategoryDTO":
+    def from_entity(cls: type["CategoryDTO"], entity: CategoryEntity, url_mapping_adapter: Optional[URLHost] = None) -> "CategoryDTO":
         absolute_url = url_mapping_adapter.get_absolute_url_of_category(entity.slug) if url_mapping_adapter and isinstance(entity, CategoryEntity) else None
         return cls(
-            uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
+            pub_uuid=entity.public_uuid,
             name=entity.name,
             slug=entity.slug,
             count_of_deals=entity.count_of_deals,
@@ -47,12 +47,12 @@ class CategoryDTO(BaseEntityDTO):
         from_attributes = True
 
 class BrandDTO(BaseEntityDTO):
-    uuid: UUID = Field(default=None)
-    name: str | None = Field(default=None)
-    slug: str | None = Field(default=None)
-    count_of_deals: int = Field(default=0)
+    pub_uuid: uuid.UUID | None = Field(default=None)
+    name: str | None = Field(default=None, min_length=2, max_length=100, title="Brand Name")
+    slug: str | None = Field(default=None, min_length=2, max_length=100, title="Brand Name")
+    count_of_deals: int | None = Field(default=None, ge=0, title="Count of Deals", alias="countOfDeals")
 
-    get_absolute_url: str | None = None
+    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page", alias="absoluteUrl")
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):
@@ -67,10 +67,10 @@ class BrandDTO(BaseEntityDTO):
         return v  
 
     @classmethod
-    def from_entity(cls: Type['BrandDTO'], entity: BrandEntity, url_mapping_adapter: Optional[URLHost] = None) -> 'BrandDTO':
+    def from_entity(cls: type['BrandDTO'], entity: BrandEntity, url_mapping_adapter: Optional[URLHost] = None) -> 'BrandDTO':
         absolute_url = url_mapping_adapter.get_absolute_url_of_brand(entity.slug) if url_mapping_adapter and isinstance(entity, BrandEntity) else None
         return cls(
-            uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
+            pub_uuid=entity.public_uuid,
             name=entity.name,
             slug=entity.slug,
             count_of_deals=entity.count_of_deals,
@@ -78,27 +78,26 @@ class BrandDTO(BaseEntityDTO):
         )
     
     @classmethod
-    def from_entities(cls: Type['BrandDTO'], entities: list[BrandEntity]) -> list['BrandDTO']:
-        return [cls.from_entity(entity) for entity in entities]
+    def from_entities(cls: type['BrandDTO'], entities: list[BrandEntity]) -> list['BrandDTO']:
+        return [cls.from_entity(entity).populate_none_fields() for entity in entities]
     
     class Config:
         from_attributes = True
 
 class ProductSizeDTO(BaseEntityDTO):
-    size: str | None = Field(default=None)
-    length: Decimal = Field(default=Decimal(0.0))
-    width: Decimal = Field(default=Decimal(0.0))
-    height: Decimal = Field(default=Decimal(0.0))
-    weight: Decimal = Field(default=Decimal(0.0))
+    pub_uuid: uuid.UUID | None = Field(default=None)
+    
+    length: Decimal | None = Field(default=None, title="Length")
+    width: Decimal | None = Field(default=None, title="Width")
+    height: Decimal | None = Field(default=None, title="Height")
+    weight: Decimal | None = Field(default=None, title="Weight")
 
-    product: UUID | None = Field(default=None)
-
-    uuid: UUID | None = Field(default=None)
+    product: uuid.UUID | None = Field(default=None, title="Product", description="Contatins the public uuid of an internal module")
 
     @classmethod
     def from_entity(cls: type['ProductSizeDTO'], entity: ProductSizeEntity) -> 'ProductSizeDTO':
         return cls(
-            uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
+            pub_uuid=entity.public_uuid,
             size=entity.size,
             length=entity.length,
             width=entity.weight,
@@ -108,62 +107,63 @@ class ProductSizeDTO(BaseEntityDTO):
         )
     
     @classmethod
-    def from_entities(cls, entities: list[ProductSizeEntity] | ProductSizesCollection[ProductSizeEntity]) -> list['ProductSizeDTO']:
-        return [cls.from_entity(entity) for entity in entities]
+    def from_entities(cls, entities: list[ProductSizeEntity] | ProductSizesEntityList[ProductSizeEntity]) -> list['ProductSizeDTO']:
+        return [cls.from_entity(entity).populate_none_fields() for entity in entities]
     
     class Config:
         from_attributes = True
 
 
 class ProductImageDTO(BaseEntityDTO):
-    image: str | None = Field(default=None)
-    product: UUID | None = Field(default=None)
-    uuid: UUID | None = Field(default=None)
+    pub_uuid: uuid.UUID | None = Field(default=None)
 
-    @classmethod
-    def from_entity(cls: type['ProductImageDTO'], entity: ProductImageEntity) -> 'ProductImageDTO':
-        return cls(
-            uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
-            image=entity.image,
-            product=entity.product.public_uuid
-        )
-    
-    @classmethod
-    def from_entities(cls, entities: list[ProductImageEntity] | ProductImagesCollection[ProductImageEntity]) -> list['ProductImageDTO']:
-        return [cls.from_entity(entity) for entity in entities]
-    
+    image: str | None = Field(default=None, title="Image")
+    product: uuid.UUID | None = Field(default=None, title="Product", description="Contatins the public uuid of an internal module")
+
     @field_validator("image", mode="before")
     def validate_image(cls, v):
         if isinstance(v, ImageField):
             return str(v)
         return v 
+
+    @classmethod
+    def from_entity(cls: type['ProductImageDTO'], entity: ProductImageEntity) -> 'ProductImageDTO':
+        return cls(
+            pub_uuid=entity.public_uuid,
+            image=entity.image,
+            product=entity.product.public_uuid
+        )
+    
+    @classmethod
+    def from_entities(cls, entities: list[ProductImageEntity] | ProductImagesEntityList[ProductImageEntity]) -> list['ProductImageDTO']:
+        return [cls.from_entity(entity).populate_none_fields() for entity in entities]
     
     class Config:
         from_attributes = True
 
 class ProductDTO(BaseEntityDTO):
-    name: str | None = Field(default=None)
-    slug: str | None = Field(default=None)
-    description: str | None = Field(default=None)
-    details: str | None = Field(default=None)
-    image: str | None = Field(default=None)
-    price: int = Field(default=0)
-    discount: int = Field(default=0)
-    color: list[str] | None = Field(default=None)
-    in_stock: int = Field(default=0)
-    count_of_selled: int = Field(default=0)
-    time_created: datetime | None = Field(default=None)
-    time_updated: datetime | None = Field(default=None)
+    pub_uuid: uuid.UUID | None = Field(default=None)
+
+    name: str | None = Field(default=None, min_length=2, max_length=100, title="Product Name")
+    slug: str | None = Field(default=None, min_length=2, max_length=100, title="Product Name")
+    description: str | None = Field(default=None, title="Description")
+    details: str | None = Field(default=None, title="Details")
+    image: str | None = Field(default=None, title="Product Image URL", description="The field keeps the path of the image")
+    price: float | None = Field(default=None, ge=0, title="Product Price")
+    discount: int | None = Field(default=None, ge=0, le=100, title="Product Discout", description="The discount must be a percentage (0-100%)")
+    color: list[str] | None = Field(default=None, title="Product Color", description="The color field must contain a list of strings that represent avaliable colors")
+    in_stock: int | None = Field(default=None, ge=0, title="In Stock", alias="inStock")
+    count_of_selled: int | None = Field(default=None, ge=0, title="Count of Sealed", alias="countOfSealed")
+    time_created: datetime | None = Field(default=None, title="Time Created", alias="timeCreated")
+    time_updated: datetime | None = Field(default=None, title="Time Updated", alias="timeUpdated")
 
     brand: BrandDTO | None = Field(default=None)
     category: CategoryDTO | None = Field(default=None)
-    seller: UUID | None = Field(default=None)
-    sizes: list[ProductSizeDTO] | None = Field(default=None)
-    images: list[ProductImageDTO] | None = Field(default=None)
+    seller: uuid.UUID | None = Field(default=None, title="Product Seller", description="Contatins the public uuid of an external module")
+    sizes: list[ProductSizeDTO] | None = Field(default=None, title="Product Sizes")
+    images: list[ProductImageDTO] | None = Field(default=None, title="Product Images")
 
-    uuid: UUID | None = Field(default=None)
-
-    get_absolute_url: str = Field(default="/")
+    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page", alias="absoluteUrl")
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):
@@ -195,7 +195,7 @@ class ProductDTO(BaseEntityDTO):
 
     @classmethod
     def from_entity(
-        cls: Type['ProductDTO'],
+        cls: type['ProductDTO'],
         entity: ProductEntity,
         category: Optional[CategoryEntity] = None,
         brand: Optional[BrandEntity] = None,
@@ -203,7 +203,7 @@ class ProductDTO(BaseEntityDTO):
     ) -> 'ProductDTO':
         absolute_url = url_mapping_adapter.get_absolute_url_of_product(category.slug, entity.slug) if url_mapping_adapter and isinstance(category, CategoryEntity) else None
         return cls(
-            uuid=UUID(str(entity.public_uuid)) if not isinstance(entity.public_uuid, UUID) else entity.public_uuid,
+            pub_uuid=entity.public_uuid,
             name=entity.name,
             slug=entity.slug,
             description=entity.description,
@@ -228,8 +228,7 @@ class ProductDTO(BaseEntityDTO):
     
     @classmethod
     def from_entities(cls, entities: list[ProductEntity]) -> list['ProductDTO']:
-        return [cls.from_entity(entity) for entity in entities]
+        return [cls.from_entity(entity).populate_none_fields() for entity in entities]
 
-    
     class Config:
         from_attributes = True

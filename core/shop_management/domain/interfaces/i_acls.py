@@ -5,7 +5,7 @@ import uuid
 
 class IProductACL(ABC):
     @abstractmethod
-    def fetch_first_sample(self, public_uuid: uuid.UUID | None) -> ProductDTO:
+    def fetch_sample_of_size(self, product_uuid: uuid.UUID | None = None, size_uuid: uuid.UUID | None = None) -> ProductDTO:
         pass
 
 class ICategoryACL(ABC):
