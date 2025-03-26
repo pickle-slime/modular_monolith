@@ -1,4 +1,4 @@
-from .....utils.domain.interfaces.i_repositories.base_repository import BaseRepository
+from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 from core.user_management.domain.entities.user_management import User as UserEntity
 
 from abc import abstractmethod
@@ -10,9 +10,9 @@ class IUserRepository(BaseRepository):
         pass
 
     @abstractmethod
-    def find_by_uuid(self, inner_uuid: uuid.UUID = None, public_uuid: uuid.UUID = None) -> UserEntity:
+    def find_by_uuid(self, inner_uuid: uuid.UUID | None = None, public_uuid: uuid.UUID | None = None) -> UserEntity:
         pass
 
     @abstractmethod
-    def save(self, user: UserEntity) -> bool:
+    def save(self, user: UserEntity) -> tuple[UserEntity, bool]:
         pass

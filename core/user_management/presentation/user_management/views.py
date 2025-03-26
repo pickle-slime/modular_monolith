@@ -7,6 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 
 from core.utils.presentation.session_helper import inject_session_dependencies_into_view
+from core.utils.infrastructure.adapters.dj_url_mapping import DjangoURLAdapter
 
 from typing import Any
 
@@ -17,6 +18,7 @@ from core.user_management.infrastructure.repositories.user_management import Dja
 from core.user_management.infrastructure.adapters.jwtoken import JWTokenAdapter
 from core.utils.application.base_view_mixin import BaseViewMixin
 from core.shop_management.presentation.acl_factory import ShopManagementACLFactory
+from core.shop_management.presentation.shop_management.forms import SearchForm
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
 
 from core.user_management.infrastructure.adapters.dj_password_hasher import DjangoPasswordHasherAdapter
@@ -33,6 +35,7 @@ class RegisterUser(CreateView, BaseViewMixin):
     adapter_classes = {
         "token_adapter": JWTokenAdapter,
         "session_adapter": None,
+        "url_mapping_adapter": DjangoURLAdapter,
     }
     repository_classes = {
         "user_repository": DjangoUserRepository,
@@ -49,10 +52,12 @@ class RegisterUser(CreateView, BaseViewMixin):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        return self.service.get_context_data(context)
+        service_context = self.service.get_context_data(context)
+        service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
+        return service_context
     
-    def form_valid(self, form: BaseModelForm) -> JsonResponse:
-        if self.request.method == 'POST' and self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    def form_valid(self, form: BaseModelForm):
+        if self.request.method == 'POST':
             user = form.save()
             email = form.cleaned_data.get("username")
             raw_password = form.cleaned_data.get("password")
@@ -67,12 +72,10 @@ class RegisterUser(CreateView, BaseViewMixin):
                 samesite="Strict"
             )
             self.request.new_access_token = access_token
-            #login(self.request, user)
-            return JsonResponse({'status': 'succeed'})
         return super().form_valid(form)
     
     def form_invalid(self, form: BaseModelForm) -> HttpResponse:
-        if self.request.method == 'POST' and self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if self.request.method == 'POST':
             return JsonResponse({'status': 'error', 'message': f'{form.errors}'})
         return super().form_invalid(form)
     
@@ -91,6 +94,7 @@ class LoginUser(LoginView, BaseViewMixin):
     adapter_classes = {
         "token_adapter": JWTokenAdapter,
         "session_adapter": None,
+        "url_mapping_adapter": DjangoURLAdapter,
     }
     repository_classes = {
         "user_repository": DjangoUserRepository,
@@ -106,29 +110,31 @@ class LoginUser(LoginView, BaseViewMixin):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        return self.service.get_context_data(context)
+        service_context = self.service.get_context_data(context)
+        service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
+        return service_context
     
     def form_valid(self, form):
-        user = form.get_user()
-        email = form.cleaned_data.get("username")
-        raw_password = form.cleaned_data.get("password")
-        #user.backend = 'user_management.backends.EmailBackend'
-        refresh_token, access_token = self.service.authenticate(email, raw_password, DjangoPasswordHasherAdapter())
-        user.backend = 'user_management.backends.EmailBackend'
         response = super().form_valid(form)
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            secure=True,
-            samesite="Strict"
-        )
-        self.request.new_access_token = access_token
-        login(self.request, user)
+        if self.request.method == 'POST':
+            user = form.get_user()
+            email = form.cleaned_data.get("username")
+            raw_password = form.cleaned_data.get("password")
+            refresh_token, access_token = self.service.authenticate(email, raw_password, DjangoPasswordHasherAdapter())
+            user.backend = 'user_management.backends.EmailBackend'
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=True,
+                samesite="Strict"
+            )
+            self.request.new_access_token = access_token
+            login(self.request, user)
         return response
 
     def form_invalid(self, form: BaseModelForm):
-        if self.request.method == 'POST' and self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if self.request.method == 'POST':
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
         return super().form_invalid(form)
 

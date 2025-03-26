@@ -5,6 +5,6 @@ from dataclasses import field
 import uuid
 
 class NewsLetter(Entity):
-    created_at: datetime = field(default=None)
+    created_at: datetime | None = field(default=None)
 
-    user: uuid.UUID = field(default=None)
+    user: uuid.UUID | None = field(default=None)

@@ -65,7 +65,7 @@
 					</div>
 					<p>{{ object.description }}</p>
 
-				{% if add_to_cart %}	
+				{% if user.is_authenticated %}	
 				<form id="productForm" method="post">
 					{% csrf_token %}
 					<div class="product-options">
@@ -238,7 +238,7 @@
 								<!-- /Reviews -->
 
 								<!-- Review Form -->
-								{% if request.user.is_authenticated %}
+								{% if user.is_authenticated %}
 								<div class="col-md-3">
 									<div id="review-form">
 										<form class="review-form" id="review-form-id" action="{% url 'review' object.category.slug object.slug %}">

@@ -23,9 +23,9 @@ class UserDTO(BaseEntityDTO["UserDTO"]):
             values['pub_uuid'] = None
         return values
 
-    @staticmethod
-    def from_entity(entity: UserEntity) -> 'UserDTO':
-        return UserDTO(
+    @classmethod
+    def from_entity(cls, entity: UserEntity) -> 'UserDTO':
+        return cls(
             pub_uuid=entity.public_uuid,
             username=entity.username,
             email=entity.email,
@@ -35,3 +35,7 @@ class UserDTO(BaseEntityDTO["UserDTO"]):
             last_login=entity.last_login,
             role=entity.role,
         )
+
+    @property
+    def is_authenticated(self) -> bool:
+        return self.role != "guest" and self.pub_uuid is not None

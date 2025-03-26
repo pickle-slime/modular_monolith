@@ -1,35 +1,33 @@
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service
 
-from core.shop_management.application.dtos.shop_management import CategoryDTO
-from core.cart_management.application.dtos.cart_management import CartDTO, WishlistDTO
-
 from core.shop_management.domain.interfaces.i_acls import ICategoryACL
 from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL
 from core.user_management.domain.interfaces.i_repositories.i_user_management import IUserRepository
 from core.user_management.domain.entities.user_management import User as UserEntity
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
+from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 from core.user_management.domain.interfaces.hosts.jwtoken import TokenHost
 from core.user_management.domain.interfaces.hosts.password_hasher import PasswordHasherHost
 
 from typing import TypeVar, Generic, Any
 
-T = TypeVar("T")
+T = TypeVar("T", bound=object)
 
 class BaseService(Generic[Service]):
     def __init__(
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_repository: IUserRepository | type[IUserRepository],
-        ) -> 'BaseService':
+        ):
         
         self.session = self._resolve_dependency(session_adapter)
         self.user_rep = self._resolve_dependency(user_repository)
 
     def _resolve_dependency(self, dependency: T | type[T]) -> T:
         """Helper method to instantiate class if type is passed"""
-        return dependency() if isinstance(dependency, type) else dependency
+        return dependency if isinstance(dependency, type) else dependency
 
     @property
     def user(self) -> UserEntity:
@@ -64,6 +62,7 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
         wishlist_acl: IWishlistACL,
 
         token_adapter: TokenHost,
+        url_mapping_adapter: URLHost,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -73,18 +72,19 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
         self.wishlist_acl = wishlist_acl
 
         self.token_adapter = token_adapter
+        self.url_mapping_adapter = url_mapping_adapter
 
     def get_header_and_footer(self) -> dict:
-        navigation_and_search_bar = self.category_acl.fetch_categories(10, 'count_of_deals')
-        
+        navigation_and_search_bar = self.category_acl.fetch_categories(10, 'count_of_deals', url_mapping_adapter=self.url_mapping_adapter)
+
         self.context['navigation'] = navigation_and_search_bar[:6]
         self.context['breadcrumb'] = self.path.split("/") if self.path else None
         self.context['search_bar'] = navigation_and_search_bar
         self.context['user'] = self.user
         
         if self.is_authorized:
-            self.context['cart'] = CartDTO.from_entity(self.cart_acl.fetch_cart())
-            self.context['wishlist'] = WishlistDTO.from_entity(self.wishlist_acl.fetch_wishlist(public_uuid=self.user.uuid))
+            self.context['cart'] = self.cart_acl.fetch_cart()
+            self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.public_uuid)
         return self.context
     
     def authenticate(self, email, password, password_hasher: PasswordHasherHost) -> tuple[str, str]:
@@ -96,5 +96,5 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
         access_token = self.token_adapter.generate_access_token(user.public_uuid)
         return refresh_token, access_token
     
-    def get_context_data(self, context: dict[str: Any]) -> dict[str: Any]:
+    def get_context_data(self, context: dict[str, Any]) -> dict[str, Any]:
         return {**self.get_header_and_footer(), **context}

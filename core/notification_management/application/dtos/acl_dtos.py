@@ -22,7 +22,7 @@ class ACLUserDTO(BaseDTO["ACLUserDTO"]):
 
     @staticmethod
     def from_user_dto(dto: UserDTO) -> 'ACLUserDTO':
-        return UserDTO(
+        return ACLUserDTO(
             pub_uuid=dto.pub_uuid,
             username=dto.username,
             email=dto.email,

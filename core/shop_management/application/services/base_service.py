@@ -3,7 +3,6 @@ from core.utils.application.base_service import Service
 
 from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
 from core.shop_management.application.dtos.acl_dtos import ACLUserDTO
-from core.cart_management.application.dtos.cart_management import CartDTO, WishlistDTO
 
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity

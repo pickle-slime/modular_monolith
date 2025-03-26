@@ -20,9 +20,9 @@ class ACLUserDTO(BaseDTO["ACLUserDTO"]):
             values['pub_uuid'] = None
         return values
 
-    @staticmethod
-    def from_user_dto(dto: UserDTO) -> 'ACLUserDTO':
-        return UserDTO(
+    @classmethod
+    def from_user_dto(cls, dto: UserDTO) -> 'ACLUserDTO':
+        return cls(
             pub_uuid=dto.pub_uuid,
             username=dto.username,
             email=dto.email,
@@ -30,3 +30,7 @@ class ACLUserDTO(BaseDTO["ACLUserDTO"]):
             last_name=dto.last_name,
             role=dto.role,
         )
+
+    @property
+    def is_authenticated(self) -> bool:
+        return self.role != 'guest' and self.pub_uuid is not None

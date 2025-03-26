@@ -10,13 +10,13 @@ class JWTokenAdapter(TokenHost):
         self.access_token_expiry = access_token_expiry
         self.refresh_token_expiry = refresh_token_expiry
     
-    def generate_access_token(self, user_public_uuid: uuid.UUID):
+    def generate_access_token(self, user_public_uuid: uuid.UUID) -> str:
         return self._generate_token(user_public_uuid, self.access_token_expiry)
     
-    def refresh_token(self, user_public_uuid: uuid.UUID):
+    def refresh_token(self, user_public_uuid: uuid.UUID) -> str:
         return self._generate_token(user_public_uuid, self.refresh_token_expiry)
     
-    def _generate_token(self, user_public_uuid: uuid.UUID, expiry_minutes: int):
+    def _generate_token(self, user_public_uuid: uuid.UUID, expiry_minutes: int) -> str:
         payload = {
             "user_public_uuid": str(user_public_uuid),
             "exp": datetime.now() + timedelta(minutes=expiry_minutes),

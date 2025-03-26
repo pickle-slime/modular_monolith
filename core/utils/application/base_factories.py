@@ -8,9 +8,9 @@ import inspect
 class BaseServiceFactory:
     def __init__(
             self, 
-            repositories: dict[str, type[BaseRepository]] | dict[str, BaseRepository] = dict(), 
-            adapters: dict[str, type[BaseHost]] | dict[str, BaseHost] = dict(), 
-            services: dict[str, type[Service]] | dict[str, Service] = dict(),
+            repositories: dict[str, type[BaseRepository | None]] | dict[str, BaseRepository | None] = dict(), 
+            adapters: dict[str, type[BaseHost | None]] | dict[str, BaseHost | None] = dict(), 
+            services: dict[str, type[Service | None]] | dict[str, Service | None] = dict(),
         ):
         
         self._services = services

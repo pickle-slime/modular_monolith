@@ -5,19 +5,10 @@ from decimal import Decimal
 
 @dataclass(frozen=True)
 class Size:
-    length: Decimal = field(default=None)
-    width: Decimal = field(default=None)
-    height: Decimal = field(default=None)
-    weight: Decimal = field(default=None)
-
-@dataclass(frozen=True)
-class CartItem:
-    color: str = field(default=None)
-    qty: int = field(default=None)
-    image: str = field(default=None)
-    price: Decimal = field(default=None)
-
-    size: Size = field(default_factory=Size)
+    length: Decimal | None = field(default=None)
+    width: Decimal | None = field(default=None)
+    height: Decimal | None = field(default=None)
+    weight: Decimal | None = field(default=None)
 
     def to_shippo_parcel(self):
         return components.ParcelCreateRequest(
@@ -28,4 +19,13 @@ class CartItem:
             distance_unit = components.DistanceUnitEnum.IN,
             mass_unit = components.WeightUnitEnum.LB,
         )
-    
+ 
+@dataclass(frozen=True)
+class CartItem:
+    color: str | None = field(default=None)
+    qty: int | None = field(default=None)
+    image: str | None = field(default=None)
+    price: Decimal | None = field(default=None)
+
+    size: Size = field(default_factory=Size)
+   

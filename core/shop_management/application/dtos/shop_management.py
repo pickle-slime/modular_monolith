@@ -16,9 +16,9 @@ class CategoryDTO(BaseEntityDTO):
     pub_uuid: uuid.UUID | None = Field(default=None)
     name: str | None = Field(default=None, min_length=5, max_length=100, title="Category Name")
     slug: str | None = Field(default=None, min_length=5, max_length=100, title="Category Name")
-    count_of_deals: int | None = Field(default=None, ge=0, title="Count of Deals", alias="countOfDeals")
+    count_of_deals: int | None = Field(default=None, ge=0, title="Count of Deals") 
 
-    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page", alias="absoluteUrl")
+    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page")
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):

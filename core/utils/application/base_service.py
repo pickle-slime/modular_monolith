@@ -15,7 +15,7 @@ from typing import TypeVar, Generic, Protocol, overload
 
 Service = TypeVar("Service")
 
-T = TypeVar("T")
+T = TypeVar("T", bound=object)
 
 class BaseService(Generic[Service], Protocol):
     '''
@@ -28,7 +28,7 @@ class BaseService(Generic[Service], Protocol):
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_repository: IUserRepository | type[IUserRepository],
-        ) -> 'BaseService':
+        ):
         pass
 
     #overload for other bounded contexts
@@ -37,7 +37,7 @@ class BaseService(Generic[Service], Protocol):
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_acl: IUserACL | type[IUserACL],
-        ) -> 'BaseService':
+        ):
         pass
 
     def _resolve_dependency(self, dependency: T | type[T]) -> T:
@@ -71,7 +71,7 @@ class BaseTemplateService(BaseService["BaseTemplateService"], Protocol):
         category_repository: ICategoryRepository,
         cart_acl: ICartACL,
         wishlist_acl: IWishlistACL,
-    ) -> 'BaseTemplateService':
+    ):
         pass
 
     #overload for cart bounded context
@@ -81,7 +81,7 @@ class BaseTemplateService(BaseService["BaseTemplateService"], Protocol):
         category_acl: ICategoryACL,
         cart_repository: ICartRepository,
         wishlist_repository: IWishlistRepository,
-    ) -> 'BaseTemplateService':
+    ):
         pass
 
     #overload for other bounded contexts
@@ -91,7 +91,7 @@ class BaseTemplateService(BaseService["BaseTemplateService"], Protocol):
         category_acl: ICategoryACL,
         cart_acl: ICartACL,
         wishlist_acl: IWishlistACL,
-    ) -> 'BaseTemplateService':
+    ):
         pass
 
     def get_header_and_footer(self) -> dict:

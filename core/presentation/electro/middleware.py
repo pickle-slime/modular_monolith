@@ -109,17 +109,20 @@ class SessionPopulatedMiddleware(MiddlewareMixin):
         else:
             self.session_adapter.hand_over_session_key(session_key)
             request.session_key = session_key
-        self.session_adapter.set(key="path", value=request.path)
+
+        self.session_adapter.set(key="path", data=request.path)
 
         if hasattr(request, 'jwt'):
             is_authorized = request.jwt.get('authorized', False)
-            self.session_adapter.set(key='is_authorized', value=is_authorized)
+            self.session_adapter.set(key='is_authorized', data=is_authorized)
 
             if not request.jwt['decoded_token'] is None:
                 user_public_uuid = request.jwt['decoded_token'].get('user_public_uuid', None)
+            else:
+                return None
 
             if is_authorized and user_public_uuid:
-                self.session_adapter.set(key='user_public_uuid', value=user_public_uuid)
+                self.session_adapter.set(key='user_public_uuid', data=user_public_uuid)
 
     def _handle_response(self, request, response):
         response.set_cookie(

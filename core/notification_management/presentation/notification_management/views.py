@@ -9,7 +9,7 @@ from core.user_management.presentation.acl_factory import UserManagementACLFacto
 import json
 
 class NewsLetterView(View):
-    service = NewsLetterService(RedisSessionAdapter(RedisAdapter), UserManagementACLFactory.create_user_acl())
+    service = NewsLetterService(RedisSessionAdapter(RedisAdapter()), UserManagementACLFactory.create_user_acl())
 
     def resolve_session_key(self, session_key: str):
         self.service.session.hand_over_session_key(session_key)

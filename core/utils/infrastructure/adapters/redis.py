@@ -39,7 +39,7 @@ class RedisAdapter(RedisHost):
 
 
 class RedisSessionAdapter(RedisSessionHost):
-    def __init__(self, redis_adapter: RedisAdapter, session_key: str = None):
+    def __init__(self, redis_adapter: RedisAdapter, session_key: str | None = None):
         self.redis_adapter = redis_adapter
         self._session_key = session_key
 
@@ -87,12 +87,12 @@ class RedisSessionAdapter(RedisSessionHost):
             #     return value
         return default
 
-    def set(self, key: str, value: Any, expire: int = SESSIONS_EXPIRY):
-        if isinstance(value, dict):
-            value = json.dumps(value)
+    def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY):
+        if isinstance(data, dict):
+            data = json.dumps(data)
         else:
-            value = pickle.dumps(value)
-        self.redis_adapter.hset(self._get_session_key(), key, value, expire*60)
+            data = pickle.dumps(data)
+        self.redis_adapter.hset(self._get_session_key(), key, data, expire*60)
 
     def delete(self, key):
         self.redis_adapter.hdel(self._get_session_key(), key)

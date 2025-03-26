@@ -1,6 +1,5 @@
 from typing import Any
 
-from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormMixin
 from django.utils.translation import gettext as _
@@ -19,9 +18,7 @@ from core.cart_management.presentation.cart_management.forms import AddToCartFor
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
 from core.user_management.presentation.acl_factory import UserManagementACLFactory
 from core.review_management.presentation.acl_factory import ReivewManagementACLFactory
-from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.utils.infrastructure.adapters.dj_url_mapping import DjangoURLAdapter
-from ...application.services.base_service import BaseTemplateService
 
 SERVICE_FACTORY = BaseServiceFactory(
     services={
@@ -88,18 +85,15 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
     def _handle_post_request(self):
         form = self.form_class(self.request.POST)
         if form.is_valid():
-            self.service.clear_session_data()
             return self.service.filter_products(form.cleaned_data)
         return self.service.get_top_selling()
 
     def _handle_get_request(self):
-        session_data = self.service.get_session_data()
-        if self.request.GET.get("clear_session", "false").lower() == "true":
-            return self.service.handle_get_request(**self.kwargs)
-        elif session_data["query"] or session_data["category_id"] != '0':
-            return self.service.handle_session_data(session_data)
-        return self.service.handle_get_request(**self.kwargs)
-    
+        navigation = True if self.request.GET.get("navigation", "false").lower() == "true" else False
+        category = self.request.GET.get("category", None)
+        query = self.request.GET.get("query", None)
+        return self.service.handle_get_request(category, query, navigation, self.kwargs.get("category", None))
+   
     def post(self, request, *args, **kwargs):
         self.object_list = self.get_queryset()
         context = self.get_context_data()
@@ -127,8 +121,13 @@ class ProductPage(DetailView, BaseViewMixin):
         context = super(ProductPage, self).get_context_data(**kwargs)
 
         service_context = self.service.get_context_data()
-    
+
         service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
+        if self.service.user.is_authenticated:
+            object_entity, cart_uuid, wishlist_uuid = service_context["add_to_cart_and_wishlist"]
+            service_context["add_to_cart"] = AddToCartForm(object_entity=object_entity, cart_uuid=cart_uuid)
+            service_context["add_to_wishlist"] = AddToWishlistForm(object_entity=object_entity, wishlist_uuid=wishlist_uuid)
+
         return {**context, **service_context}
     
     def get_object(self, queryset=None) -> ProductDTO:
@@ -137,14 +136,13 @@ class ProductPage(DetailView, BaseViewMixin):
 
         return self.service.get_object(self.kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         self.object = self.get_object()
         self.get_context_data(object=self.object)
 
         data = request.POST.copy()
-        data['product'] = self.object.pk
-        data['cart'] = request.user.cart.pk
-        form = AddToCartForm(data, object=self.object, cart_pk=request.user.cart.pk)
+        form = AddToCartForm(data, object_entity=self.object, cart_uuid=self.request.user.cart.public_uuid
+)
         if form.is_valid():
             self.service.post()
 
@@ -154,11 +152,3 @@ class ProductPage(DetailView, BaseViewMixin):
         inject_session_dependencies_into_view(self, request)
         return super().dispatch(request, *args, **kwargs)
 
-
-def search(request):
-    query = request.GET.get('query', '')
-    category_public_uuid = request.GET.get('category', '')
-
-    store_search(query, category_public_uuid, RedisSessionAdapter(RedisAdapter()))
-
-    return HttpResponseRedirect(reverse_lazy('store'))

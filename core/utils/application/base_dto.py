@@ -24,14 +24,15 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
         return getattr(self.Config, "_defaults", {}).get(annotation, None)
     
     def _resolve_annotation(self, annotation: type[Any] | None) -> type:
-        while annotation is not None and get_origin(annotation) in {Union, UnionType}:
-            annotation = next((t for t in get_args(annotation) if t is not type(None)), None)
+        resolved_annotation: Any = annotation
+        while resolved_annotation is not None and get_origin(resolved_annotation) in {Union, UnionType}:
+            resolved_annotation = next((t for t in get_args(resolved_annotation) if t is not type(None)), None)
         
-        origin = get_origin(annotation)
+        origin = get_origin(resolved_annotation)
         if origin in {list, dict, set, tuple}:
-            annotation = origin
+            resolved_annotation = origin
 
-        return annotation
+        return resolved_annotation
     
     def populate_none_fields(self) -> "BaseDTO":
         '''

@@ -31,7 +31,7 @@ class NewsLetterService:
             self._is_authorized = self.session.get('is_authorized', False)
         return self._is_authorized
 
-    def newsletter_service(self, data: dict[str: Any]) -> tuple[dict, int]:
+    def newsletter_service(self, data: dict[str, Any]) -> tuple[dict, int]:
         if not self.is_authorized:
             return {"status": "error", "message": "Log in for a subscribe to email notification"}, 401
         elif not "email" in data:

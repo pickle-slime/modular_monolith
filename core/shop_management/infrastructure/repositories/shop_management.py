@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 from datetime import timedelta
 import uuid
 
@@ -72,9 +72,12 @@ class DjangoProductRepository(IProductRepository):
         elif public_uuid:
             product_model = ProductModel.objects.get(public_uuid=public_uuid)
         else:
-            return ProductEntity(inner_uuid=None, public_uuid=None)
+            raise ValueError(f"{self.__class__.__name__}.{self.fetch_product_by_uuid.__name__}: must have at least inner_uuid or public_uuid")
 
         return DjangoProductMapper.map_product_into_entity(product_model)
+
+    def all(self) -> list[ProductEntity]:
+        return [DjangoProductMapper.map_product_into_entity(model) for model in ProductModel.objects.all()]
     
     def filter_products(
         self,
@@ -97,14 +100,14 @@ class DjangoProductRepository(IProductRepository):
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
 
 
-    def searching_products(self, name: str | None = None, category_inner: uuid.UUID | None = None) -> list[ProductEntity]:
+    def searching_products(self, query: str | None = None, category_pub: uuid.UUID | None = None) -> list[ProductEntity]:
         queryset = ProductModel.objects.all()
 
-        if name:
-            queryset = queryset.filter(name__icontains=name)
+        if query:
+            queryset = queryset.filter(name__icontains=query)
         
-        if category_inner:
-            queryset = queryset.filter(category__inner_uuid=category_inner)
+        if category_pub:
+            queryset = queryset.filter(category__public_uuid=category_pub)
 
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
     
@@ -114,8 +117,12 @@ class DjangoProductRepository(IProductRepository):
         queryset = ProductModel.objects.filter(time_created__gte=hot_week)
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
 
-    def filter_by_category_slug(self, category_slug: str) -> list[ProductEntity]:
-        queryset = ProductModel.objects.filter(category__slug=category_slug)
+    def filter_by_category_slug(self, category_slug: str | None) -> list[ProductEntity]:
+        if category_slug:
+            queryset = ProductModel.objects.filter(category__slug=category_slug)
+        else:
+            queryset = ProductModel.objects.all()
+
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
     
     def fetch_by_slugs(self, category_slug: str, product_slug: str) -> ProductEntity:
@@ -123,7 +130,7 @@ class DjangoProductRepository(IProductRepository):
             model = ProductModel.objects.get(slug=product_slug, category__slug=category_slug)
             sizes = ProductSizesModel.objects.filter(product__inner_uuid=model.inner_uuid)
             images = MultipleProductImagesModel.objects.filter(product__inner_uuid=model.inner_uuid)
-        except (model.model.DoesNotExist, sizes.model.DoesNotExist, images.model.DoesNotExist):
+        except (ProductModel.DoesNotExist, ProductSizesModel.DoesNotExist, MultipleProductImagesModel.DoesNotExist):
             raise Http404("No product found matching the query")
         return DjangoProductMapper.map_product_into_entity(model, sizes, images)
 
@@ -166,6 +173,6 @@ class DjangoProductRepository(IProductRepository):
             product = ProductModel.objects.get(public_uuid=public_uuid)
             size = ProductSizesModel.objects.get(public_uuid=size_public_uuid)
         except (ProductModel.DoesNotExist, ProductSizesModel.DoesNotExist):
-            return ProductEntity(inner_uuid=None, public_uuid=None)
+            return ProductEntity()
 
         return DjangoProductMapper.map_product_into_entity(product, sizes_queryset=size)

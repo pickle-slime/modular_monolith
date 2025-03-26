@@ -1,4 +1,4 @@
-from ....utils.domain.entity import Entity
+from core.utils.domain.entity import Entity
 from ..interfaces.hosts.password_hasher import PasswordHasherHost
 
 from dataclasses import dataclass, field
@@ -6,18 +6,21 @@ from datetime import datetime
 
 @dataclass(kw_only=True)
 class User(Entity):
-    username: str = field(default=None)
-    email: str = field(default=None)
-    hashed_password: str = field(default=None)
-    first_name: str = field(default=None)
-    last_name: str = field(default=None)
-    date_joined: datetime = field(default=None)
-    last_login: datetime = field(default=None)
-    role: str = field(default=None)
+    username: str | None = field(default=None)
+    email: str | None = field(default=None)
+    hashed_password: str | None = field(default=None)
+    first_name: str | None = field(default=None)
+    last_name: str | None = field(default=None)
+    date_joined: datetime | None = field(default=None)
+    last_login: datetime | None = field(default=None)
+    role: str | None = field(default=None)
 
     def check_password(self, password: str, password_hasher: PasswordHasherHost):
-        return password_hasher.verify(password, self.hashed_password)
+        if self.hashed_password:
+            return password_hasher.verify(password, self.hashed_password)
+        else:
+            raise ValueError(f"{self.__class__.__name__}.{self.__class__.check_password.__name__}: tryed to check password while the hashed_password is None")
 
     @staticmethod
     def guest() -> 'User':
-        return User(inner_uuid=None, public_uuid=None, role='guest')
+        return User(role='guest')

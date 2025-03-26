@@ -1,11 +1,11 @@
 from typing import Any
+import uuid
 
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from ..base_service import BaseTemplateService
 
 from core.review_management.domain.interfaces.i_acl import IProductRatingACL
 from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO, ProductImageDTO
-from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 
 class HomePageService(BaseTemplateService['HomePageService']):
     def __init__(self, **kwargs):
@@ -23,7 +23,7 @@ class HomePageService(BaseTemplateService['HomePageService']):
         return slick_tablet
 
     @BaseCachingMixin.cache_result("{self.user.pub_uuid}", dtos=[ProductDTO, CategoryDTO])
-    def _get_context_data(self) -> dict[str: Any]:
+    def _get_context_data(self) -> dict[str, Any]:
         context = dict()
         context['hot_deals'] = self._get_hot_deals()
         context['top_selling'] = self.get_top_selling(5)
@@ -31,14 +31,14 @@ class HomePageService(BaseTemplateService['HomePageService']):
 
         return context
     
-    def get_context_data(self) -> dict[str: Any]:
+    def get_context_data(self) -> dict[str, Any]:
         return {**self.get_header_and_footer(), **self._get_context_data()}
 
 class StorePageService(BaseTemplateService['StorePageService']):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
-    def get_context_data(self, request_data: dict[str: Any]) -> dict[str: Any]:
+    def get_context_data(self, request_data: dict[str, Any]) -> dict[str, Any]:
         context = dict()
         context.update(self.get_header_and_footer())
         context.update(self._fetch_aside_data())
@@ -46,14 +46,14 @@ class StorePageService(BaseTemplateService['StorePageService']):
 
         return context
     
-    def _fetch_aside_data(self) -> dict[str: Any]:
+    def _fetch_aside_data(self) -> dict[str, Any]:
         return {
             'category_aside': [CategoryDTO.from_entity(entity).populate_none_fields() for entity in self.category_rep.fetch_categories(limit=6)],
             'brands': [BrandDTO.from_entity(brand).populate_none_fields() for brand in self.brand_rep.fetch_brands(limit=6)],
             'tablet_aside': self.get_top_selling(3),
         }
     
-    def _process_request_data(self, request_data: dict[str: Any]) -> dict[str: Any] | dict:
+    def _process_request_data(self, request_data: dict[str, Any]) -> dict[str, Any] | dict:
         if request_data.get('method') == "POST":
             return {
                 'select_option_sort_by': request_data.get('sort_by'),
@@ -62,33 +62,19 @@ class StorePageService(BaseTemplateService['StorePageService']):
             }
         return {}
 
-    def get_session_data(self):
-            return {
-                "query": self.session.get("search-query"),
-                "category_id": self.session.pop("search-category", "0"),
-            }
-
-    def clear_session_data(self):
-        self.session.pop("search-query")
-        self.session.pop("search-category", "0")
-
-    def handle_get_request(self, **kwargs) -> list[ProductDTO]:
-        self.clear_session_data()
-        if kwargs:
-            return self._filter_products_by_slug_of_category(**kwargs)
+    def handle_get_request(self, category: str | None, query: str | None, navigation: bool = False, category_slug: str | None = None) -> list[ProductDTO]:
+        if navigation:
+            return self._filter_products_by_slug_of_category(category_slug)
+        elif category or query:
+            return self.handle_search(self._resolve_category_uuid(category), query)
         return self.get_top_selling()
 
-    def handle_session_data(self, session_data) -> list[ProductDTO]:
-        query = session_data["query"]
-        category_inner_uuid = session_data["category_public_uuid"]
-        
-        if query or category_inner_uuid:
-            return self.create_product_dtos(self.product_rep.searching_products(name=query, category_inner=category_inner_uuid))
-        
-        return self.get_top_selling()
+    def handle_search(self, category: uuid.UUID | None, query: str | None) -> list[ProductDTO]:
+        return self.create_product_dtos(self.product_rep.searching_products(query=query, category_pub=category))
     
     #@BaseCachingMixin.cache_result("{data.category}.{data.brand}", prefix="filter_products", dtos=[ProductDTO])
     def filter_products(self, data: dict[str, Any]) -> list[ProductDTO]:
+        entities = None
         if data['category'] and data['brand']:
             entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], category_pubs=data['category'], brand_pubs=data['brand'])
         elif not data['category'] and not data['brand']:
@@ -98,15 +84,25 @@ class StorePageService(BaseTemplateService['StorePageService']):
         elif not data['brand']:
             entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], category_pubs=data['category'])
 
-        return self.create_product_dtos(entities)
+        return self.create_product_dtos(entities) if entities else []
 
-    def _filter_products_by_slug_of_category(self, *args, **kwargs) -> list[ProductDTO]:
-        return self.create_product_dtos(self.product_rep.filter_by_category_slug(category_slug=kwargs['category']))
+    def _filter_products_by_slug_of_category(self, category: str | None) -> list[ProductDTO]:
+        return self.create_product_dtos(self.product_rep.filter_by_category_slug(category_slug=category))
 
 
     def post(self):
         """Whole workflow goes through get_context_data and get_queryset"""
         pass
+
+    def _resolve_category_uuid(self, category: str | None) -> uuid.UUID | None:
+        if not category:
+            return None
+    
+        try:
+            return uuid.UUID(category)
+        except ValueError:
+            return None
+
     
 class ProductPageService(BaseTemplateService['ProductPageService']):
     def __init__(
@@ -130,7 +126,7 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
             url_mapping_adapter=self.url_mapping,
         )
 
-    def get_context_data(self) -> dict[str: Any]:
+    def get_context_data(self) -> dict[str, Any]:
         header_and_footer = self.get_header_and_footer()
         product_rating_dto = self.product_rating_acl.fetch_rating_by_product_uuid(self.entity.public_uuid)
         
@@ -140,14 +136,11 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
         context['product_rating'] = product_rating_dto.populate_none_fields()
         context['stars'], context['reviews_count'] = self.product_rating_acl.fetch_rating_product_stars(product_rating_dto.pub_uuid)
 
-        # if self.is_authorized:
-        #     context['add_to_cart'] = AddToCartForm(object_entity=ProductDTO.from_entity(entity), cart_pk=request.user.cart.pk)
-        #     context['add_to_wishlist'] = AddToWishlistForm(object_entity=ProductDTO.from_entity(entity), wishlist_pk=request.user.wishlist.pk) 
+        if self.user.is_authenticated:
+            context['add_to_cart_and_wishlist'] = ProductDTO.from_entity(self.entity), self.cart_acl.fetch_cart().pub_uuid, self.wishlist_acl.fetch_wishlist()
 
         return {**header_and_footer, **context}
 
-    def post() -> None:
+    def post(self) -> None:
         pass
 
-def store_search(query: str, category_public_uuid: str, session_adapter: RedisSessionHost):
-    session_adapter.set({'search-query': query, 'search-category': category_public_uuid}, expire=30)

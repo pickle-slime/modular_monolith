@@ -11,20 +11,20 @@ class DjangoUserRepository(IUserRepository):
         try:
             return DjangoUserMapper.map_user_into_entity(UserModel.objects.get(email=email)) 
         except UserModel.DoesNotExist:
-            return UserEntity(inner_uuid=None, public_uuid=None)
+            return UserEntity.guest()
         
-    def find_by_uuid(self, inner_uuid: uuid.UUID = None, public_uuid: uuid.UUID = None) -> UserEntity:
+    def find_by_uuid(self, inner_uuid: uuid.UUID | None = None, public_uuid: uuid.UUID | None = None) -> UserEntity:
         try:
-            entity = UserEntity(inner_uuid=None, public_uuid=None)
+            entity = UserEntity()
             if inner_uuid:
                 entity = DjangoUserMapper.map_user_into_entity(UserModel.objects.get(inner_uuid=inner_uuid)) 
             elif public_uuid:
                 entity = DjangoUserMapper.map_user_into_entity(UserModel.objects.get(public_uuid=public_uuid)) 
             return entity
         except UserModel.DoesNotExist:
-            return UserEntity(inner_uuid=None, public_uuid=None)
+            return UserEntity.guest()
 
-    def save(self, user: UserEntity) -> bool:
+    def save(self, user: UserEntity) -> tuple[UserEntity, bool]:
         model, created = UserModel.objects.update_or_create(
             public_uuid=user.public_uuid,
             defaults={
@@ -35,7 +35,6 @@ class DjangoUserRepository(IUserRepository):
                 'email': user.email,
                 'date_joined': user.date_joined,
                 'last_login': user.last_login,
-                'is_authenticated': user.is_authenticated,
                 'role': user.role,
             }
         )

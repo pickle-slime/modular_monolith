@@ -1,6 +1,7 @@
 from ...domain.interfaces.i_repositories.i_shop_management import IBrandRepository, ICategoryRepository, IProductRepository
 from ...domain.interfaces.i_acls import IBrandACL, ICategoryACL, IProductACL
-from ..dtos.shop_management import CategoryDTO, ProductDTO, ProductSizeDTO
+from ..dtos.shop_management import CategoryDTO, ProductDTO
+from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 import uuid
 
@@ -15,8 +16,8 @@ class CategoryACL(ICategoryACL):
     def __init__(self, category_repository: ICategoryRepository):
         self.category_rep = category_repository
 
-    def fetch_categories(self, limit: int = None, order: str = None) -> list[CategoryDTO]:
-        return [CategoryDTO.from_entity(entity) for entity in self.category_rep.fetch_categories(limit, order)]
+    def fetch_categories(self, limit: int | None = None, order: str | None = None, url_mapping_adapter: URLHost | None = None) -> list[CategoryDTO]:
+        return [CategoryDTO.from_entity(entity, url_mapping_adapter=url_mapping_adapter) for entity in self.category_rep.fetch_categories(limit, order)]
 
 class BrandACL(IBrandACL):
     def __init__(self, brand_repository: IBrandRepository):

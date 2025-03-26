@@ -4,8 +4,8 @@ import uuid
 
 @dataclass(kw_only=True, init=False)
 class Entity:
-    inner_uuid: uuid.UUID | None = field(default_factory=uuid.uuid4)
-    public_uuid: uuid.UUID | None = field(default_factory=uuid.uuid4)
+    inner_uuid: uuid.UUID = field(default_factory=uuid.uuid4)
+    public_uuid: uuid.UUID = field(default_factory=uuid.uuid4)
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, type(self)):

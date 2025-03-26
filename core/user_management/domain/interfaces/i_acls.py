@@ -6,7 +6,7 @@ import uuid
 
 class IUserACL(ABC):
     @abstractmethod
-    def fetch_by_uuid(self, inner_uuid: uuid.UUID = None, public_uuid: uuid.UUID = None) -> UserDTO:
+    def fetch_by_uuid(self, inner_uuid: uuid.UUID | None = None, public_uuid: uuid.UUID | None = None) -> UserDTO:
         pass
 
     @abstractmethod

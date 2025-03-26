@@ -1,4 +1,5 @@
 from ...application.dtos.shop_management import CategoryDTO, ProductDTO
+from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 from abc import ABC, abstractmethod
 import uuid
@@ -10,7 +11,7 @@ class IProductACL(ABC):
 
 class ICategoryACL(ABC):
     @abstractmethod
-    def fetch_categories(self, limit: int = None, order: str = None) -> list[CategoryDTO]:
+    def fetch_categories(self, limit: int | None = None, order: str | None = None, url_mapping_adapter: URLHost | None = None) -> list[CategoryDTO]:
         pass
 
 class IBrandACL(ABC):
