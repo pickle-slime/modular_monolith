@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.views import View
 
 from core.notification_management.application.services.internal.notification_management import NewsLetterService
+from core.notification_management.infrastructure.repositories.notification_management import DjangoNewsLetterRepsoitory
 
 from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.user_management.presentation.acl_factory import UserManagementACLFactory
@@ -9,7 +10,7 @@ from core.user_management.presentation.acl_factory import UserManagementACLFacto
 import json
 
 class NewsLetterView(View):
-    service = NewsLetterService(RedisSessionAdapter(RedisAdapter()), UserManagementACLFactory.create_user_acl())
+    service = NewsLetterService(RedisSessionAdapter(RedisAdapter()), UserManagementACLFactory.create_user_acl(), newsletter_repository=DjangoNewsLetterRepsoitory())
 
     def resolve_session_key(self, session_key: str):
         self.service.session.hand_over_session_key(session_key)

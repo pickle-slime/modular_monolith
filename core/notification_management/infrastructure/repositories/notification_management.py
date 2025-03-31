@@ -1,21 +1,24 @@
 from core.notification_management.domain.interfaces.notification_management import INewsLetterRepository
-from core.notification_management.domain.entitites.notification_management import NewsLetter as NewsLetterEntity
+from core.notification_management.domain.entities.notification_management import NewsLetter as NewsLetterEntity
+from ..mappers.notification_management import NewsLetterMapper
 
 from core.notification_management.presentation.notification_management.models import CommonMailingList
 
 from typing import Iterator
+import uuid
 
 class DjangoNewsLetterRepsoitory(INewsLetterRepository):
     def fetch_iterator(self) -> Iterator[NewsLetterEntity]:
         pass
 
-    def save(self, newsletter_entity: NewsLetterEntity) -> bool:
-        if not newsletter_entity or not isinstance(newsletter_entity, NewsLetterEntity):
-            return False
+    def create(self, email: str, user_public_uuid: uuid.UUID | None = None) -> NewsLetterEntity | None:
+        if not email:
+            return None
         
         try:
-            CommonMailingList.objects.update_or_create(public_uuid=newsletter_entity.public_uuid, defaults=dict(newsletter_entity))
+            model = CommonMailingList.objects.create(email=email, user_public_uuid=user_public_uuid)
+            entity = NewsLetterMapper.map_into_entity(model)
         except:
-            return False
+            return None
         
-        return True
+        return entity

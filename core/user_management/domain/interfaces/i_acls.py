@@ -1,5 +1,4 @@
 from ...application.dtos.user_management import UserDTO
-from ..entities.user_management import User as UserEntity
 
 from abc import ABC, abstractmethod
 import uuid
@@ -10,5 +9,5 @@ class IUserACL(ABC):
         pass
 
     @abstractmethod
-    def guest(self) -> UserEntity:
+    def guest(self) -> UserDTO:
         pass

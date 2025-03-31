@@ -1,7 +1,6 @@
 from ..external.notification_management import MailchipService
 from core.notification_management.application.dtos.acl_dtos import ACLUserDTO
-
-from core.notification_management.presentation.notification_management.models import CommonMailingList
+from core.notification_management.domain.interfaces.notification_management import INewsLetterRepository
 
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.user_management.domain.interfaces.i_acls import IUserACL
@@ -12,7 +11,7 @@ import requests
 class NewsLetterService:
     mailchimp = MailchipService()
 
-    def __init__(self, session_adapter: RedisSessionHost, user_acl: IUserACL, newsletter_repository = None):
+    def __init__(self, session_adapter: RedisSessionHost, user_acl: IUserACL, newsletter_repository = INewsLetterRepository):
         self.session = session_adapter
         self.user_acl = user_acl
         self.newsletter_rep = newsletter_repository
@@ -32,19 +31,20 @@ class NewsLetterService:
         return self._is_authorized
 
     def newsletter_service(self, data: dict[str, Any]) -> tuple[dict, int]:
-        if not self.is_authorized:
-            return {"status": "error", "message": "Log in for a subscribe to email notification"}, 401
-        elif not "email" in data:
+        if not "email" in data:
             return {"status": "error", "message": "Insert an email"}, 400
-        elif data["email"] != self.user.email:
-            return {"status": "error", "message": f"Incorrect email address: {data["email"]}"}, 400
         else:
+            first_name = None
+            last_name = None
+            if data["email"] == self.user.email:
+                first_name = self.user.first_name
+                last_name = self.user.last_name
             try:
-                status_code, respond_data = self.mailchimp.subscribe_user_to_mailchimp(email=data["email"], first_name=data["Fname"], last_name=data["Lname"])
+                status_code, respond_data = self.mailchimp.subscribe_user_to_mailchimp(email=data["email"], first_name=first_name, last_name=last_name)
             except requests.exceptions.Timeout:
                 return {"status": "error", "message": "timed out"}, 504
 
             if status_code == 200:
-                CommonMailingList.objects.create(email=data["email"], user=request.user)
+                self.newsletter_rep.create(email=data["email"], user=self.user.pub_uuid)
         
         return respond_data, status_code

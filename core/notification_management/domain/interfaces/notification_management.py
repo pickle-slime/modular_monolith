@@ -1,7 +1,8 @@
-from ..entitites.notification_management import NewsLetter as NewsLetterEntity
+from ..entities.notification_management import NewsLetter as NewsLetterEntity
 
 from abc import ABC, abstractmethod
 from typing import Iterator
+import uuid
 
 class INewsLetterRepository(ABC):
     @abstractmethod
@@ -9,5 +10,5 @@ class INewsLetterRepository(ABC):
         pass
     
     @abstractmethod
-    def save(self, newsletter_entity: NewsLetterEntity) -> bool:
+    def create(self, email: str, user_public_uuid: uuid.UUID | None = None) -> NewsLetterEntity | None:
         pass

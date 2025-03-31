@@ -76,7 +76,7 @@ class MailchipService:
             return campaign_response  # Handle campaign creation error
 
     @staticmethod
-    def subscribe_user_to_mailchimp(email, first_name='', last_name=''):
+    def subscribe_user_to_mailchimp(email, first_name: str | None = None, last_name: str | None = None):
         api_url = f"https://{config.MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/{config.MAILCHIMP_AUDIENCE_ID}/members"
         api_key = config.MAILCHIMP_API_KEY
 
@@ -84,8 +84,8 @@ class MailchipService:
             "email_address": email,
             "status": "subscribed", 
             "merge_fields": {
-                "FNAME": first_name,
-                "LNAME": last_name
+                "FNAME": first_name if first_name else "",
+                "LNAME": last_name if last_name else "",
             }
         }
 
@@ -104,6 +104,7 @@ class MailchipService:
             
             # Handle potential Mailchimp API errors
             else:
+                print("qwer")
                 error_message = response_data.get("title")
                 return response.status_code, {"status": "error", "message": error_message}
 
