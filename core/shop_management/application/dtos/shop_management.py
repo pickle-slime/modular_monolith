@@ -43,9 +43,6 @@ class CategoryDTO(BaseEntityDTO):
             get_absolute_url=absolute_url
         )
 
-    class Config:
-        from_attributes = True
-
 class BrandDTO(BaseEntityDTO):
     pub_uuid: uuid.UUID | None = Field(default=None)
     name: str | None = Field(default=None, min_length=2, max_length=100, title="Brand Name")
@@ -86,6 +83,7 @@ class BrandDTO(BaseEntityDTO):
 
 class ProductSizeDTO(BaseEntityDTO):
     pub_uuid: uuid.UUID | None = Field(default=None)
+    size: str | None = Field(default=None)
     
     length: Decimal | None = Field(default=None, title="Length")
     width: Decimal | None = Field(default=None, title="Width")
@@ -137,11 +135,8 @@ class ProductImageDTO(BaseEntityDTO):
     @classmethod
     def from_entities(cls, entities: list[ProductImageEntity] | ProductImagesEntityList[ProductImageEntity]) -> list['ProductImageDTO']:
         return [cls.from_entity(entity).populate_none_fields() for entity in entities]
-    
-    class Config:
-        from_attributes = True
 
-class ProductDTO(BaseEntityDTO):
+class ProductDTO(BaseEntityDTO['ProductDTO']):
     pub_uuid: uuid.UUID | None = Field(default=None)
 
     name: str | None = Field(default=None, min_length=2, max_length=100, title="Product Name")
@@ -229,6 +224,4 @@ class ProductDTO(BaseEntityDTO):
     @classmethod
     def from_entities(cls, entities: list[ProductEntity]) -> list['ProductDTO']:
         return [cls.from_entity(entity).populate_none_fields() for entity in entities]
-
-    class Config:
-        from_attributes = True
+    

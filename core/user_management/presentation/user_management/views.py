@@ -1,10 +1,9 @@
 from django.forms import BaseModelForm
 from django.shortcuts import redirect
-from django.http import HttpResponse, JsonResponse
 from django.views.generic import CreateView
-from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect, HttpResponseNotAllowed
 
 from core.utils.presentation.session_helper import inject_session_dependencies_into_view
 from core.utils.infrastructure.adapters.dj_url_mapping import DjangoURLAdapter
@@ -17,6 +16,7 @@ from core.user_management.application.services.internal.user_management import A
 from core.user_management.infrastructure.repositories.user_management import DjangoUserRepository
 from core.user_management.infrastructure.adapters.jwtoken import JWTokenAdapter
 from core.utils.application.base_view_mixin import BaseViewMixin
+from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.shop_management.presentation.acl_factory import ShopManagementACLFactory
 from core.shop_management.presentation.shop_management.forms import SearchForm
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
@@ -33,6 +33,7 @@ class RegisterUser(CreateView, BaseViewMixin):
         "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
     }
     adapter_classes = {
+        "password_hasher_adapter": DjangoPasswordHasherAdapter,
         "token_adapter": JWTokenAdapter,
         "session_adapter": None,
         "url_mapping_adapter": DjangoURLAdapter,
@@ -57,31 +58,37 @@ class RegisterUser(CreateView, BaseViewMixin):
         return service_context
     
     def form_valid(self, form: BaseModelForm):
-        if self.request.method == 'POST':
-            user = form.save()
-            email = form.cleaned_data.get("username")
-            raw_password = form.cleaned_data.get("password")
-            refresh_token, access_token = self.service.authenticate(email, raw_password, DjangoPasswordHasherAdapter())
-            user.backend = 'user_management.backends.EmailBackend'
-            response = super().form_valid(form)
-            response.set_cookie(
-                "refresh_token",
-                value=refresh_token,
-                httponly=True,
-                secure=True,
-                samesite="Strict"
-            )
-            self.request.new_access_token = access_token
-        return super().form_valid(form)
+        if self.request.method != 'POST':
+            return HttpResponseNotAllowed(permitted_methods=["POST"])
+
+        raw_data = self.adjust_form_data(form.cleaned_data)
+
+        user_dto, refresh_token, access_token = self.service.register_user(raw_data)
+        self.object = user_dto
+        
+        response = HttpResponseRedirect(self.get_success_url())
+        response.set_cookie(
+            "refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="Strict"
+        )
+        self.request.new_access_token = access_token
+        return response
+
+    def adjust_form_data(self, data) -> dict[str, Any]:
+        return {
+            "username": data.get("username"),
+            "email": data.get("email"),
+            "password": data.get("password1"),
+            "first_name": data.get("first_name"),
+            "last_name": data.get("last_name"),
+        }
     
-    def form_invalid(self, form: BaseModelForm) -> HttpResponse:
-        if self.request.method == 'POST':
-            return JsonResponse({'status': 'error', 'message': f'{form.errors}'})
-        return super().form_invalid(form)
-    
-    def get(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         inject_session_dependencies_into_view(self, request)
-        return super().get(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
     
 class LoginUser(LoginView, BaseViewMixin):
     form_class = LoginUserForm
@@ -92,6 +99,7 @@ class LoginUser(LoginView, BaseViewMixin):
         "wishlist_acl": CartManagementACLFactory.create_wishlist_acl(),
     }
     adapter_classes = {
+        "password_hasher_adapter": DjangoPasswordHasherAdapter,
         "token_adapter": JWTokenAdapter,
         "session_adapter": None,
         "url_mapping_adapter": DjangoURLAdapter,
@@ -117,11 +125,9 @@ class LoginUser(LoginView, BaseViewMixin):
     def form_valid(self, form):
         response = super().form_valid(form)
         if self.request.method == 'POST':
-            user = form.get_user()
             email = form.cleaned_data.get("username")
             raw_password = form.cleaned_data.get("password")
-            refresh_token, access_token = self.service.authenticate(email, raw_password, DjangoPasswordHasherAdapter())
-            user.backend = 'user_management.backends.EmailBackend'
+            refresh_token, access_token = self.service.authenticate(email, raw_password)
             response.set_cookie(
                 key="refresh_token",
                 value=refresh_token,
@@ -130,23 +136,19 @@ class LoginUser(LoginView, BaseViewMixin):
                 samesite="Strict"
             )
             self.request.new_access_token = access_token
-            login(self.request, user)
         return response
-
-    def form_invalid(self, form: BaseModelForm):
-        if self.request.method == 'POST':
-            return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
-        return super().form_invalid(form)
 
     def get_success_url(self):
         return reverse_lazy('home')
     
-    def get(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         inject_session_dependencies_into_view(self, request)
-        return super().get(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
     
 def logout_user(request):
-    logout(request)
+    session = RedisSessionAdapter(RedisAdapter(), request.session_key)
+    session.delete("user_public_uuid")
+
     request.jwt = {"authorized": False, "error": None, "new_access_token": None}
     response = redirect('home')
     response.delete_cookie("access_token")

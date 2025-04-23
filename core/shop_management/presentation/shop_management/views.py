@@ -94,7 +94,7 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
         query = self.request.GET.get("query", None)
         return self.service.handle_get_request(category, query, navigation, self.kwargs.get("category", None))
    
-    def post(self, request, *args, **kwargs):
+    def post(self):
         self.object_list = self.get_queryset()
         context = self.get_context_data()
 
@@ -125,8 +125,8 @@ class ProductPage(DetailView, BaseViewMixin):
         service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
         if self.service.user.is_authenticated:
             object_entity, cart_uuid, wishlist_uuid = service_context["add_to_cart_and_wishlist"]
-            service_context["add_to_cart"] = AddToCartForm(object_entity=object_entity, cart_uuid=cart_uuid)
-            service_context["add_to_wishlist"] = AddToWishlistForm(object_entity=object_entity, wishlist_uuid=wishlist_uuid)
+            service_context["add_to_cart"] = AddToCartForm(object_dto=object_entity, cart_uuid=cart_uuid)
+            service_context["add_to_wishlist"] = AddToWishlistForm(object_dto=object_entity, wishlist_uuid=wishlist_uuid)
 
         return {**context, **service_context}
     

@@ -1,9 +1,12 @@
 from core.user_management.domain.interfaces.hosts.jwtoken import TokenHost
+from core.user_management.domain.entities.user_management import User as UserEntity
+from core.user_management.application.dtos.user_management import UserDTO
 from ..base_service import BaseTemplateService
 
 from core.utils.application.base_service import Service
 
-from typing import Generic
+from typing import Generic, Any
+from datetime import datetime
 
 class AuthenticationUserMiddlewareService(Generic[Service]):
     def __init__(self, token_adapter: TokenHost):
@@ -25,7 +28,30 @@ class AuthenticationUserMiddlewareService(Generic[Service]):
     
     
 class AuthenticationRegisterUserService(BaseTemplateService['AuthenticationRegisterUserService']):
-    pass
+    def register_user(self, raw_user_data: dict[str, Any]) -> tuple[UserDTO, str, str]:
+        actual_pasword = raw_user_data["password"]
+        raw_user_data["password"] = self.password_hasher.hash(raw_user_data["password"]) 
+
+        user_entity = self.create_user_entity(raw_user_data)
+
+        user_entity = self.user_rep.create(user_entity)
+        
+        refresh_token, access_token = self.authenticate(email=user_entity.email, password=actual_pasword)
+
+        print(user_entity)
+        return UserDTO.from_entity(user_entity), refresh_token, access_token
+
+    def create_user_entity(self, user_data: dict[str, Any]) -> UserEntity:
+        return UserEntity(
+                username=user_data["username"],
+                email=user_data["email"],
+                hashed_password=user_data["password"],
+                first_name=user_data["first_name"],
+                last_name=user_data["last_name"],
+                date_joined=datetime.now(),
+                last_login=datetime.now(),
+                role="user",
+            )
 
 class AuthenticationLoginUserService(BaseTemplateService['AuthenticationLoginUserService']):
     pass

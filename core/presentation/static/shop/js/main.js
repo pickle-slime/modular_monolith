@@ -578,10 +578,10 @@
 	}
 
 	function updateReviews(reviews) {
-		let reviewsContainer = $(".reviews")
-		reviewsContainer.empty()
+		LET REVIewsContainer = $(".reviews")
+		REVIEWSContainer.empty()
 
-		reviews.forEach(element => {
+		REVIEWS.forEach(element => {
 			let html = '<li>' +
 				'<div class="review-heading">' +
 				'<h5 class="name">' + element["user__username"] + '</h5>' +

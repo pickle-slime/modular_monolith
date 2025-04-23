@@ -1,6 +1,6 @@
 from core.user_management.domain.entities.user_management import User as UserEntity
+from core.user_management.domain.value_objects.user_management import RoleField
 from core.user_management.presentation.user_management.models import CustomUser as UserModel
-
 
 class DjangoUserMapper:
     @staticmethod
@@ -15,4 +15,11 @@ class DjangoUserMapper:
             last_name=model.last_name,
             date_joined=model.date_joined,
             last_login=model.last_login,
+            role=RoleField(DjangoUserMapper.resolve_django_roles(model))
         )
+
+    @staticmethod
+    def resolve_django_roles(model: UserModel) -> str:
+        if model.is_superuser == True: return 'admin'
+        if model.is_staff == True: return 'manager'
+        return 'customer'

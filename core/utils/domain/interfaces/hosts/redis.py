@@ -15,7 +15,7 @@ class RedisHost(BaseHost):
         pass
 
     @abstractmethod
-    def hset(self, hash_name: str, key: str, value, expire: int = None):
+    def hset(self, hash_name: str, key: str, value, expire: int | None = None):
         pass
 
     @abstractmethod

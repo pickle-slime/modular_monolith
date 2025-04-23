@@ -1,8 +1,6 @@
 from django.db import models
 from django.urls import reverse
 
-from .managers import ProductRatingManager
-
 import uuid
 
 class ProductRating(models.Model):
@@ -10,9 +8,6 @@ class ProductRating(models.Model):
     public_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     rating = models.DecimalField(max_digits=3, decimal_places=1, editable=False, null=True)
     product = models.OneToOneField('shop_management.Product', on_delete=models.CASCADE, related_name='product_rating')
-
-    #objects = ProductRatingManager()
-
 
 class Review(models.Model):
     '''
@@ -27,13 +22,4 @@ class Review(models.Model):
     product_rating = models.ForeignKey(ProductRating, on_delete=models.CASCADE, related_name='reviews')
 
     def get_absolute_url(self):
-        return reverse('review', kwargs={'category': self.product.category.slug, 'product': self.product.slug})
-
-    def delete(self, *args, **kwargs):
-        ProductRating.objects.update_rating(self.product_rating)
-        super().delete(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        ProductRating.objects.update_rating(self.product_rating)
- 
+        return reverse('review', kwargs={'category': self.product_rating.product.category.slug, 'product': self.product_rating.product.slug})

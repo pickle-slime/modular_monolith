@@ -4,6 +4,7 @@ from core.user_management.presentation.user_management.models import CustomUser 
 
 from ..mappers.user_management import DjangoUserMapper
 
+from core.exceptions import UserAlreadyExistsError
 import uuid
 
 class DjangoUserRepository(IUserRepository):    
@@ -32,10 +33,30 @@ class DjangoUserRepository(IUserRepository):
                 'public_uuid': user.public_uuid,
                 'username': user.username,
                 'password': user.hashed_password,
+                'fisrt_name': user.first_name,
+                'last_name': user.last_name,
                 'email': user.email,
                 'date_joined': user.date_joined,
                 'last_login': user.last_login,
-                'role': user.role,
             }
         )
         return DjangoUserMapper.map_user_into_entity(model), created
+
+    def create(self, user: UserEntity) -> UserEntity:
+        existing = UserModel.objects.filter(public_uuid=user.public_uuid).first()
+        if existing:
+            raise UserAlreadyExistsError("User with this UUID already exists.")
+        
+        model = UserModel.objects.create(
+            public_uuid=user.public_uuid,
+            inner_uuid=user.inner_uuid,
+            username=user.username,
+            password=user.hashed_password,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+            date_joined=user.date_joined,
+            last_login=user.last_login,
+        )
+
+        return DjangoUserMapper.map_user_into_entity(model)

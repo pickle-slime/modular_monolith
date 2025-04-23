@@ -8,11 +8,11 @@ import uuid
 
 class IWishlistRepository(BaseRepository):
     @abstractmethod
-    def fetch_wishlist_by_user(self, public_uuid: uuid.UUID = None) -> WishlistEntity:
+    def fetch_wishlist_by_user(self, public_uuid: uuid.UUID | None = None) -> WishlistEntity:
         pass
 
     @abstractmethod
-    def save(self, wishlist: WishlistEntity = None, wishlist_items: list[WishlistItemEntity] = None) -> None:
+    def save(self, wishlist: WishlistEntity | None = None, wishlist_items: list[WishlistItemEntity] | None = None) -> None:
         pass
 
 class IWishlistItemRepository(BaseRepository):

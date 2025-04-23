@@ -43,7 +43,7 @@ class JWTMiddleware:
             except (IndexError, ValueError) as e:
                 request.jwt["error"] = str(e)
 
-        elif refresh_token:
+        if refresh_token:
             try:
                 new_access_token = self.token_service.refresh_access_token(refresh_token)
                 if not new_access_token:

@@ -64,6 +64,7 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
         json_encoders = {uuid.UUID: str}
         validate_assignment = True 
         populate_by_name=True
+        from_attributes = True
 
         _defaults = {
             str: "",
@@ -75,7 +76,7 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
             bool: False,
         }
 
-class BaseEntityDTO(BaseDTO[DTO]):
+class BaseEntityDTO(BaseDTO[DTO], Generic[DTO]):
     @classmethod
     @abstractmethod
     def from_entity(cls: type[DTO], entity: EntityType) -> DTO:

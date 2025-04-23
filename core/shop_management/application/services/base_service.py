@@ -16,14 +16,14 @@ from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 from typing import TypeVar, Generic
 import uuid
 
-T = TypeVar("T")
+T = TypeVar("T", bound=object)
 
 class BaseService(Generic[Service], BaseCachingMixin):
     def __init__(
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_acl: IUserACL | type[IUserACL],
-        ) -> 'BaseService':
+        ):
         super().__init__(session_adapter)
         self.session = self._resolve_dependency(session_adapter)
         self.user_acl = self._resolve_dependency(user_acl)

@@ -16,13 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 
 import debug_toolbar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('api.v1.urls')),
 
+    path('', lambda request: redirect("home/")),
     path('', include('core.shop_management.presentation.shop_management.urls')),
     path('', include('core.user_management.presentation.user_management.urls')),
     path('', include('core.cart_management.presentation.cart_management.urls')),

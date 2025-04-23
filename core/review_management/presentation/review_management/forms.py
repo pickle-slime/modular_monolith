@@ -1,7 +1,5 @@
 from django import forms
 
-from .models import Review
-
 class ReviewForm(forms.Form):
     text = forms.CharField(max_length=500, required=True)
     rating = forms.IntegerField(min_value=1, max_value=5, required=True)

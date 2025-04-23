@@ -16,3 +16,8 @@ class IUserRepository(BaseRepository):
     @abstractmethod
     def save(self, user: UserEntity) -> tuple[UserEntity, bool]:
         pass
+
+    @abstractmethod
+    def create(self, user: UserEntity) -> UserEntity:
+        pass
+

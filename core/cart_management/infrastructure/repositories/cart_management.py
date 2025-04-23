@@ -20,7 +20,7 @@ class DjangoCartRepository(ICartRepository):
         if raw_cart:
             return RedisCartDTO(**raw_cart).to_entity()
         else:
-            return CartEntity(inner_uuid=None, public_uuid=None)
+            return CartEntity()
         
     def save(self, cart_entity: CartEntity) -> None:
         dto = RedisCartDTO.from_entity(cart_entity)
@@ -28,16 +28,16 @@ class DjangoCartRepository(ICartRepository):
 
 
 class DjangoWishlistRepository(IWishlistRepository):
-    def fetch_wishlist_by_user(self, public_uuid: uuid.UUID = None) -> WishlistEntity:
+    def fetch_wishlist_by_user(self, public_uuid: uuid.UUID | None = None) -> WishlistEntity:
         wishlist = WishlistModel.objects.filter(customer__public_uuid=public_uuid).first()
             
         if wishlist:
             return DjangoWishlistMapper.map_wishlist_into_entity(wishlist)
         else:
-            return WishlistEntity(inner_uuid=None, public_uuid=None)
+            return WishlistEntity()
 
     @transaction.atomic  
-    def save(self, wishlist: WishlistEntity = None, wishlist_items: list[WishlistItemEntity] = None) -> None:
+    def save(self, wishlist: WishlistEntity | None = None, wishlist_items: list[WishlistItemEntity] | None = None) -> None:
         if wishlist:
             wishlist_data = dict(wishlist)
             wishlist_model, created = WishlistModel.objects.update_or_create(

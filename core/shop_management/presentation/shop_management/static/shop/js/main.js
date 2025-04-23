@@ -572,26 +572,28 @@
 	}
 
 	function updateReviews(reviews) {
-		let reviewsContainer = $(".reviews")
-		reviewsContainer.empty()
+		if (reviews) {
+			let reviewsContainer = $(".reviews")
+			reviewsContainer.empty()
 
-		reviews.forEach(element => {
-			let html = '<li>' +
-				'<div class="review-heading">' +
-				'<h5 class="name">' + element["user__username"] + '</h5>' +
-				'<p class="date">' + element["date_created"] + '</p>' +
-				'<div class="review-rating">' +
-				'<i class="fa fa-star"></i>'.repeat(Math.round(element["rating"])) +
-				'<i class="fa fa-star-o"></i>'.repeat(5 - Math.round(element["rating"])) +
-				'</div>' +
-				'</div>' +
-				'<div class="review-body">' +
-				'<p class="random-text">' + element["text"] + '</p>' +
-				'</div>' +
-				'</li>';
+			reviews.forEach(element => {
+				let html = '<li>' +
+					'<div class="review-heading">' +
+					'<h5 class="name">' + element["user__username"] + '</h5>' +
+					'<p class="date">' + element["date_created"] + '</p>' +
+					'<div class="review-rating">' +
+					'<i class="fa fa-star"></i>'.repeat(Math.round(element["rating"])) +
+					'<i class="fa fa-star-o"></i>'.repeat(5 - Math.round(element["rating"])) +
+					'</div>' +
+					'</div>' +
+					'<div class="review-body">' +
+					'<p class="random-text">' + element["text"] + '</p>' +
+					'</div>' +
+					'</li>';
 
-			reviewsContainer.append(html)
-		});
+				reviewsContainer.append(html)
+			});
+		}
 	}
 
 	function updatePagination(data) {

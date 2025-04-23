@@ -61,6 +61,7 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
         cart_acl: ICartACL,
         wishlist_acl: IWishlistACL,
 
+        password_hasher_adapter: PasswordHasherHost,
         token_adapter: TokenHost,
         url_mapping_adapter: URLHost,
         **kwargs,
@@ -71,6 +72,7 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
         self.cart_acl = cart_acl
         self.wishlist_acl = wishlist_acl
 
+        self.password_hasher = password_hasher_adapter
         self.token_adapter = token_adapter
         self.url_mapping_adapter = url_mapping_adapter
 
@@ -87,10 +89,10 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
             self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.public_uuid)
         return self.context
     
-    def authenticate(self, email, password, password_hasher: PasswordHasherHost) -> tuple[str, str]:
+    def authenticate(self, email, password) -> tuple[str, str]:
         ''' Returns refresh token and access token accordingly '''
         user = self.user_rep.find_by_email(email)
-        if not user or not user.check_password(password, password_hasher):
+        if not user or not user.check_password(password, self.password_hasher):
             raise ValueError("Invalid credentials")
         refresh_token = self.token_adapter.refresh_token(user.public_uuid)
         access_token = self.token_adapter.generate_access_token(user.public_uuid)

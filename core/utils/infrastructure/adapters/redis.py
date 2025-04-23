@@ -12,7 +12,7 @@ class RedisAdapter(RedisHost):
     _instance = None
     _initialized = False
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -25,7 +25,7 @@ class RedisAdapter(RedisHost):
     def hget(self, hash_name: str, key: str):
         return self.redis_client.hget(hash_name, key)
 
-    def hset(self, hash_name: str, key: str, value, expire: int = None):
+    def hset(self, hash_name: str, key: str, value, expire: int | None = None):
         self.redis_client.hset(hash_name, key, value)
 
         if expire: self.expire(hash_name, expire)
@@ -44,7 +44,7 @@ class RedisSessionAdapter(RedisSessionHost):
         self._session_key = session_key
 
     @property
-    def session_key(self) -> None:
+    def session_key(self) -> str:
         if not self._session_key:
             self._session_key = secrets.token_hex(8)
         return self._session_key
@@ -66,8 +66,6 @@ class RedisSessionAdapter(RedisSessionHost):
         session_data = self.redis_adapter.hget(self._get_session_key(), key)
         if session_data:
             return self._deserialize_data(session_data)
-            # if isinstance(data, dict):
-            #     return data.get(key, default)
         return default
 
     def pop(self, key: str, default: Any = None) -> Any:
@@ -76,15 +74,6 @@ class RedisSessionAdapter(RedisSessionHost):
             data = self._deserialize_data(session_data)
             self.redis_adapter.hdel(self._get_session_key(), key)
             return data
-            # if isinstance(data, dict):
-            #     value = data.pop(key, default)
-            #     self.redis_adapter.hset(
-            #         self._get_session_key(),
-            #         key,
-            #         pickle.dumps(data),
-            #         expire=SESSIONS_EXPIRY,
-            #     )
-            #     return value
         return default
 
     def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY):

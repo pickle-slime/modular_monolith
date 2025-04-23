@@ -104,7 +104,6 @@ class MailchipService:
             
             # Handle potential Mailchimp API errors
             else:
-                print("qwer")
                 error_message = response_data.get("title")
                 return response.status_code, {"status": "error", "message": error_message}
 

@@ -1,10 +1,12 @@
 from ...domain.entities.user_management import User as UserEntity
+from ...domain.value_objects.user_management import RoleField
 
 from core.utils.application.base_dto import BaseEntityDTO
 
-from pydantic import Field, model_validator
-import uuid
+from pydantic import Field, model_validator, field_validator
+from typing import Literal
 from datetime import datetime
+import uuid
 
 class UserDTO(BaseEntityDTO["UserDTO"]):
     pub_uuid: uuid.UUID | None = Field(default=None)
@@ -14,7 +16,7 @@ class UserDTO(BaseEntityDTO["UserDTO"]):
     last_name: str | None = Field(default=None, min_length=2, max_length=225, title="Last Name")
     date_joined: datetime | None = Field(default=None, title="Date joined")
     last_login: datetime | None = Field(default=None, title="Last Login")
-    role: str | None = Field(default=None, examples=["user", "guest", "admin"], title="Role")
+    role: Literal['customer', 'guest', 'admin', 'manager'] | None = Field(default=None, examples=["user", "guest", "admin"], title="Role")
 
     @model_validator(mode="before")
     def validate_pub_uuid(cls, values):
@@ -22,6 +24,12 @@ class UserDTO(BaseEntityDTO["UserDTO"]):
         if role == "guest":
             values['pub_uuid'] = None
         return values
+
+    @field_validator("role", mode="before")
+    def validate_role(cls, value):
+        if isinstance(value, RoleField):
+            cls.role = str(value)
+        return str(value)
 
     @classmethod
     def from_entity(cls, entity: UserEntity) -> 'UserDTO':

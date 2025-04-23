@@ -20,7 +20,7 @@ class DjangoProductRatingRepository(IProductRatingRepository):
             reviews = self.fetch_reviews_of_product_rating(model.public_uuid)
             return ProductRatingMapper.map_product_rating_into_entity(model, reviews)
         except ProductRatingModel.DoesNotExist:
-            return ProductRatingEntity(inner_uuid=None, public_uuid=None)
+            return ProductRatingEntity()
 
     def fetch_reviews_of_product_rating(self, product_rating_public_uuid: uuid.UUID, amount: int | None = None) -> ReviewCollection[ReviewEntity]:
         try:
