@@ -23,6 +23,5 @@ class ProductPageReviewsService:
         
     def load_reviews(self, product_rating_pub_uuid: uuid.UUID | None, page_number: int) -> dict[str, Any]:
         paginated_reviews = self.pr_rep.fetch_paginated_reviews(product_rating_pub_uuid, page_number)
-        print(paginated_reviews)
 
         return ReviewCollectionDTO.from_paginated_data(paginated_reviews).model_dump(mode="json")

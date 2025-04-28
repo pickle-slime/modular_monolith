@@ -3,7 +3,6 @@
 import os
 import sys
 
-
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.presentation.electro.settings')
@@ -29,4 +28,10 @@ def main():
 
 
 if __name__ == '__main__':
+    if "--debugpy" in sys.argv:
+        import debugpy
+        debugpy.listen(("127.0.0.1", 5678))
+        print("waiting for debuger to attach")
+        debugpy.wait_for_client()
+        sys.argv.remove("--debugpy")
     main()

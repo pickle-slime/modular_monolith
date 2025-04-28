@@ -38,7 +38,6 @@ class AuthenticationRegisterUserService(BaseTemplateService['AuthenticationRegis
         
         refresh_token, access_token = self.authenticate(email=user_entity.email, password=actual_pasword)
 
-        print(user_entity)
         return UserDTO.from_entity(user_entity), refresh_token, access_token
 
     def create_user_entity(self, user_data: dict[str, Any]) -> UserEntity:
