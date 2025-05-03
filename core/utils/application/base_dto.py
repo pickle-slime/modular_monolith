@@ -65,6 +65,7 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
         validate_assignment = True 
         populate_by_name=True
         from_attributes = True
+        population_by_name = True
 
         _defaults = {
             str: "",

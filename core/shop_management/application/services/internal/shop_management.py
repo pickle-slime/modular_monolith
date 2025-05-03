@@ -134,7 +134,9 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
         context['product_images'] = ProductImageDTO.from_entities(self.entity.images)
         context['related_products'] = self.create_product_dtos(self.product_rep.fetch_related_products(brand=self.entity.brand.inner_uuid, limit=10, select_related='category'))
         context['product_rating'] = product_rating_dto.populate_none_fields()
-        context['stars'], context['reviews_count'] = self.product_rating_acl.fetch_rating_product_stars(product_rating_dto.pub_uuid)
+        context['stars'], context['reviews_avg'] = self.product_rating_acl.fetch_rating_product_stars(product_rating_dto.pub_uuid)
+        context['reviews_count'] = self.product_rating_acl.fetch_reviews_count(product_rating_dto.pub_uuid)
+
 
         if self.user.is_authenticated:
             context['add_to_cart_and_wishlist'] = ProductDTO.from_entity(self.entity), self.cart_acl.fetch_cart().pub_uuid, self.wishlist_acl.fetch_wishlist()

@@ -79,7 +79,7 @@ class IProductRepository(BaseRepository):
     @abstractmethod 
     def fetch_related_products(
         self,
-        brand: str,
+        brand: uuid.UUID,
         limit: int = 1,
         select_related: Optional[str] = None
     ) -> list[ProductEntity]:

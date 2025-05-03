@@ -10,7 +10,11 @@ class IProductRatingACL(ABC):
         pass
 
     @abstractmethod
-    def fetch_rating_product_stars(self, product_rating_public_uuid) -> tuple[list[Any | int], int]:
+    def fetch_rating_product_stars(self, product_rating_public_uuid: uuid.UUID) -> tuple[list[Any | int], int]:
+        pass
+
+    @abstractmethod
+    def fetch_reviews_count(self, product_rating_public_uuid: uuid.UUID) -> int:
         pass
 
 class IReviewACL(ABC):

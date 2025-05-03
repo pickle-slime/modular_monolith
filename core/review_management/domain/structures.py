@@ -1,12 +1,13 @@
 from core.utils.domain.structures import BaseEntityList
-from core.review_management.domain.entities.review_management import Review as ReviewEntity
+from core.review_management.domain.entities.review_management import Review as ReviewEntity, ReviewEntityType
 
-from typing import Optional
+from typing import Generic, Optional, Iterable
 
 MAX_REVIEWS = 100
 
-class ReviewCollection(BaseEntityList):
-    def __post_init__(self):
+class ReviewCollection(Generic[ReviewEntityType], BaseEntityList[ReviewEntity]):
+    def __init__(self, entities: Iterable[ReviewEntity]):
+        super().__init__(entities)
         self.validate_length(max_length=MAX_REVIEWS)
 
     def validate_length(self, max_length: Optional[int] = None) -> None:

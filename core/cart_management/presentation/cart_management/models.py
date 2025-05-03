@@ -11,7 +11,7 @@ class WishList(models.Model):
     total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     quantity = models.PositiveBigIntegerField(default=0)
 
-    customer = models.OneToOneField("user_management.CustomUser", on_delete=models.CASCADE, related_name="wishlist")
+    customer = models.OneToOneField("user_management.CustomUser", on_delete=models.CASCADE, related_name="wishlist", to_field="public_uuid")
 
     objects = ItemCollectionManager()
     

@@ -55,10 +55,10 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
-    user = models.ForeignKey("user_management.CustomUser", on_delete=models.CASCADE)
+    user = models.ForeignKey("user_management.CustomUser", on_delete=models.CASCADE, to_field="public_uuid")
 
     def __str__(self):
-        return f"Order {self.id}"
+        return f"Order {self.pk}"
     
 
 class Shipment(models.Model):

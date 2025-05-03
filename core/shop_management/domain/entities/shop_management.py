@@ -1,15 +1,15 @@
 from core.utils.domain.entity import *
 from ..value_objects.shop_management import *
-from ....utils.domain.value_objects.common import *
+from core.utils.domain.value_objects.common import *
 
 from decimal import Decimal
 import uuid
 
 @dataclass(kw_only=True)
 class Category(Entity):
-    name: CommonNameField | str = field(default=None)
-    slug: CommonSlugField | str = field(default=None)
-    count_of_deals: int = field(default=None)
+    name: CommonNameField | str | None = field(default=None)
+    slug: CommonSlugField | str | None = field(default=None)
+    count_of_deals: int | None = field(default=None)
 
     def __post_init__(self):
         if isinstance(self.name, str):
@@ -21,23 +21,29 @@ class Category(Entity):
 
 @dataclass(kw_only=True)
 class Brand(Entity):
-    name: CommonNameField = field(default=None)
-    slug: CommonSlugField = field(default=None)
-    count_of_deals: int = field(default=None)
+    name: CommonNameField | None = field(default=None)
+    slug: CommonSlugField | None = field(default=None)
+    count_of_deals: int | None = field(default=None)
 
 
 @dataclass(kw_only=True)
 class ProductSize(Entity):
-    size: str = field(default=None)
-    length: Decimal = field(default=None)
-    width: Decimal = field(default=None)
-    height: Decimal = field(default=None)
-    weight: Decimal = field(default=None)
+    size: str | None = field(default=None)
+    length: Decimal | None = field(default=None)
+    width: Decimal | None = field(default=None)
+    height: Decimal | None = field(default=None)
+    weight: Decimal | None = field(default=None)
 
-    product: ForeignUUID | uuid.UUID = field(default=None)
+    product: ForeignUUID | uuid.UUID | None = field(default=None)
+
+ProductSizeType = TypeVar("ProductSizeType", bound=ProductSize)
 
 @dataclass(kw_only=True)
 class ProductImage(Entity):
-    image: ImageField = field(default=None)
+    image: ImageField | None = field(default=None)
 
-    product: ForeignUUID | uuid.UUID = field(default=None)
+    product: ForeignUUID | uuid.UUID | None = field(default=None)
+
+ProductImageType = TypeVar("ProductImageType", bound=ProductImage)
+
+

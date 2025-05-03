@@ -488,12 +488,11 @@
 			container2.find("li .sum ").each(function(index, element) {
 				rating_list.push(element.textContent)
 			})
-			rating_list.reverse()
 		} else {
 			container.find("span").text(rating.toFixed(2))
 
 			container2.find("li .sum ").each(function(index, element) {
-				element.textContent = rating_list[(rating_list.length - 1) - index]
+				element.textContent = rating_list[index]
 			})
 		}
 
@@ -509,7 +508,7 @@
 		}
 
 		$(".rating-progress div").each(function(index, element) {
-			let percent = (rating_list[(rating_list.length - 1) - index] / full_rating) * 100
+			let percent = (rating_list[index] / full_rating) * 100
 			element.style.width = percent + "%"
 		})
 	}
@@ -562,6 +561,7 @@
 			url: `load_reviews/?product_rating_uuid=${product_rating_uuid}&page=${page}`,
 			type: 'GET',
 			success: function(respond) {
+				console.log(respond)
 				updateReviews(respond.reviews)
 				updatePagination(respond)
 			},

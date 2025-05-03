@@ -1,9 +1,8 @@
-from typing import Iterable, Generic, TypeVar
+from core.utils.domain.entity import EntityType
+from typing import Iterable, Generic
 
-T = TypeVar('T')
-
-class BaseEntityList(Iterable[T], Generic[T]):
-    def __init__(self, entities: Iterable):
+class BaseEntityList(Generic[EntityType]):
+    def __init__(self, entities: Iterable[EntityType]):
         self._entities = list(entities)
 
     def __len__(self):

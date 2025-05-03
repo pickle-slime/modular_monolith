@@ -91,7 +91,7 @@ class Product(models.Model):
 
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    seller = models.ForeignKey("user_management.CustomUser", on_delete=models.CASCADE)
+    seller = models.ForeignKey("user_management.CustomUser", on_delete=models.CASCADE, to_field="public_uuid")
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
