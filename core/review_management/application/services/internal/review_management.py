@@ -7,6 +7,7 @@ from core.exceptions import MissingProductRatingError
 from typing import Any
 from datetime import datetime
 import uuid
+import json
 
 class ProductPageReviewsService:
     def __init__(self, product_rating_repository: IProductRatingRepository, product_rating_read_model: IReviewReadModel):
@@ -41,4 +42,4 @@ class ProductPageReviewsService:
     def load_reviews(self, product_rating_pub_uuid: uuid.UUID | None, page_number: int) -> dict[str, Any]:
         paginated_reviews = self.read_model.fetch_paginated_reviews(product_rating_pub_uuid, page_number)
 
-        return ReviewCollectionDTO.from_paginated_data(paginated_reviews).model_dump(mode="json")
+        return ReviewCollectionDTO.from_paginated_data(paginated_reviews).model_dump(mode="json", by_alias=True)

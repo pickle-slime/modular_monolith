@@ -579,8 +579,8 @@
 			reviews.forEach(element => {
 				let html = '<li>' +
 					'<div class="review-heading">' +
-					'<h5 class="name">' + element["user__username"] + '</h5>' +
-					'<p class="date">' + element["date_created"] + '</p>' +
+					'<h5 class="name">' + element["username"] + '</h5>' +
+					'<p class="date">' + element["datetimeCreated"] + '</p>' +
 					'<div class="review-rating">' +
 					'<i class="fa fa-star"></i>'.repeat(Math.round(element["rating"])) +
 					'<i class="fa fa-star-o"></i>'.repeat(5 - Math.round(element["rating"])) +
@@ -597,11 +597,11 @@
 	}
 
 	function updatePagination(data) {
-		let cp = data.current_page
+		let cp = data.currentPage
 		let paginationContainer = $(".reviews-pagination")
 		paginationContainer.empty()
 
-		if (data.has_previous) {
+		if (data.hasPrevious) {
 			let prevPageButton = $(`<li><a href="javascript:void(0)"><i class="fa fa-angle-left"></i></a></li>`)
 			prevPageButton.click(function() {
 				fetch_reviews(parseInt(cp)-1)
@@ -609,7 +609,7 @@
 			paginationContainer.append(prevPageButton)
 		}
 
-		for (let i = Math.max(1, cp - 2); i <= Math.min(data.num_pages, cp + 2); i++) {
+		for (let i = Math.max(1, cp - 2); i <= Math.min(data.numPages, cp + 2); i++) {
 			if (i === cp) {
 				paginationContainer.append(`<li class="active">${i}</li>`)
 			} else {
@@ -621,7 +621,7 @@
 			}
 		}
 
-		if (data.has_next) {
+		if (data.hasNext) {
 			let nextPageButton = $(`<li><a href="javascript:void(0)"><i class="fa fa-angle-right"></i></a></li>`)
 			nextPageButton.click(function() {
 				fetch_reviews(parseInt(cp)+1)
