@@ -4,6 +4,7 @@ from ..structures import ReviewCollection
 from ..exceptions import MissingFieldDataError
 
 from dataclasses import dataclass, field
+from typing import Any
 from decimal import Decimal
 import uuid
 
@@ -18,11 +19,13 @@ class ProductRating(Entity):
     total_rating_sum: Decimal | None = field(default=Decimal("0.0"))
     total_reviews_count: int | None = field(default=0)
 
+    review: type[Review] = Review
 
-    def add_review(self, review: Review):
+    def add_review(self, raw_review: dict[str, Any]):
         if self.reviews is None:
             self.reviews = ReviewCollection([])
 
+        review = self.review.map(raw_review)
         self.reviews.append(review)
 
         if review.rating is not None:

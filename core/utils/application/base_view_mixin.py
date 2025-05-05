@@ -1,10 +1,9 @@
-from core.exceptions import MissingRepositoryError
 from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository, Repository
 from core.utils.domain.interfaces.hosts.base_host import BaseHost, Host
 from .base_factories import BaseServiceFactory
 from .base_service import Service
 
-from typing import Any
+from typing import Any, Union
 import logging
 
 logger = logging.getLogger(__name__)

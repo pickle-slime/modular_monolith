@@ -1,6 +1,6 @@
 from django.http import HttpRequest
 
-from core.cart_management.application.services.internal.cart_management import ItemCollectionService
+from core.cart_management.application.services.internal.cart_management import CartService, WishlistService
 from core.cart_management.infrastructure.repositories.cart_management import DjangoWishlistRepository, DjangoCartRepository
 from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
 from core.user_management.presentation.acl_factory import UserManagementACLFactory
@@ -20,8 +20,13 @@ SERVICE_FACTORY = BaseServiceFactory(
     }
 )
 
-def initiate_item_collection_service(request: HttpRequest) -> ItemCollectionService:
-    session_adapter = RedisSessionAdapter(redis_adapter=RedisAdapter(), session_key=request.session_key)
-    SERVICE_FACTORY._services["cart_acl"] = DjangoCartRepository(session_adapter)
+def initiate_cart_service(request: HttpRequest) -> CartService:
+    session_adapter = RedisSessionAdapter(redis_adapter=RedisAdapter(), session_key=request.session_key) # pyright: ignore[reportAttributeAccessIssue]
+    SERVICE_FACTORY._services["cart_repository"] = DjangoCartRepository(session_adapter)
     SERVICE_FACTORY._adapters["session_adapter"] = session_adapter
-    return SERVICE_FACTORY.create_service(ItemCollectionService)
+    return SERVICE_FACTORY.create_service(CartService)
+
+def initiate_wishlist_service(request: HttpRequest) -> WishlistService:
+    session_adapter = RedisSessionAdapter(redis_adapter=RedisAdapter(), session_key=request.session_key) # pyright: ignore[reportAttributeAccessIssue]
+    SERVICE_FACTORY._adapters["session_adapter"] = session_adapter
+    return SERVICE_FACTORY.create_service(WishlistService)

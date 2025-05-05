@@ -3,17 +3,20 @@ from ..domain.interfaces.hosts.redis import RedisSessionHost
 from ..infrastructure.serializers.json_decoder import PydanticJSONDecoder
 from ..infrastructure.serializers.json_encoder import PydanticJSONEncoder
 
-from typing import Any, Callable
+from typing import Callable
 from functools import wraps
-import hashlib
 import inspect
 import json
 
 class BaseCachingMixin:
     session_adapter: RedisSessionHost
 
-    def __init__(self, session_adapter: RedisSessionHost):
-        BaseCachingMixin.set_session_adapter(session_adapter)
+    def __init__(self, session_adapter: RedisSessionHost | type[RedisSessionHost]):
+        BaseCachingMixin.set_session_adapter(self._resolve_dependency(session_adapter))
+
+    def _resolve_dependency(self, dependency):
+        """Helper method to instantiate class if type is passed"""
+        return dependency() if isinstance(dependency, type) else dependency
 
     @classmethod
     def set_session_adapter(cls, session_adapter: RedisSessionHost):
@@ -47,6 +50,6 @@ class BaseCachingMixin:
                 if not cached_data:
                     cached_data = json.dumps(func(instance, *args, **kwargs), cls=PydanticJSONEncoder)
                     cls.session_adapter.set(cache_key, cached_data)
-                return json.loads(cached_data, object_hook=PydanticJSONDecoder.from_dict(dtos))
+                return json.loads(cached_data, object_hook=PydanticJSONDecoder.from_dict(dtos)) if dtos else json.loads(cached_data)
             return wrapper
         return decorator

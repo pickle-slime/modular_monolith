@@ -15,5 +15,5 @@ class WishlistACL(IWishlistACL):
     def __init__(self, wishlist_repository: IWishlistRepository):
         self.wishlist_rep = wishlist_repository
 
-    def fetch_wishlist(self, public_uuid: uuid.UUID = None) -> WishlistDTO:
+    def fetch_wishlist(self, public_uuid: uuid.UUID | None = None) -> WishlistDTO:
         return WishlistDTO.from_entity(self.wishlist_rep.fetch_wishlist_by_user(public_uuid))

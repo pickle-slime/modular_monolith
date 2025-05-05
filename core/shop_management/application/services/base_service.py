@@ -25,12 +25,12 @@ class BaseService(Generic[Service], BaseCachingMixin):
             user_acl: IUserACL | type[IUserACL],
         ):
         super().__init__(session_adapter)
-        self.session = self._resolve_dependency(session_adapter)
+        self.session: RedisSessionHost = self._resolve_dependency(session_adapter)
         self.user_acl = self._resolve_dependency(user_acl)
 
     def _resolve_dependency(self, dependency: T | type[T]) -> T:
         """Helper method to instantiate class if type is passed"""
-        return dependency() if isinstance(dependency, type) else dependency
+        return dependency() if isinstance(dependency, type) else dependency # pyright: ignore[reportReturnType]
 
     @property
     def user(self) -> ACLUserDTO:

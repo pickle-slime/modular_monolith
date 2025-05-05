@@ -1,16 +1,20 @@
-from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository
-from core.utils.domain.interfaces.hosts.base_host import BaseHost
-from core.utils.application.base_service import Service
+from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository, Repository
+from core.utils.domain.interfaces.hosts.base_host import BaseHost, Host
+from core.utils.application.base_service import Service 
 
-from typing import Callable
+from typing import Union
 import inspect
+
+TRepository = Union[type[Repository] | Repository | None]
+THost = Union[type[Host] | Host | None]
+TService = Union[type[Repository] | Repository | None]
 
 class BaseServiceFactory:
     def __init__(
             self, 
-            repositories: dict[str, type[BaseRepository | None]] | dict[str, BaseRepository | None] = dict(), 
-            adapters: dict[str, type[BaseHost | None]] | dict[str, BaseHost | None] = dict(), 
-            services: dict[str, type[Service | None]] | dict[str, Service | None] = dict(),
+            repositories: dict[str, TRepository] = dict(), 
+            adapters: dict[str, THost] = dict(), 
+            services: dict[str, TService] = dict(),
         ):
         
         self._services = services
@@ -31,22 +35,16 @@ class BaseServiceFactory:
 
                 if name in self._repositories and name not in kwargs:
                     init_args = repository_args.get(name, None)
-                    if isinstance(self._repositories[name], Callable):
-                        kwargs[name] = self._repositories[name](**init_args) if init_args else self._repositories[name]() 
-                    else:
-                        kwargs[name] = self._repositories[name]
+                    value = self._repositories[name]
+                    kwargs[name] = value(**init_args) if callable(value) and init_args else value() if callable(value) else value
                 elif name in self._adapters and name not in kwargs:
                     init_args = adapter_args.get(name, None)
-                    if isinstance(self._adapters[name], Callable):
-                        kwargs[name] = self._adapters[name](**init_args) if init_args else self._adapters[name]()
-                    else:
-                        kwargs[name] = self._adapters[name]
+                    value = self._adapters[name]
+                    kwargs[name] = value(**init_args) if callable(value) and init_args else value() if callable(value) else value
                 elif name in self._services and name not in kwargs:
                     init_args = service_args.get(name, None)
-                    if isinstance(self._services[name], Callable):
-                        kwargs[name] = self._services[name](**init_args) if init_args else self._services[name]()
-                    else:
-                        kwargs[name] = self._services[name]
+                    value = self._services[name]
+                    kwargs[name] = value(**init_args) if callable(value) and init_args else value() if callable(value) else value
                 elif param.default is not inspect.Parameter.empty and name not in kwargs:
                     kwargs[name] = param.default
 

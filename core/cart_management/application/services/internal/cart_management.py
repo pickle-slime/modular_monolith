@@ -11,15 +11,13 @@ from core.shop_management.domain.interfaces.i_acls import IProductACL
 from typing import Any
 
 
-class ItemCollectionService(BaseService['ItemCollectionService']):
-
-    def __init__(self, product_acl: IProductACL, cart_repository: ICartRepository, wishlist_repository: IWishlistRepository, **kwargs):
+class CartService(BaseService["CartService"]):
+    def __init__(self, product_acl: IProductACL, cart_repository: ICartRepository, **kwargs):
         super().__init__(**kwargs)
         self.product_acl = product_acl
         self.cart_repository = cart_repository
-        self.wishlist_repository = wishlist_repository
 
-    def delete_button_item_collection_service(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
+    def delete_button_cart_service(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
         item_pub_uuid = data.get('product')
         #type_of_collection = data['type']
 
@@ -53,7 +51,7 @@ class ItemCollectionService(BaseService['ItemCollectionService']):
         return response_data, 200
 
 
-    def add_to_item_collection(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
+    def add_to_cart(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
         product = ProductDTO.from_product(self.product_acl.fetch_sample_of_size(product_uuid=data.get('product', None), size_uuid=data.get('size', None)))
 
         if not product.sizes or len(product.sizes) < 1:
@@ -90,3 +88,17 @@ class ItemCollectionService(BaseService['ItemCollectionService']):
                 
             return {'status': "success", 'item_of_collection': items_of_collection}, 200
         return {'status': 'error', 'message': 'Something went wrong'}, 400
+
+class WishlistService(BaseService["WishlistService"]):
+    def __init__(self, product_acl: IProductACL, wishlist_repository: IWishlistRepository, **kwargs):
+        super().__init__(**kwargs)
+        self.product_acl = product_acl
+        self.wishlist_repository = wishlist_repository
+
+    def delete_button_wishlist_service(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
+        ...
+
+    def add_to_wishlist(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
+        ...
+
+

@@ -1,14 +1,8 @@
+from core.cart_management.domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service
 
-from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
-from core.cart_management.application.dtos.cart_management import CartDTO, WishlistDTO
-
-from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
-from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
-
 from core.shop_management.domain.interfaces.i_acls import ICategoryACL
-from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL
 from core.user_management.domain.interfaces.i_acls import IUserACL
 from core.user_management.application.dtos.user_management import UserDTO
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
@@ -61,14 +55,14 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
     def __init__(
         self, 
         category_acl: ICategoryACL,
-        cart_acl: ICartACL,
-        wishlist_acl: IWishlistACL,
+        cart_repository: ICartRepository,
+        wishlist_repository: IWishlistRepository,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.category_acl = category_acl
-        self.cart_acl = cart_acl
-        self.wishlist_acl = wishlist_acl
+        self.cart_repository = cart_repository
+        self.wishlist_repository = wishlist_repository
 
     def get_header_and_footer(self) -> dict:
         navigation_and_search_bar = self.category_acl.fetch_categories(10, 'count_of_deals')
@@ -79,6 +73,6 @@ class BaseTemplateService(BaseService[Service], BaseCachingMixin):
         self.context['user'] = self.user
         
         if self.is_authorized:
-            self.context['cart'] = self.cart_acl.fetch_cart()
-            self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.uuid)
+            self.context['cart'] = self.cart_repository.fetch_cart()
+            self.context['wishlist'] = self.wishlist_repository.fetch_wishlist_by_user(public_uuid=self.user.pub_uuid)
         return self.context

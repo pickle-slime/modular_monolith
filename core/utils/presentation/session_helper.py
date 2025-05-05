@@ -6,7 +6,7 @@ def inject_session_dependencies_into_view(view_instance, request: HttpRequest) -
     """
     Helper function to inject session-related dependencies dynamically into a view instance that has the BaseViewMixin.
     """
-    session_adapter = RedisSessionAdapter(RedisAdapter(), session_key=request.session_key)
+    session_adapter = RedisSessionAdapter(RedisAdapter(), session_key=request.session_key) # pyright: ignore[reportAttributeAccessIssue]
     cart_acl = CartManagementACLFactory.create_cart_acl(session_adapter)
     
     view_instance.service_classes["cart_acl"] = cart_acl

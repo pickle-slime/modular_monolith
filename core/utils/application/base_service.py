@@ -13,7 +13,7 @@ from core.user_management.application.dtos.user_management import UserDTO
 
 from typing import TypeVar, Generic, Protocol, overload
 
-Service = TypeVar("Service")
+Service = TypeVar("Service", covariant=True)
 
 T = TypeVar("T", bound=object)
 
@@ -42,19 +42,19 @@ class BaseService(Generic[Service], Protocol):
 
     def _resolve_dependency(self, dependency: T | type[T]) -> T:
         """Helper method to instantiate class if type is passed"""
-        pass
+        ...
 
     @property
     def user(self) -> UserEntity | UserDTO:
-        pass
+        ...
     
     @property
     def path(self) -> str:
-        pass
+        ...
     
     @property
     def is_authorized(self) -> bool:
-        pass
+        ...
 
 
 class BaseTemplateService(BaseService["BaseTemplateService"], Protocol):
@@ -95,4 +95,4 @@ class BaseTemplateService(BaseService["BaseTemplateService"], Protocol):
         pass
 
     def get_header_and_footer(self) -> dict:
-        pass
+        ...

@@ -147,10 +147,8 @@
 
 	function updatePriceSlider(elem , value) {
 		if ( elem.hasClass('price-min') ) {
-			console.log('min')
 			priceSlider.noUiSlider.set([value, null]);
 		} else if ( elem.hasClass('price-max')) {
-			console.log('max')
 			priceSlider.noUiSlider.set([null, value]);
 		}
 	}
@@ -262,7 +260,6 @@
 			var data = {
 				csrfmiddlewaretoken: csrf,
 				item: item_pk,
-				type: "WishListOrderProduct",
 				//reqdata: request,
 			}
 	
@@ -275,15 +272,13 @@
 					"X-CSRFToken": csrf,  
 				},
 				success: function(responseData) {
-					console.log(responseData);
 					$('#qty-wish').html(responseData['qty']);
 					$('#qty-2-wish').html(responseData['qty-2']);
 					$('#subtotal-wish').html(responseData['subtotal']);
 					form.closest('.product-widget').remove();
-					console.log('success: ', data);
 				},
 				error: function() {
-					alert('js-error-delete-cart-item');
+					alert('js-error-delete-wishlist-item');
 				}
 			});
 		});
@@ -301,7 +296,6 @@
 			var data = {
 				csrfmiddlewaretoken: csrf,
 				item: item_pk,
-				type: "CartOrderProduct",
 			}
 	
 			$.ajax({
@@ -313,12 +307,10 @@
 					"X-CSRFToken": csrf,  
 				},
 				success: function(responseData) {
-					console.log(responseData);
 					$('#qty').html(responseData['qty']);
 					$('#qty-2').html(responseData['qty-2']);
 					$('#subtotal').html(responseData['subtotal']);
 					form.closest('.product-widget').remove();
-					console.log('success: ', data);
 				},
 				error: function() {
 					alert('js-error-delete-cart-item');
@@ -387,7 +379,6 @@
 					"X-CSRFToken": csrfToken
 				},
 				success: function(responseData) {
-					console.log(responseData.items_of_collection)
 					window.location.reload()
 				}, 
 				error: function(e) {
@@ -423,7 +414,6 @@
 					"X-CSRFToken": csrfToken
 				},
 				success: function(responseData) {
-					console.log(responseData.items_of_collection)
 					window.location.reload()
 				}, 
 				error: function(e) {
@@ -489,11 +479,24 @@
 				rating_list.push(element.textContent)
 			})
 		} else {
-			container.find("span").text(rating.toFixed(2))
+			container.find("span").text(rating)
+			container.find("span").text(rating.toFixed(1))
 
 			container2.find("li .sum ").each(function(index, element) {
 				element.textContent = rating_list[index]
 			})
+
+			let inputStars = $(".input-rating .stars")
+			inputStars.empty()
+
+			let html = `
+				<input id="star5" name="rating" value="5" type="radio"><label for="star5"></label>
+				<input id="star4" name="rating" value="4" type="radio"><label for="star4"></label>
+				<input id="star3" name="rating" value="3" type="radio"><label for="star3"></label>
+				<input id="star2" name="rating" value="2" type="radio"><label for="star2"></label>
+				<input id="star1" name="rating" value="1" type="radio"><label for="star1"></label>
+			`
+			inputStars.append(html)
 		}
 
 		container.find(".rating-stars i").each(function(index, element) {
@@ -544,7 +547,7 @@
 			success: function(responseData) {
 				let rating_list = responseData["rating_list"]
 
-				update_rating(rating=responseData["rating"], rating_list=rating_list)	
+				update_rating(rating=responseData["rating"], rating_list=rating_list)
 				fetch_reviews(1)
 
 				text.val("");
@@ -561,9 +564,16 @@
 			url: `load_reviews/?product_rating_uuid=${product_rating_uuid}&page=${page}`,
 			type: 'GET',
 			success: function(respond) {
-				console.log(respond)
 				updateReviews(respond.reviews)
 				updatePagination(respond)
+
+				if ( respond.totalCount ) {
+					let actualReviewsTab = document.querySelectorAll(".tab-nav li a");
+					let reviewsTab = actualReviewsTab[actualReviewsTab.length - 1]; 
+					let reviewsLink = document.querySelector(".review-link");
+					reviewsTab.textContent = `Reviews (${respond.totalCount})`;
+					reviewsLink.textContent = `${respond.totalCount} Review(s) | Add your review`;
+				}
 			},
 			error: function(error) {
 				console.error("Error fetching reviews: ", error)
@@ -597,6 +607,10 @@
 	}
 
 	function updatePagination(data) {
+		if ( !data.reviews?.length ) {
+			return null 
+		}
+
 		let cp = data.currentPage
 		let paginationContainer = $(".reviews-pagination")
 		paginationContainer.empty()
