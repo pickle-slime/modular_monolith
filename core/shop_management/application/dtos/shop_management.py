@@ -1,5 +1,5 @@
 from pydantic import field_validator, Field
-from typing import Optional
+from typing import Iterable, Optional
 from datetime import datetime
 from decimal import Decimal
 import uuid
@@ -218,9 +218,8 @@ class ProductDTO(BaseEntityDTO['ProductDTO']):
             brand=BrandDTO.from_entity(brand, url_mapping_adapter) if brand else None,
             category=CategoryDTO.from_entity(category, url_mapping_adapter) if category else None,
             seller=entity.seller,
-            sizes=ProductSizeDTO.from_entities(entity.sizes) if entity.sizes else None,
-            images=ProductImageDTO.from_entities(entity.images) if entity.images else None,
-
+            sizes=ProductSizeDTO.from_entities(entity.sizes) if isinstance(entity.sizes, Iterable) else [ProductSizeDTO.from_entity(entity.sizes)] if entity.sizes else None,
+            images=ProductImageDTO.from_entities(entity.images) if isinstance(entity.images, Iterable) else [ProductSizeDTO.from_entity(entity.images)] if entity.images else None,
             get_absolute_url=absolute_url,
         )
     

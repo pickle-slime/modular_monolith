@@ -7,7 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ValidationError
 import uuid
 
-DTO = TypeVar("DTO")
+DTO = TypeVar("DTO", bound="BaseDTO")
 
 class BaseDTO(BaseModel, ABC, Generic[DTO]):
     '''
@@ -34,7 +34,7 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
 
         return resolved_annotation
     
-    def populate_none_fields(self) -> "BaseDTO":
+    def populate_none_fields(self: DTO) -> DTO:
         '''
         Populates all None fields in the DTO to hand it over to a render engine.
         The DTOs should use a built-in model_dump or model_dump_json with exclude_none=True.
@@ -77,10 +77,8 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
             bool: False,
         }
 
-class BaseEntityDTO(BaseDTO[DTO], Generic[DTO]):
+class BaseEntityDTO(BaseDTO[DTO]):
     @classmethod
     @abstractmethod
-    def from_entity(cls: type[DTO], entity: EntityType) -> DTO:
+    def from_entity(cls: type["BaseEntityDTO"], entity: EntityType) -> DTO:
         pass
-
-ENTITY_DTO = TypeVar("ENTITY_DTO", bound=BaseEntityDTO)

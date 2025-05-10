@@ -1,14 +1,14 @@
-from core.cart_management.presentation.cart_management.forms import AddToWishlistForm, AddToCartForm
-
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
 from core.cart_management.application.dtos.acl_dtos import ProductDTO
+from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO
 from ..base_service import BaseService
 
 from core.shop_management.domain.interfaces.i_acls import IProductACL
 
 from typing import Any
+from decimal import Decimal
 import uuid
 
 
@@ -99,12 +99,23 @@ class WishlistService(BaseService["WishlistService"]):
         self.wishlist_repository.save(wishlist_entity)
         return {'status': "success"}, 200
 
-    def add_to_wishlist(self, raw_wishlist: dict[str, Any]) -> tuple[dict[str, Any], int]:
-        if not raw_wishlist:
-            raise ValueError(f"{self.__class__.__name__}.{self.add_to_wishlist.__name__} didn't get raw_wishlist argument")
+    def add_to_wishlist(self, request_dto: AddWishlistItemRequestDTO) -> tuple[dict[str, Any], int]:
 
         wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
-        wishlist_entity.add_item(raw_wishlist)
+        product_dto = ProductDTO.from_product(self.product_acl.fetch_sample_of_size(request_dto.product, size_uuid=request_dto.size))
+        compiled_wihslist_item = self.compile_wishlist_item_data(request_dto, product_dto)
+        wishlist_entity.add_item(*compiled_wihslist_item)
         self.wishlist_repository.save(wishlist_entity)
         return {'status': "success"}, 200
+
+    def compile_wishlist_item_data(self, request_dto: AddWishlistItemRequestDTO, product: ProductDTO) -> tuple[dict[str, Any], int, Decimal]:
+        qty = request_dto.qty
+        price = Decimal(product.price)
+        return {
+                "color": request_dto.color,
+                "qty": qty,
+                "image": product.image,
+                "price": price,
+                "size": product.sizes[0].to_size_vo() if product.sizes and product.sizes[0] else None
+            }, qty, price
 

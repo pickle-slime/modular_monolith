@@ -164,15 +164,19 @@ class DjangoProductRepository(IProductRepository):
     
     def fetch_sample_of_size(
         self,
-        public_uuid: uuid.UUID | None,
+        public_uuid: uuid.UUID,
         size_public_uuid: uuid.UUID | None,
     ) -> ProductEntity:
         '''Fetches the product by public uuid with size by size's public uuid, the image is first one'''
 
         try:
             product = ProductModel.objects.get(public_uuid=public_uuid)
-            size = ProductSizesModel.objects.get(public_uuid=size_public_uuid)
         except (ProductModel.DoesNotExist, ProductSizesModel.DoesNotExist):
-            return ProductEntity()
+            raise ProductModel.DoesNotExist(f"{self.__class__.__name__}.{self.fetch_sample_of_size.__name__} didn't get product public uuid")
+
+        if size_public_uuid:
+            size = ProductSizesModel.objects.get(public_uuid=size_public_uuid)
+        else:
+            size = ProductSizesModel.objects.filter(product__public_uuid=public_uuid)[0]
 
         return DjangoProductMapper.map_product_into_entity(product, sizes_queryset=size)

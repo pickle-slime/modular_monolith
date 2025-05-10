@@ -1,3 +1,5 @@
+from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO
+
 from django.shortcuts import redirect
 from django.http import JsonResponse
 
@@ -24,16 +26,20 @@ def delete_button_wishlist(request):
         response, status = service.delete_button_wishlist_service(data)
         return JsonResponse(response, status=status)
 
-    return redirect('home')
+    return JsonResponse({"message": "Invalid data"}, status=403)
 
 def add_to_wishlist(request):
     if request.method == 'PUT' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         data = json.loads(request.body.decode('utf-8'))
         service = initiate_wishlist_service(request)
-        response, status = service.add_to_wishlist(data)
+        try:
+            validated_dto = AddWishlistItemRequestDTO(**data)
+            response, status = service.add_to_wishlist(validated_dto)
+        except ValueError:
+            return JsonResponse({"message": "Validation error"}, status=403)
         return JsonResponse(response, status=status)
 
-    return JsonResponse({"status": "error", "message": "Invalid data"})
+    return JsonResponse({"message": "Invalid data"}, status=403)
 
 def add_to_cart(request):
     if request.method == 'PUT' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':

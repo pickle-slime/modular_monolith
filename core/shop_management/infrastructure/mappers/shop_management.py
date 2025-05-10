@@ -105,8 +105,8 @@ class DjangoProductMapper:
         if sizes_queryset is None:
             return None
         if isinstance(sizes_queryset, ProductSizesModel):
-            return ProductSizesEntityList(DjangoProductSizesMapper.map_size_into_entity(sizes_queryset))
-        return DjangoProductSizesMapper.map_sizes_into_entities(sizes_queryset)
+            return DjangoProductSizesMapper.map_size_into_entity(sizes_queryset)
+        return ProductSizesEntityList(DjangoProductSizesMapper.map_sizes_into_entities(sizes_queryset))
 
     @staticmethod
     def _map_images(images_queryset: MultipleProductImagesModel | QuerySet[MultipleProductImagesModel] | None) -> ProductImagesEntityList | ProductImageEntity | None:
@@ -114,5 +114,5 @@ class DjangoProductMapper:
         if images_queryset is None:
             return None
         if isinstance(images_queryset, MultipleProductImagesModel):
-            return ProductImagesEntityList(DjangoProductImagesMapper.map_image_into_entity(images_queryset))
-        return DjangoProductImagesMapper.map_images_into_entities(images_queryset)
+            return DjangoProductImagesMapper.map_image_into_entity(images_queryset)
+        return ProductImagesEntityList(DjangoProductImagesMapper.map_images_into_entities(images_queryset))

@@ -88,7 +88,7 @@ class IProductRepository(BaseRepository):
     @abstractmethod
     def fetch_sample_of_size(
         self,
-        public_uuid: uuid.UUID | None,
+        public_uuid: uuid.UUID,
         size_public_uuid: uuid.UUID | None,
     ) -> ProductEntity:
         '''Fetches the Product entity with the first found size and image'''

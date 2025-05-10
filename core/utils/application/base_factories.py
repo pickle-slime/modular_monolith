@@ -7,7 +7,7 @@ import inspect
 
 TRepository = Union[type[Repository] | Repository | None]
 THost = Union[type[Host] | Host | None]
-TService = Union[type[Repository] | Repository | None]
+TService = Union[type[Service] | Service | None]
 
 class BaseServiceFactory:
     def __init__(

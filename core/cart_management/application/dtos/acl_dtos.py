@@ -27,7 +27,7 @@ class SizeDTO(BaseDTO['SizeDTO']):
         )
 
     def to_size_vo(self) -> Size:
-        return Size(**self.model_dump())
+        return Size(**self.model_dump(exclude="pub_uuid"))
     
 class ProductDTO(BaseDTO['ProductDTO']):
     pub_uuid: uuid.UUID | None = Field(default=None)

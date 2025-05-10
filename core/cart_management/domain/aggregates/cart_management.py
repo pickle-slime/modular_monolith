@@ -20,22 +20,20 @@ class Wishlist(Entity):
 
     def add_item(
         self, 
-        raw_wishlist_item: dict[str, Any]
+        raw_wishlist_item: dict[str, Any],
+        qty: int,
+        price: Decimal,
+        item_uuid: uuid.UUID | None = None,
     ):
         if self.items is None:
             self.items = {}
 
-        item_uuid = raw_wishlist_item.pop("item_uuid", uuid.uuid4())
-        qty = raw_wishlist_item.get("qty", 1)
-        price = raw_wishlist_item.get("price", None)
+        item_uuid = item_uuid if item_uuid else uuid.uuid4()
 
-        if price is None:
-            raise ValueError(f"{self.__class__.__name__}.{self.add_item.__name__} didn't get the price value")
-
-        if item_uuid and item_uuid in self.items:
+        if item_uuid in self.items:
             existing_item = self.items[item_uuid]
-            existing_item.qty = (existing_item or 0) + qty
-        elif item_uuid:
+            existing_item.qty = (existing_item.qty or 0) + qty
+        else:
             self.items[item_uuid] = self._item_cls.map_raw_data(raw_wishlist_item)
 
         self.quantity = (self.quantity or 0) + qty

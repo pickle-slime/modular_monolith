@@ -33,7 +33,7 @@ class WishlistItem(Entity):
             raise ValueError(f"{cls.__name__}.{cls.map_raw_data.__name__} didn't get price value")
 
         size = raw_data.get("size", None)
-        if not isinstance(size, dict):
+        if not isinstance(size, dict) and not isinstance(size, SizeVO):
             raise ValueError(f"{cls.__name__}.{cls.map_raw_data.__name__} didn't get size data")
 
         return cls(
@@ -41,5 +41,5 @@ class WishlistItem(Entity):
                 qty=raw_data.get("qty", 1),
                 image=raw_data.get("image", "/"),
                 price=price,
-                size=cls._size_cls.map_raw_data(size)
+                size=size if isinstance(size, SizeVO) else cls._size_cls.map_raw_data(size)
             )
