@@ -11,13 +11,13 @@ from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.user_management.domain.entities.user_management import User as UserEntity
 from core.user_management.application.dtos.user_management import UserDTO
 
-from typing import TypeVar, Generic, Protocol, overload
+from typing import TypeVar, Protocol, overload
 
 Service = TypeVar("Service", covariant=True)
 
 T = TypeVar("T", bound=object)
 
-class BaseService(Generic[Service], Protocol):
+class BaseService(Protocol[Service]):
     '''
     Core protocol that is shared across all bounded contexts.
     '''
@@ -57,7 +57,7 @@ class BaseService(Generic[Service], Protocol):
         ...
 
 
-class BaseTemplateService(BaseService["BaseTemplateService"], Protocol):
+class BaseTemplateService(BaseService[Service], Protocol[Service]):
     '''
     Base service for TempleServices. It handles heander and footer
     '''

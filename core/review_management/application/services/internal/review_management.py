@@ -1,11 +1,9 @@
 from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewReadModel
 from core.review_management.application.dtos.review_management import ReviewCollectionDTO
-from core.review_management.domain.entities.review_management import Review as ReviewEntity
 
 from core.exceptions import MissingProductRatingError
 
 from typing import Any
-from datetime import datetime
 import uuid
 
 class ProductPageReviewsService:

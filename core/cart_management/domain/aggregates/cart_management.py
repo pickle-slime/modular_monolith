@@ -1,8 +1,9 @@
 from core.utils.domain.entity import Entity
-from ..entities.cart_management import WishlistItem, Size as SizeEntity
+from ..entities.cart_management import WishlistItem
 
 from decimal import Decimal
 from dataclasses import dataclass, field
+from typing import Any
 import uuid
 
 
@@ -15,40 +16,53 @@ class Wishlist(Entity):
 
     items: dict[uuid.UUID, WishlistItem] | None = field(default=None)
 
+    _item_cls: type[WishlistItem] = WishlistItem
+
     def add_item(
-        self, item_uuid: uuid.UUID, price: float, color: str, qty: int, image: str, size: SizeEntity
-    ) -> tuple["Wishlist", WishlistItem]:
+        self, 
+        raw_wishlist_item: dict[str, Any]
+    ):
         if self.items is None:
             self.items = {}
 
-        if item_uuid in self.items:
+        item_uuid = raw_wishlist_item.pop("item_uuid", uuid.uuid4())
+        qty = raw_wishlist_item.get("qty", 1)
+        price = raw_wishlist_item.get("price", None)
+
+        if price is None:
+            raise ValueError(f"{self.__class__.__name__}.{self.add_item.__name__} didn't get the price value")
+
+        if item_uuid and item_uuid in self.items:
             existing_item = self.items[item_uuid]
-            existing_item.qty += qty
-        else:
-            self.items[item_uuid] = WishlistItem(color=color, qty=qty, image=image, size=size)
+            existing_item.qty = (existing_item or 0) + qty
+        elif item_uuid:
+            self.items[item_uuid] = self._item_cls.map_raw_data(raw_wishlist_item)
 
         self.quantity = (self.quantity or 0) + qty
         self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
 
-        return self, self.items[item_uuid]
-
-    def delete_item(self, item_uuid: uuid.UUID, qty: int | None = None) -> bool:
+    def delete_item(self, item_uuid: uuid.UUID, qty: int = 1):
         if not self.items or item_uuid not in self.items:
-            return False
+            raise ValueError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item uuid in self.items")
 
         item = self.items[item_uuid]
         item_price = Decimal(item.price) if item.price else Decimal(0)
 
-        if qty is None or qty >= item.qty:
-            del self.items[item_uuid]
+        if item.qty and qty >= item.qty:
+            try:
+                del self.items[item_uuid]
+            except KeyError:
+                raise KeyError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item by item_uuid")
             qty = item.qty
         else:
-            item.qty -= qty
+            if isinstance(item.qty, int):
+                item.qty -= qty
+            else:
+                item.qty = qty
 
         self.quantity = max((self.quantity or 0) - qty, 0)
         self.total_price = max((self.total_price or Decimal(0)) - (item_price * qty), Decimal(0))
 
-        return True
 
     # def get_list_of_parcels(self, item_collection):
     #     parcels = []

@@ -136,6 +136,9 @@ class ProductImageDTO(BaseEntityDTO):
     def from_entities(cls, entities: list[ProductImageEntity] | ProductImagesEntityList[ProductImageEntity]) -> list['ProductImageDTO']:
         return [cls.from_entity(entity).populate_none_fields() for entity in entities]
 
+    def __str__(self):
+        return self.image
+
 class ProductDTO(BaseEntityDTO['ProductDTO']):
     pub_uuid: uuid.UUID | None = Field(default=None)
 

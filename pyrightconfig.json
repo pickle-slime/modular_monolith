@@ -5,5 +5,6 @@
     "pythonPlatform": "Linux",
     "typeCheckingMode": "basic",
     "diagnosticMode": "workspace",  
-    "useLibraryCodeForTypes": true
+    "useLibraryCodeForTypes": true,
+    "pydanticV2Support": true
 }

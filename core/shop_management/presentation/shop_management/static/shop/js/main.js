@@ -328,9 +328,8 @@
 
 	 		let data = {
 	 			'csrfmiddlewaretoken': [csrfToken],
-				'type-collection': $(this).attr('type-collection'),
 	 			'size': $("#size").val(),
-     			'color': $("#color").val(),
+     				'color': $("#color").val(),
 				'qty': $("input[name=qty]").val(),
 	 			'product': $("#object-pk").val(),
 	 		};

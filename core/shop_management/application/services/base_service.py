@@ -1,5 +1,6 @@
+from unittest.mock import Base
 from core.utils.application.base_cache_mixin import BaseCachingMixin
-from core.utils.application.base_service import Service
+from core.utils.application.base_service import Service, BaseService as BaseServiceProtocol, BaseTemplateService as BaseTemplateServiceProtocol
 
 from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
 from core.shop_management.application.dtos.acl_dtos import ACLUserDTO
@@ -13,20 +14,20 @@ from core.user_management.domain.interfaces.i_acls import IUserACL
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
-from typing import TypeVar, Generic
+from typing import TypeVar
 import uuid
 
 T = TypeVar("T", bound=object)
 
-class BaseService(Generic[Service], BaseCachingMixin):
+class BaseService(BaseCachingMixin, BaseServiceProtocol[Service]):
     def __init__(
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_acl: IUserACL | type[IUserACL],
         ):
-        super().__init__(session_adapter)
         self.session: RedisSessionHost = self._resolve_dependency(session_adapter)
         self.user_acl = self._resolve_dependency(user_acl)
+        super().__init__(session_adapter=session_adapter)
 
     def _resolve_dependency(self, dependency: T | type[T]) -> T:
         """Helper method to instantiate class if type is passed"""
@@ -53,7 +54,7 @@ class BaseService(Generic[Service], BaseCachingMixin):
         return self._is_authorized
     
 
-class BaseTemplateService(BaseService[Service]):
+class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
     '''
     Base service for TempleServices. It handles heander and footer
     '''

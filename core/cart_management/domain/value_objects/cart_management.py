@@ -1,6 +1,7 @@
 from shippo import components
 
 from dataclasses import dataclass, field
+from typing import Any
 from decimal import Decimal
 
 @dataclass(frozen=True)
@@ -19,6 +20,15 @@ class Size:
             distance_unit = components.DistanceUnitEnum.IN,
             mass_unit = components.WeightUnitEnum.LB,
         )
+
+    @classmethod
+    def map_raw_data(cls, raw_data: dict[str, Any]) -> "Size":
+        return cls(
+                length=raw_data.get("length", None),
+                width=raw_data.get("width", None),
+                height=raw_data.get("height", None),
+                weight=raw_data.get("weight", None)
+            )
  
 @dataclass(frozen=True)
 class CartItem:

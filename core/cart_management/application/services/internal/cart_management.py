@@ -9,6 +9,7 @@ from ..base_service import BaseService
 from core.shop_management.domain.interfaces.i_acls import IProductACL
 
 from typing import Any
+import uuid
 
 
 class CartService(BaseService["CartService"]):
@@ -17,27 +18,18 @@ class CartService(BaseService["CartService"]):
         self.product_acl = product_acl
         self.cart_repository = cart_repository
 
-    def delete_button_cart_service(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
-        item_pub_uuid = data.get('product')
-        #type_of_collection = data['type']
+    def delete_button_cart_service(self, raw_cart: dict[str, Any]) -> tuple[dict[str, Any], int]:
+        item_pub_uuid = raw_cart.get('product')
+        
+        cart_entity = self.cart_repository.fetch_cart()
 
-        if type_of_collection == WishlistEntity.__name__:
-            item_collection = self.wishlist_rep.fetch_wishlist_by_user(self.user.uuid)
-            #order_product = #get_object_or_404(WishlistItem, pk=item_id)
-            #item_collection = order_product.wishlist if hasattr(order_product, 'wishlist') else None
-        elif type_of_collection == CartEntity.__name__:
-            #order_product = #get_object_or_404(CartItem, pk=item_id)
-            #item_collection = order_product.cart if hasattr(order_product, 'cart') else None
-            pass
-        else:
-            return {'status': 'error', 'message': 'Item not associated with any collection'}, 400
-
-        if item_collection is None:
-            return {'status': 'error', 'message': 'Collection not found'}, 404
+        if cart_entity is None:
+            return {'status': 'error', 'message': 'Cart not found'}, 404
 
         # Compute the price and quantity changes
-        qty = item_collection.quantity - order_product.qty
-        price = order_product.size.product.get_price_with_discount() * order_product.qty
+        cart_entity.remove_item()
+        #qty = item_collection.quantity - order_product.qty
+        #price = order_product.size.product.get_price_with_discount() * order_product.qty
         response_data = {
             'qty': str(qty),
             'qty-2': f'{qty} Item(s) selected',
@@ -50,8 +42,7 @@ class CartService(BaseService["CartService"]):
 
         return response_data, 200
 
-
-    def add_to_cart(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
+    def add_to_cart(self, data: dict[str, Any]) -> tuple[dict[str, Any], int]:
         product = ProductDTO.from_product(self.product_acl.fetch_sample_of_size(product_uuid=data.get('product', None), size_uuid=data.get('size', None)))
 
         if not product.sizes or len(product.sizes) < 1:
@@ -95,10 +86,25 @@ class WishlistService(BaseService["WishlistService"]):
         self.product_acl = product_acl
         self.wishlist_repository = wishlist_repository
 
-    def delete_button_wishlist_service(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
-        ...
+    def delete_button_wishlist_service(self, data: dict[str, Any]) -> tuple[dict[str, Any], int]:
+        if not data:
+            raise ValueError(f"{self.__class__.__name__}.{self.delete_button_wishlist_service.__name__} didn't get data argument")
 
-    def add_to_wishlist(self, data: dict[str, Any], type_of_collection: str) -> tuple[dict[str, Any], int]:
-        ...
+        item_pub_uuid = data.get("item_public_uuid", None)
+        if not item_pub_uuid or not isinstance(item_pub_uuid, uuid.UUID):
+            raise ValueError(f"{self.__class__.__name__}.{self.delete_button_wishlist_service.__name__} didn't get item uuid")
 
+        wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
+        wishlist_entity.delete_item(item_uuid=item_pub_uuid, qty=data.get("qty", 1))
+        self.wishlist_repository.save(wishlist_entity)
+        return {'status': "success"}, 200
+
+    def add_to_wishlist(self, raw_wishlist: dict[str, Any]) -> tuple[dict[str, Any], int]:
+        if not raw_wishlist:
+            raise ValueError(f"{self.__class__.__name__}.{self.add_to_wishlist.__name__} didn't get raw_wishlist argument")
+
+        wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
+        wishlist_entity.add_item(raw_wishlist)
+        self.wishlist_repository.save(wishlist_entity)
+        return {'status': "success"}, 200
 

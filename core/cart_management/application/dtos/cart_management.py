@@ -1,7 +1,7 @@
 from core.utils.application.base_dto import BaseEntityDTO, BaseDTO, DTO
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
 from core.cart_management.domain.value_objects.cart_management import CartItem as CartItemVO, Size as SizeVO
-from core.cart_management.domain.entities.cart_management import Cart as CartEntity, Size as SizeEntity
+from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 
 from typing import Union
 from pydantic import Field, field_validator
@@ -9,7 +9,6 @@ from decimal import Decimal
 import uuid
 
 class SizeDTO(BaseDTO['SizeDTO']):
-    pub_uuid: uuid.UUID | None = Field(default=None)
     length: Decimal | None = Field(default=None, title="Length")
     width: Decimal | None = Field(default=None, title="Width")
     height: Decimal | None = Field(default=None, title="Height")
@@ -26,10 +25,9 @@ class SizeDTO(BaseDTO['SizeDTO']):
         )
 
     @classmethod
-    def from_size_entity(cls, size: SizeEntity | None) -> Union['SizeDTO', None]:
+    def from_size_entity(cls, size: SizeVO | None) -> Union['SizeDTO', None]:
         if size is None: return None
         return cls(
-            pub_uuid=size.public_uuid,
             length=size.length,
             width=size.width,
             height=size.height,
@@ -38,7 +36,6 @@ class SizeDTO(BaseDTO['SizeDTO']):
 
 
 class BaseItemDTO(BaseDTO[DTO]):
-    pub_uuid: uuid.UUID | None = Field(default=None)
     color: str | None = Field(default=None, min_length=3, max_length=100, title="Item Color")
     qty: int | None = Field(default=None, ge=0, lt=100, title="QTY", description="QTY per item")
 
@@ -54,14 +51,11 @@ class CartItemDTO(BaseItemDTO['CartItemDTO']):
         )
 
 class WishlistItemDTO(BaseItemDTO['WishlistItemDTO']):
-    size: uuid.UUID | None = Field(default=None, title="Size", description="Contatins the public uuid of external module")
-
     @staticmethod
     def from_entity(entity: WishlistItemEntity) -> 'WishlistItemDTO':
         return WishlistItemDTO(
             color=entity.color,
             qty=entity.qty,
-            size=entity.size.public_uuid if entity.size else None,
             size_snapshot=SizeDTO.from_size_entity(entity.size),
         )
 
