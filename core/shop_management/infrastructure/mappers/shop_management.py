@@ -35,6 +35,8 @@ class DjangoProductSizesMapper:
     def map_size_into_entity(model: ProductSizesModel, product_model: ProductModel | None = None) -> ProductSizeEntity:
         product_model = model.product if not product_model else product_model
         return ProductSizeEntity(
+            inner_uuid=model.inner_uuid,
+            public_uuid=model.public_uuid,
             size=model.size,
             length=model.length,
             width=model.width,
@@ -55,6 +57,8 @@ class DjangoProductImagesMapper:
     def map_image_into_entity(model: MultipleProductImagesModel, product_model: ProductModel | None = None) -> ProductImageEntity:
         product_model = model.product if not product_model else product_model
         return ProductImageEntity(
+            inner_uuid=model.inner_uuid,
+            public_uuid=model.public_uuid,
             image=model.image.url,
             product=ForeignUUID(product_model.inner_uuid, product_model.public_uuid)
         )
@@ -74,8 +78,8 @@ class DjangoProductMapper:
         images_queryset: MultipleProductImagesModel | QuerySet[MultipleProductImagesModel] | None = None,
     ) -> ProductEntity:
 
-        sizes = DjangoProductMapper._map_sizes(sizes_queryset)
-        images = DjangoProductMapper._map_images(images_queryset)
+        sizes = DjangoProductMapper._map_sizes(model.product_sizes.all()) if hasattr(model, "product_sizes") else DjangoProductMapper._map_sizes(sizes_queryset)
+        images = DjangoProductMapper._map_images(model.product_images.all()) if hasattr(model, "product_images") else DjangoProductMapper._map_images(images_queryset)
         
         return ProductEntity(
             name=model.name,

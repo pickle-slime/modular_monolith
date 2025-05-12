@@ -10,6 +10,7 @@ from core.shop_management.presentation.shop_management.models import Category as
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from ...domain.interfaces.i_repositories.i_shop_management import *
+from ..exceptions import ProductNotFoundError, SizeNotFoundError
 
 from ..mappers.shop_management import DjangoCategoryMapper, DjangoBrandMapper, DjangoProductMapper
 
@@ -171,12 +172,15 @@ class DjangoProductRepository(IProductRepository):
 
         try:
             product = ProductModel.objects.get(public_uuid=public_uuid)
-        except (ProductModel.DoesNotExist, ProductSizesModel.DoesNotExist):
-            raise ProductModel.DoesNotExist(f"{self.__class__.__name__}.{self.fetch_sample_of_size.__name__} didn't get product public uuid")
+        except ProductModel.DoesNotExist:
+            raise ProductNotFoundError(f"Can't find product by uuid ({public_uuid})")
 
-        if size_public_uuid:
-            size = ProductSizesModel.objects.get(public_uuid=size_public_uuid)
-        else:
-            size = ProductSizesModel.objects.filter(product__public_uuid=public_uuid)[0]
+        try:
+            if size_public_uuid:
+                size = ProductSizesModel.objects.get(public_uuid=size_public_uuid)
+            else:
+                size = ProductSizesModel.objects.filter(product__public_uuid=public_uuid)[0]
+        except ProductSizesModel.DoesNotExist:
+            raise SizeNotFoundError(f"Can't find size by uuid ({size_public_uuid})")
 
         return DjangoProductMapper.map_product_into_entity(product, sizes_queryset=size)

@@ -1,9 +1,9 @@
 from core.utils.domain.entity import Entity
 from ..entities.cart_management import WishlistItem
+from ..dtos.cart_management import AddToWishlistDomainDTO 
 
 from decimal import Decimal
 from dataclasses import dataclass, field
-from typing import Any
 import uuid
 
 
@@ -20,7 +20,7 @@ class Wishlist(Entity):
 
     def add_item(
         self, 
-        raw_wishlist_item: dict[str, Any],
+        raw_wishlist_item: AddToWishlistDomainDTO,
         qty: int,
         price: Decimal,
         item_uuid: uuid.UUID | None = None,
@@ -34,7 +34,7 @@ class Wishlist(Entity):
             existing_item = self.items[item_uuid]
             existing_item.qty = (existing_item.qty or 0) + qty
         else:
-            self.items[item_uuid] = self._item_cls.map_raw_data(raw_wishlist_item)
+            self.items[item_uuid] = self._item_cls.map_domain_dto(raw_wishlist_item)
 
         self.quantity = (self.quantity or 0) + qty
         self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)

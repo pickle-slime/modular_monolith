@@ -1,8 +1,10 @@
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
+from core.cart_management.domain.dtos.cart_management import AddToWishlistDomainDTO
 from core.cart_management.application.dtos.acl_dtos import ProductDTO
 from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO
+from core.cart_management.application.exceptions import WishlistPriceValidationError
 from ..base_service import BaseService
 
 from core.shop_management.domain.interfaces.i_acls import IProductACL
@@ -108,14 +110,19 @@ class WishlistService(BaseService["WishlistService"]):
         self.wishlist_repository.save(wishlist_entity)
         return {'status': "success"}, 200
 
-    def compile_wishlist_item_data(self, request_dto: AddWishlistItemRequestDTO, product: ProductDTO) -> tuple[dict[str, Any], int, Decimal]:
-        qty = request_dto.qty
-        price = Decimal(product.price)
-        return {
-                "color": request_dto.color,
-                "qty": qty,
-                "image": product.image,
-                "price": price,
-                "size": product.sizes[0].to_size_vo() if product.sizes and product.sizes[0] else None
-            }, qty, price
+    def compile_wishlist_item_data(self, request_dto: AddWishlistItemRequestDTO, product: ProductDTO) -> tuple[AddToWishlistDomainDTO, int, Decimal]:
+        if product.price is None:
+            raise WishlistPriceValidationError("Product price is required to add to wishlist.")
 
+        try:
+            price = Decimal(product.price)
+        except (ValueError, TypeError):
+            raise WishlistPriceValidationError(f"Invalid price value: {product.price}")
+
+        return AddToWishlistDomainDTO(
+                color=request_dto.color or "Black",
+                qty=request_dto.qty or 1,
+                image=product.image or "/",
+                price=price,
+                size=product.sizes[0].to_size_vo() if product.sizes and product.sizes[0] else None
+            ), request_dto.qty, price

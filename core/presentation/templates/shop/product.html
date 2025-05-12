@@ -96,7 +96,7 @@
 						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
 						
 						<ul class="product-btns">
-							<!--<li><button class="model-button add-to-wishlist" type-collection="WishListOrderProduct" item-pk="{{ object.pk }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button></li>-->
+							<button class="add-to-wishlist" default-color="{{i.color.0}}" default-size="{{i.sizes.0.pub_uuid}}" item-public-uuid="{{ i.pub_uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
 							<li><button class="model-button" type-collection="WishListOrderProduct"  data-action="{% url 'add_to_wishlist' %}"><i class="fa fa-heart-o"></i> add to wishlist</button></li>
 							<li><button class="model-button add-to-compare" data-product-url="{{ object.get_absolute_url }}"><i class="fa fa-exchange"></i> add to compare</button></li>
 						</ul>
@@ -321,7 +321,7 @@
 						</div>
 						{% endif %}
 						<div class="product-btns">
-							<button class="add-to-wishlist" type-collection="WishListOrderProduct" default-size="{{i.product_sizes.all.0.pk}}" item-pk="{{ i.pk }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+							<button class="add-to-wishlist" default-color="{{i.color.0}}" default-size="{{i.sizes.0.pub_uuid}}" item-public-uuid="{{ i.pub_uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
 							<button class="add-to-compare" data-product-url="{{ i.get_absolute_url }}" csrf-token="{{ csrf_token }}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
 							<button class="quick-view openModalButton" image-url="{{i.image.url}}" description="{{i.description}}"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
 						</div>

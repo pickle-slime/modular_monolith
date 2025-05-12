@@ -1,5 +1,7 @@
 from core.utils.domain.entity import Entity
 from ..value_objects.cart_management import CartItem as CartItemVO, Size as SizeVO
+from ..dtos.cart_management import AddToWishlistDomainDTO
+from ..exceptions import InvalidSizeError, InvalidPriceError
 
 from decimal import Decimal
 from typing import Any
@@ -26,20 +28,56 @@ class WishlistItem(Entity):
     
     _size_cls: type[SizeVO] = SizeVO
 
+    def __post_init__(self):
+        try:
+            if self.size is not None:
+                size = self.size if isinstance(self.size, SizeVO) else self._size_cls.map_raw_data(self.size) if isinstance(self.size, dict) else SizeVO()
+                object.__setattr__(self, "size", size)
+        except (ValueError, TypeError, KeyError):
+            raise InvalidSizeError(f"{size}")
+
+        try:
+            if self.price:
+                price = Decimal(str(self.price))
+                object.__setattr__(self, "price", price)
+        except (ValueError, TypeError, KeyError):
+            raise InvalidPriceError(f"{price}")
+
+
     @classmethod
     def map_raw_data(cls, raw_data: dict[str, Any]) -> "WishlistItem":
-        price = raw_data.get("price", None)
-        if price is None:
-            raise ValueError(f"{cls.__name__}.{cls.map_raw_data.__name__} didn't get price value")
-
-        size = raw_data.get("size", None)
-        if not isinstance(size, dict) and not isinstance(size, SizeVO):
-            raise ValueError(f"{cls.__name__}.{cls.map_raw_data.__name__} didn't get size data")
-
-        return cls(
-                color=raw_data.get("color", "Black"),
-                qty=raw_data.get("qty", 1),
-                image=raw_data.get("image", "/"),
-                price=price,
-                size=size if isinstance(size, SizeVO) else cls._size_cls.map_raw_data(size)
+        return cls._build(
+                color=raw_data.get("color", None),
+                qty=raw_data.get("qty", None),
+                image=raw_data.get("image", None),
+                price=raw_data.get("price", None),
+                size=raw_data.get("size", None)
             )
+    
+    @classmethod
+    def map_domain_dto(cls, domain_dto: AddToWishlistDomainDTO) -> "WishlistItem":
+        return cls._build(
+                color=domain_dto.color,
+                qty=domain_dto.qty,
+                image=domain_dto.image,
+                price=domain_dto.price,
+                size=domain_dto.size
+            )
+
+    @classmethod
+    def _build(
+                cls,
+                color: str | None, 
+                qty: int | None,
+                image: str | None,
+                price: Decimal | float | str | None, 
+                size: SizeVO | dict | None
+            ) -> "WishlistItem":
+        return cls(
+                color=color or "Black",
+                qty=qty or 1,
+                image=image or "/",
+                price=price or Decimal("0"),    #pyright: ignore[reportArgumentType]
+                size=size or SizeVO(),  #pyright: ignore[reportArgumentType]
+            )
+

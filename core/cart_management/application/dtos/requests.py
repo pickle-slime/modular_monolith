@@ -7,5 +7,4 @@ class AddWishlistItemRequestDTO(BaseModel):
     color: str
     size: uuid.UUID
 
-    def map_into_tuple(self) -> tuple[uuid.UUID, int, str, uuid.UUID]:
-        return (self.product, self.qty, self.color, self.size)
+    
