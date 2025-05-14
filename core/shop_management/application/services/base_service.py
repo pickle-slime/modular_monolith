@@ -9,7 +9,7 @@ from core.shop_management.domain.aggregates.shop_management import Product as Pr
 
 from core.shop_management.domain.interfaces.i_repositories.i_shop_management import ICategoryRepository, IBrandRepository, IProductRepository
 from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL
-from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError
+from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError, NotFoundCartACLError
 from core.user_management.domain.interfaces.i_acls import IUserACL
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
@@ -88,7 +88,12 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         self.context['user'] = self.user
         
         if self.is_authorized:
-            self.context['cart'] = self.cart_acl.fetch_cart()
+            try:
+                self.context['cart'] = self.cart_acl.fetch_cart()
+            except NotFoundCartACLError:
+                self.context['cart'] = None
+                self.context['cart_warning'] = "We couldn't load your cart. It may be empty or not initialized yet."
+
             try:
                 self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid)
             except NotFoundWishlistACLError:

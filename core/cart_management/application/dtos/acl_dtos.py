@@ -1,4 +1,3 @@
-from core.cart_management.domain.value_objects.cart_management import Size
 from core.utils.application.base_dto import BaseDTO
 
 from core.shop_management.application.dtos.shop_management import ProductSizeDTO, ProductImageDTO, ProductDTO as ExternalProductDTO
@@ -25,10 +24,7 @@ class SizeDTO(BaseDTO['SizeDTO']):
             height=size.height,
             weight=size.weight,
         )
-
-    def to_size_vo(self) -> Size:
-        return Size(**self.model_dump(exclude="pub_uuid"))
-    
+   
 class ProductDTO(BaseDTO['ProductDTO']):
     pub_uuid: uuid.UUID | None = Field(default=None)
     name: str | None = Field(default=None, min_length=5, max_length=100, title="Produt Name")

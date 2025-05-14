@@ -22,7 +22,7 @@ class HomePageService(BaseTemplateService['HomePageService']):
 
         return slick_tablet
 
-    #@BaseCachingMixin.cache_result("{self.user.pub_uuid}", dtos=[ProductDTO, CategoryDTO])
+    @BaseCachingMixin.cache_result("{self.user.pub_uuid}", dtos=[ProductDTO, CategoryDTO])
     def _get_context_data(self) -> dict[str, Any]:
         context = dict()
         context['hot_deals'] = self._get_hot_deals()

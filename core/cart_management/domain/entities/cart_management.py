@@ -1,7 +1,7 @@
 from core.utils.domain.entity import Entity
-from ..value_objects.cart_management import CartItem as CartItemVO, Size as SizeVO
+from ..value_objects.cart_management import CartItem as CartItemVO
 from ..dtos.cart_management import AddToWishlistDomainDTO
-from ..exceptions import InvalidSizeError, InvalidPriceError
+from ..exceptions import InvalidPriceError
 
 from decimal import Decimal
 from typing import Any
@@ -15,7 +15,7 @@ class Cart(Entity):
 
     user: uuid.UUID | None = field(default=None)
 
-    items: dict[uuid.UUID, CartItemVO] | None = field(default=None)
+    items: list[CartItemVO] | None = field(default=None)
  
 @dataclass(kw_only=True)
 class WishlistItem(Entity):
@@ -24,18 +24,9 @@ class WishlistItem(Entity):
     image: str | None = field(default=None)
     price: Decimal | None = field(default=None)
 
-    size: SizeVO | None = field(default=None)
-    
-    _size_cls: type[SizeVO] = SizeVO
+    size: uuid.UUID | None = field(default=None)
 
     def __post_init__(self):
-        try:
-            if self.size is not None:
-                size = self.size if isinstance(self.size, SizeVO) else self._size_cls.map_raw_data(self.size) if isinstance(self.size, dict) else SizeVO()
-                object.__setattr__(self, "size", size)
-        except (ValueError, TypeError, KeyError):
-            raise InvalidSizeError(f"{size}")
-
         try:
             if self.price:
                 price = Decimal(str(self.price))
@@ -71,13 +62,12 @@ class WishlistItem(Entity):
                 qty: int | None,
                 image: str | None,
                 price: Decimal | float | str | None, 
-                size: SizeVO | dict | None
+                size: uuid.UUID | None
             ) -> "WishlistItem":
         return cls(
                 color=color or "Black",
                 qty=qty or 1,
                 image=image or "/",
                 price=price or Decimal("0"),    #pyright: ignore[reportArgumentType]
-                size=size or SizeVO(),  #pyright: ignore[reportArgumentType]
+                size=size or None,
             )
-

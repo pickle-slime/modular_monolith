@@ -32,6 +32,11 @@ class RedisSessionHost(BaseHost):
     def __init__(self, session_key: str | None = None):
         pass
 
+    @property
+    @abstractmethod
+    def session_key(self) -> str:
+        ...
+
     @abstractmethod
     def hand_over_session_key(self, session_key: str) -> None:
         pass

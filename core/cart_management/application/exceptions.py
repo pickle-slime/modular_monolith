@@ -45,3 +45,18 @@ class ValidationError(ApplicationException):
 class WishlistPriceValidationError(ValidationError):
     pass
 
+
+class InfrastructureAppError(ApplicationException):
+    '''
+    Infrastructure raise - application handles
+    '''
+    prefix: str = "[INFRASTRUCTION ERROR]"
+
+class NotFoundWishlistError(InfrastructureAppError):
+    pass
+
+class NotFoundCartError(InfrastructureAppError):
+    pass
+
+
+

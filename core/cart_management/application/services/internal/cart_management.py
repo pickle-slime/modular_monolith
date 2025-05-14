@@ -4,7 +4,7 @@ from core.cart_management.domain.interfaces.i_repositories.i_cart_management imp
 from core.cart_management.domain.dtos.cart_management import AddToWishlistDomainDTO
 from core.cart_management.application.dtos.acl_dtos import ProductDTO
 from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO
-from core.cart_management.application.exceptions import WishlistPriceValidationError
+from core.cart_management.application.exceptions import WishlistPriceValidationError, NotFoundWishlistError
 from ..base_service import BaseService
 
 from core.shop_management.domain.interfaces.i_acls import IProductACL
@@ -105,7 +105,11 @@ class WishlistService(BaseService["WishlistService"]):
         if not self.user.is_authenticated:
             return {"message": "You must register or log in to use this feature"}, 401
 
-        wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
+        try:
+            wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
+        except NotFoundWishlistError:
+            return {"message": "Sorry, we can't find your wishlist"}, 404
+
         product_dto = ProductDTO.from_product(self.product_acl.fetch_sample_of_size(request_dto.product, size_uuid=request_dto.size))
         compiled_wihslist_item = self.compile_wishlist_item_data(request_dto, product_dto)
         wishlist_entity.add_item(*compiled_wihslist_item)

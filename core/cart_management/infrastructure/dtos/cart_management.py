@@ -3,6 +3,7 @@ from core.cart_management.domain.entities.cart_management import Cart as CartEnt
 from core.cart_management.domain.value_objects.cart_management import CartItem as CartItemVO
 
 from pydantic import Field
+from decimal import Decimal
 import uuid
 
 '''
@@ -10,56 +11,60 @@ The DTOs below represent data from external storages.
 '''
 
 class RedisCartItemDTO(BaseEntityDTO):
-    public_uuid: uuid.UUID | None = Field(default=None)
-    color: str = Field(default='Black')
-    qty: int = Field(default=0)
+    color: str | None = Field(default='Black')
+    image: str | None = Field(default=None)
+    price: float | None = Field(default=None)
+
+    qty: int | None = Field(default=0)
 
     size: uuid.UUID | None = Field(default=None)
-    size_snapshot: dict | None = Field(default=None)
 
-    @staticmethod
-    def from_entity(entity: CartItemVO) -> 'RedisCartItemDTO':
-        return RedisCartItemDTO(
+    @classmethod
+    def from_entity(cls, entity: CartItemVO) -> 'RedisCartItemDTO':
+        return cls(
             color=entity.color,
+            image=entity.image,
+            price=float(entity.price) if entity.price is not None else None,
             qty=entity.qty,
             size=entity.size,
-            size_snapshot=entity.size_snapshot,
         )
     
     def to_entity(self) -> CartItemVO:
-        return RedisCartItemDTO(
-            public_uuid=self.public_uuid,
+        return CartItemVO(
             color=self.color,
+            image=self.image,
+            price=Decimal(self.price) if self.price is not None else None,
             qty=self.qty,
             size=self.size,
-            size_snapshot=self.size_snapshot,
         )
 
 class RedisCartDTO(BaseEntityDTO):
-    public_uuid: uuid.UUID | None = Field(default=None)
-    total_price: int = Field(default=0)
-    quantity: int = Field(default=0)
+    inner_uuid: uuid.UUID = Field(default=None)
+    public_uuid: uuid.UUID = Field(default=None)
+    total_price: float | None = Field(default=0)
+    quantity: int | None = Field(default=0)
 
-    items: list[RedisCartItemDTO] = Field(default_factory=list)
+    items: list[RedisCartItemDTO] | None = Field(default_factory=list)
 
     user: uuid.UUID | None = Field(default=None)
 
-    @staticmethod
-    def from_entity(entity: CartEntity) -> 'RedisCartDTO':
-        return RedisCartDTO(
-            total_price=entity.total_price,
+    @classmethod
+    def from_entity(cls, entity: CartEntity) -> 'RedisCartDTO':
+        return cls(
+            total_price=float(entity.total_price) if entity.total_price is not None else 0.0,
             quantity=entity.quantity,
             items=[RedisCartItemDTO.from_entity(item) for item in entity.items] if entity.items else [],
             user=entity.user,
-            pubic_uuid=entity.public_uuid,
             inner_uuid=entity.inner_uuid,
+            public_uuid=entity.public_uuid,
         )
     
     def to_entity(self) -> CartEntity:
         return CartEntity(
+            inner_uuid=self.inner_uuid,
             public_uuid=self.public_uuid,
-            total_price=self.total_price,
+            total_price=Decimal(self.total_price) if self.total_price else None,
             quantity=self.quantity,
             user=self.user,
-            items=[item.to_entity() for item in self.items]
+            items=[item.to_entity() for item in self.items] if self.items else None
         )

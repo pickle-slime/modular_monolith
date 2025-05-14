@@ -152,7 +152,18 @@
 								<!-- Cart -->
 								{% if user.is_authenticated %}
 								<div class="dropdown">
-									{% if cart %}
+									{% if cart_warning %}
+									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+										<i class="fa fa-shopping-cart"></i>
+										<span>Your Cart</span>
+										{% if cart.quantity %}
+										<div class="qty" id="qty">{{ cart.quantity }}</div>
+										{% endif %}
+									</a>
+									<div class="cart-dropdown">
+										<div class="alert alert-warning">{{ cart_warning }}</div>
+									</div>
+									{% elif cart %}
 									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
 										<i class="fa fa-shopping-cart"></i>
 										<span>Your Cart</span>

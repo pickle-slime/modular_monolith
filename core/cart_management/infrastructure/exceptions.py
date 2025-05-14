@@ -40,10 +40,3 @@ class InfrastructureException(Exception):
 
         return None
 
-class NotFoundRowError(InfrastructureException):
-    pass
-
-class NotFoundWishlistError(NotFoundRowError):
-    pass
-
-

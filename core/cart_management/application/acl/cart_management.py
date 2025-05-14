@@ -1,5 +1,5 @@
-from core.cart_management.infrastructure.exceptions import NotFoundWishlistError
-from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError
+from core.cart_management.application.exceptions import NotFoundWishlistError, NotFoundCartError
+from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError, NotFoundCartACLError
 from ...domain.interfaces.i_acls import *
 from ...domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
 from ..dtos.cart_management import CartDTO, WishlistDTO
@@ -11,7 +11,10 @@ class CartACL(ICartACL):
         self.cart_rep = cart_repository
 
     def fetch_cart(self) -> CartDTO:
-        return CartDTO.from_entity(self.cart_rep.fetch_cart())
+        try:
+            return CartDTO.from_entity(self.cart_rep.fetch_cart())
+        except NotFoundCartError:
+            raise NotFoundCartACLError(f"didnt find wishlist by session key ({self.cart_rep.session_key})")
 
 class WishlistACL(IWishlistACL):
     def __init__(self, wishlist_repository: IWishlistRepository):

@@ -1,7 +1,6 @@
-from ..value_objects.cart_management import Size as SizeVO
-
 from dataclasses import dataclass
 from decimal import Decimal
+import uuid
 
 @dataclass(frozen=True)
 class AddToWishlistDomainDTO:
@@ -9,5 +8,5 @@ class AddToWishlistDomainDTO:
     color: str | None
     qty: int | None
     image: str | None 
-    size: SizeVO | None 
+    size: uuid.UUID | None 
 

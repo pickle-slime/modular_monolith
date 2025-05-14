@@ -26,6 +26,10 @@ class ICartRepository(BaseRepository):
     @abstractmethod
     def save(self, cart_entity: CartEntity) -> None:
         pass
+
+    @abstractmethod
+    def session_key(self) -> str:
+        pass
  
 class ICartItemRepository(BaseRepository):
     pass

@@ -43,8 +43,5 @@ class DomainException(Exception):
 class ValidationError(DomainException):
     prefix: str = "[DOMAIN VALIDATION ERROR]"
 
-class InvalidSizeError(ValidationError):
-    pass
-
 class InvalidPriceError(ValidationError):
     pass

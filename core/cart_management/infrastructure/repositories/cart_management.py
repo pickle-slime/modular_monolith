@@ -1,10 +1,10 @@
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, ICartRepository
-from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
+from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
-from core.cart_management.presentation.cart_management.models import WishList as WishlistModel, WishListOrderProduct as WishlistItemModel
+from core.cart_management.presentation.cart_management.models import WishList as WishlistModel
+from core.cart_management.application.exceptions import NotFoundWishlistError, NotFoundCartError
 from ..dtos.cart_management import RedisCartDTO
 from ..mappers.cart_management import DjangoWishlistMapper
-from ..exceptions import NotFoundWishlistError
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 
 from django.db import transaction, connection
@@ -22,11 +22,14 @@ class DjangoCartRepository(ICartRepository):
         if raw_cart:
             return RedisCartDTO(**raw_cart).to_entity()
         else:
-            return CartEntity()
+            raise NotFoundCartError(f"didn't find wishlist by ({self.session_adapter.session_key})")
         
     def save(self, cart_entity: CartEntity) -> None:
         dto = RedisCartDTO.from_entity(cart_entity)
         self.session_adapter.set("cart", dto.model_dump())
+
+    def session_key(self) -> str:
+        return self.session_adapter.session_key
 
 class DjangoWishlistRepository(IWishlistRepository):
     def fetch_wishlist_by_user(self, public_uuid: uuid.UUID | None = None) -> WishlistEntity:
@@ -58,12 +61,12 @@ class DjangoWishlistRepository(IWishlistRepository):
     @transaction.atomic()
     def save(self, wishlist: WishlistEntity):
         wishlist_dict = asdict(wishlist)
-        items = wishlist_dict.pop("items")
+        items = wishlist.items
         self.insert_wishlist(wishlist_dict)
 
         if items:
             item_dicts = []
-            for item in items:
+            for key, item in items.items():
                 item_dict = asdict(item)
                 item_dict["wishlist_id"] = wishlist.inner_uuid
                 item_dicts.append(item_dict)

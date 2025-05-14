@@ -5,3 +5,6 @@ class ACLException(ApplicationException):
 
 class NotFoundWishlistACLError(ACLException):
     pass
+
+class NotFoundCartACLError(ACLException):
+    pass
