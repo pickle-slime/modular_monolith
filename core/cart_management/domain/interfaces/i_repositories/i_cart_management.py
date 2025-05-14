@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
-from core.cart_management.domain.entities.cart_management import Cart as CartEntity, WishlistItem as WishlistItemEntity
+from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 
 import uuid
 
@@ -12,7 +12,7 @@ class IWishlistRepository(BaseRepository):
         pass
 
     @abstractmethod
-    def save(self, wishlist: WishlistEntity | None = None, wishlist_items: list[WishlistItemEntity] | None = None) -> None:
+    def save(self, wishlist: WishlistEntity):
         pass
 
 class IWishlistItemRepository(BaseRepository):

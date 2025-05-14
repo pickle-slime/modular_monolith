@@ -1,8 +1,9 @@
 from types import FrameType
 import inspect
 
-class DomainException(Exception):
-    prefix: str = "[DOMAIN ERROR]"
+class InfrastructureException(Exception):
+    prefix: str = "[INFRASTRUCTURE ERROR]"
+    current_frame: FrameType | None = inspect.currentframe()
 
     def __init__(self, msg: str):
         cls_name, method_name = self._handle_error_context()
@@ -22,6 +23,7 @@ class DomainException(Exception):
             return "UnknownClass", "UnknownMethod"
 
         return cls_name, method_name
+
     def _find_user_frame(self) -> FrameType | None:
         """
         Walks back the frame stack until it finds a frame
@@ -32,9 +34,16 @@ class DomainException(Exception):
             f_locals = frame.f_locals
             self_obj = f_locals.get("self")
 
-            if not isinstance(self_obj, DomainException):
+            if not isinstance(self_obj, InfrastructureException):
                 return frame
             frame = frame.f_back
 
-class MissingFieldDataError(Exception):
+        return None
+
+class NotFoundRowError(InfrastructureException):
     pass
+
+class NotFoundWishlistError(NotFoundRowError):
+    pass
+
+

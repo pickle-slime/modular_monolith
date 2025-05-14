@@ -10,5 +10,5 @@ class ICartACL(ABC):
 
 class IWishlistACL(ABC):
     @abstractmethod
-    def fetch_wishlist(self, inner_uuid: uuid.UUID = None, public_uuid: uuid.UUID = None) -> WishlistDTO:
+    def fetch_wishlist(self, public_uuid: uuid.UUID) -> WishlistDTO:
         pass

@@ -1,3 +1,5 @@
+from core.cart_management.infrastructure.exceptions import NotFoundWishlistError
+from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError
 from ...domain.interfaces.i_acls import *
 from ...domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
 from ..dtos.cart_management import CartDTO, WishlistDTO
@@ -15,5 +17,8 @@ class WishlistACL(IWishlistACL):
     def __init__(self, wishlist_repository: IWishlistRepository):
         self.wishlist_rep = wishlist_repository
 
-    def fetch_wishlist(self, public_uuid: uuid.UUID | None = None) -> WishlistDTO:
-        return WishlistDTO.from_entity(self.wishlist_rep.fetch_wishlist_by_user(public_uuid))
+    def fetch_wishlist(self, public_uuid: uuid.UUID) -> WishlistDTO:
+        try:
+            return WishlistDTO.from_entity(self.wishlist_rep.fetch_wishlist_by_user(public_uuid))
+        except NotFoundWishlistError:
+            raise NotFoundWishlistACLError(f"didnt find wishlist by user public uuid ({public_uuid})")

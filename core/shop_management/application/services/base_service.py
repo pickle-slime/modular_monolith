@@ -1,4 +1,3 @@
-from unittest.mock import Base
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service, BaseService as BaseServiceProtocol, BaseTemplateService as BaseTemplateServiceProtocol
 
@@ -10,6 +9,7 @@ from core.shop_management.domain.aggregates.shop_management import Product as Pr
 
 from core.shop_management.domain.interfaces.i_repositories.i_shop_management import ICategoryRepository, IBrandRepository, IProductRepository
 from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL
+from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError
 from core.user_management.domain.interfaces.i_acls import IUserACL
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
@@ -88,8 +88,12 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         self.context['user'] = self.user
         
         if self.is_authorized:
-            self.context['cart'] = self.cart_acl.fetch_cart()#CartOrderProduct.objects.filter(cart=request.user.cart.pk).select_related('size__product__category')
-            self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid) #WishListOrderProduct.objects.filter(wishlist=request.user.wishlist.pk).select_related('size__product__category')
+            self.context['cart'] = self.cart_acl.fetch_cart()
+            try:
+                self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid)
+            except NotFoundWishlistACLError:
+                self.context['wishlist'] = None
+                self.context['wishlist_warning'] = "We couldn't load your wishlist. It may be empty or not initialized yet."
         return self.context
 
     #@BaseCachingMixin.cache_result(key_template="{amount}{indent}", prefix="top_selling", dtos=[ProductDTO])

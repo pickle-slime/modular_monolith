@@ -345,8 +345,9 @@
 	 			success: function(responseData) {
 	 				window.location.reload(); 
 	 			},
-	 			error: function() {
-	 				alert('An error occurred while processing your request.');
+	 			error: function(e) {
+					var response = e.responseJSON;
+					alert(`An error occurred while processing your request: ${response.message}`);
 	 			}
 	 		});
 		});
@@ -381,7 +382,8 @@
 					window.location.reload()
 				}, 
 				error: function(e) {
-					alert('An error occurred while processing your request.');
+					var response = e.responseJSON;
+					alert(`An error occurred while processing your request: ${response.message}`);
 				}
 			});
 		});
@@ -416,7 +418,8 @@
 					window.location.reload()
 				}, 
 				error: function(e) {
-					alert('An error occurred while processing your request.');
+					var response = e.responseJSON;
+					alert(`An error occurred while processing your request: ${response.message}`);
 				}
 			});
 		});

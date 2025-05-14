@@ -102,13 +102,15 @@ class WishlistService(BaseService["WishlistService"]):
         return {'status': "success"}, 200
 
     def add_to_wishlist(self, request_dto: AddWishlistItemRequestDTO) -> tuple[dict[str, Any], int]:
+        if not self.user.is_authenticated:
+            return {"message": "You must register or log in to use this feature"}, 401
 
         wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
         product_dto = ProductDTO.from_product(self.product_acl.fetch_sample_of_size(request_dto.product, size_uuid=request_dto.size))
         compiled_wihslist_item = self.compile_wishlist_item_data(request_dto, product_dto)
         wishlist_entity.add_item(*compiled_wihslist_item)
         self.wishlist_repository.save(wishlist_entity)
-        return {'status': "success"}, 200
+        return {'message': "success"}, 200
 
     def compile_wishlist_item_data(self, request_dto: AddWishlistItemRequestDTO, product: ProductDTO) -> tuple[AddToWishlistDomainDTO, int, Decimal]:
         if product.price is None:

@@ -17,11 +17,13 @@ class BaseService(BaseCachingMixin, BaseServiceProtocol[Service]):
             self, 
             session_adapter: RedisSessionHost | type[RedisSessionHost], 
             user_acl: IUserACL | type[IUserACL],
+            *args,
+            **kwargs
         ):
         
         self.session = self._resolve_dependency(session_adapter)
         self.user_acl = self._resolve_dependency(user_acl)
-        super().__init__(session_adapter=session_adapter)
+        super().__init__(session_adapter=session_adapter, *args, **kwargs)
 
     def _resolve_dependency(self, dependency: T | type[T]) -> T:
         """Helper method to instantiate class if type is passed"""

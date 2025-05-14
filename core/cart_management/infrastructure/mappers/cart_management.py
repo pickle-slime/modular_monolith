@@ -63,12 +63,12 @@ class DjangoWishlistItemMapper:
 
 class DjangoWishlistMapper:
     @staticmethod
-    def map_wishlist_into_entity(wishlist: WishlistModel, items: Manager[WishlistItemModel] = None):
+    def map_wishlist_into_entity(wishlist: WishlistModel, items: Manager[WishlistItemModel] | None = None):
         return WishlistEntity(
             inner_uuid=wishlist.inner_uuid,
             public_uuid=wishlist.public_uuid,
             total_price=wishlist.total_price,
             quantity=wishlist.quantity,
-            user=wishlist.customer,
+            user=wishlist.customer.public_uuid,
             items=DjangoWishlistItemMapper.map_wishlist_items_into_entities(items),
         )

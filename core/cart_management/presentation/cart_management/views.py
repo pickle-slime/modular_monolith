@@ -18,7 +18,6 @@ def delete_button_cart(request):
         JsonResponse(response, status=status)
 
     return redirect('home')
-
 def delete_button_wishlist(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax and request.method == 'PUT':

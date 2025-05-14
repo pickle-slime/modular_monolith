@@ -97,7 +97,18 @@
 								<!-- Wishlist -->
 								{% if user.is_authenticated %}
 								<div class="dropdown">
-									{% if wishlist %}
+									{% if wishlist_warning %}
+									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+										<i class="fa fa-heart-o"></i>
+										<span>Your Wishlist</span>
+										{% if wishlist.quantity %}
+										<div class="qty" id="qty-wish">{{ wishlist.quantity }}</div>
+										{% endif %}
+									</a>
+									<div class="cart-dropdown">
+										<div class="alert alert-warning">{{ wishlist_warning }}</div>
+									</div>
+									{% elif wishlist %}
 									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
 										<i class="fa fa-heart-o"></i>
 										<span>Your Wishlist</span>
