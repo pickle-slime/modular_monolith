@@ -2,7 +2,7 @@ from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service, BaseService as BaseServiceProtocol, BaseTemplateService as BaseTemplateServiceProtocol
 
 from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
-from core.shop_management.application.dtos.acl_dtos import ACLUserDTO
+from core.shop_management.application.dtos.acl_dtos import ACLUserDTO, ACLCartDTO, ACLWishlistDTO
 
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
@@ -95,7 +95,8 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
                 self.context['cart_warning'] = "We couldn't load your cart. It may be empty or not initialized yet."
 
             try:
-                self.context['wishlist'] = self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid)
+                t = ACLWishlistDTO.from_dto(self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid))
+                self.context['wishlist'] =  t 
             except NotFoundWishlistACLError:
                 self.context['wishlist'] = None
                 self.context['wishlist_warning'] = "We couldn't load your wishlist. It may be empty or not initialized yet."

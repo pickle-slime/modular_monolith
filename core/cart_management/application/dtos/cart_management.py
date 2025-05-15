@@ -10,6 +10,7 @@ import uuid
 class BaseItemDTO(BaseDTO[DTO]):
     color: str | None = Field(default=None, min_length=3, max_length=100, title="Item Color")
     qty: int | None = Field(default=None, ge=0, lt=100, title="QTY", description="QTY per item")
+    size: uuid.UUID | None = Field(default=None, title="Size", description="Represents a fereign key in the database")
 
 class CartItemDTO(BaseItemDTO['CartItemDTO']):
     @classmethod
@@ -17,14 +18,16 @@ class CartItemDTO(BaseItemDTO['CartItemDTO']):
         return cls(
             color=entity.color,
             qty=entity.qty,
+            size=entity.size,
         )
 
 class WishlistItemDTO(BaseItemDTO['WishlistItemDTO']):
-    @staticmethod
-    def from_entity(entity: WishlistItemEntity) -> 'WishlistItemDTO':
-        return WishlistItemDTO(
+    @classmethod
+    def from_entity(cls, entity: WishlistItemEntity) -> 'WishlistItemDTO':
+        return cls(
             color=entity.color,
             qty=entity.qty,
+            size=entity.size,
         )
 
 class BaseItemCollectionDTO(BaseEntityDTO):

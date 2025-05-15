@@ -1,3 +1,4 @@
+from core.cart_management.application.dtos.cart_management import WishlistItemDTO
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, ICartRepository
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
@@ -34,9 +35,10 @@ class DjangoCartRepository(ICartRepository):
 class DjangoWishlistRepository(IWishlistRepository):
     def fetch_wishlist_by_user(self, public_uuid: uuid.UUID | None = None) -> WishlistEntity:
         wishlist = WishlistModel.objects.filter(customer__public_uuid=public_uuid).first()
+        items = wishlist.orderproduct_set.all()
             
         if wishlist:
-            return DjangoWishlistMapper.map_wishlist_into_entity(wishlist)
+            return DjangoWishlistMapper.map_wishlist_into_entity(wishlist, items)
         else:
             raise NotFoundWishlistError(f"didn't find wishlist by customer__public_uuid ({public_uuid})")
 

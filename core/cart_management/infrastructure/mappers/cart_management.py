@@ -7,6 +7,7 @@ from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 
 from django.db.models import Manager
 from typing import Any
+import uuid
 
 class DjangoCartItemMapper:
     @staticmethod
@@ -40,30 +41,21 @@ class DjangoCartMapper:
 class DjangoWishlistItemMapper:
     @staticmethod
     def map_wishlist_item_into_entity(item: WishlistItemModel) -> WishlistItemEntity:
-        size = item.size
-        size_snapshot = {
-            "length": size.length,
-            "width": size.width,
-            "height": size.height,
-            "weight": size.weight,
-        } if size else None
-
         return WishlistItemEntity(
             color=item.color,
             qty=item.qty,
-            size=size,
-            size_snapshot=size_snapshot,
+            size=item.size.public_uuid,
         )
 
     @staticmethod
-    def map_wishlist_items_into_entities(items: Manager[WishlistItemModel]) -> list[WishlistItemEntity] | None:
+    def map_wishlist_items_into_entities(items: Manager[WishlistItemModel]) -> dict[uuid.UUID, WishlistItemEntity] | None:
         if items:
-            return {str(entity.inner_uuid): DjangoWishlistItemMapper.map_wishlist_item_into_entity(entity) for entity in items}
+            return {uuid.UUID(str(model.inner_uuid)): DjangoWishlistItemMapper.map_wishlist_item_into_entity(model) for model in items}
         return None
 
 class DjangoWishlistMapper:
     @staticmethod
-    def map_wishlist_into_entity(wishlist: WishlistModel, items: Manager[WishlistItemModel] | None = None):
+    def map_wishlist_into_entity(wishlist: WishlistModel, items: Manager[WishlistItemModel] | None = None) -> WishlistEntity:
         return WishlistEntity(
             inner_uuid=wishlist.inner_uuid,
             public_uuid=wishlist.public_uuid,

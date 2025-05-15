@@ -128,7 +128,5 @@ class WishlistService(BaseService["WishlistService"]):
         return AddToWishlistDomainDTO(
                 color=request_dto.color or "Black",
                 qty=request_dto.qty or 1,
-                image=product.image or "/",
-                price=price,
-                size=product.sizes[0].to_size_vo() if product.sizes and product.sizes[0] else None
+                size=product.sizes[0].pub_uuid if product.sizes and product.sizes[0] else None
             ), request_dto.qty, price

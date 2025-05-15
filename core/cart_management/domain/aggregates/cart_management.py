@@ -39,12 +39,11 @@ class Wishlist(Entity):
         self.quantity = (self.quantity or 0) + qty
         self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
 
-    def delete_item(self, item_uuid: uuid.UUID, qty: int = 1):
+    def delete_item(self, item_uuid: uuid.UUID, price: Decimal, qty: int = 1):
         if not self.items or item_uuid not in self.items:
             raise ValueError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item uuid in self.items")
 
         item = self.items[item_uuid]
-        item_price = Decimal(item.price) if item.price else Decimal(0)
 
         if item.qty and qty >= item.qty:
             try:
@@ -59,7 +58,7 @@ class Wishlist(Entity):
                 item.qty = qty
 
         self.quantity = max((self.quantity or 0) - qty, 0)
-        self.total_price = max((self.total_price or Decimal(0)) - (item_price * qty), Decimal(0))
+        self.total_price = max((self.total_price or Decimal(0)) - (price * qty), Decimal(0))
 
 
     # def get_list_of_parcels(self, item_collection):

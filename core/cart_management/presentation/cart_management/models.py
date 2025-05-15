@@ -25,7 +25,7 @@ class WishListOrderProduct(models.Model):
     color = models.CharField(max_length=225, null=True, blank=True)
     qty = models.PositiveBigIntegerField(default=1, blank=True)
 
-    size = models.ForeignKey("shop_management.ProductSizes", on_delete=models.CASCADE)
+    size = models.ForeignKey("shop_management.ProductSizes", on_delete=models.CASCADE, to_field="public_uuid")
 
     wishlist = models.ForeignKey('WishList', related_name='orderproduct_set', on_delete=models.CASCADE)
 
