@@ -22,9 +22,11 @@ class CartItemDTO(BaseItemDTO['CartItemDTO']):
         )
 
 class WishlistItemDTO(BaseItemDTO['WishlistItemDTO']):
+    pub_uuid: uuid.UUID | None = Field(default=None, title="Public UUID")
     @classmethod
     def from_entity(cls, entity: WishlistItemEntity) -> 'WishlistItemDTO':
         return cls(
+            pub_uuid=entity.public_uuid,
             color=entity.color,
             qty=entity.qty,
             size=entity.size,

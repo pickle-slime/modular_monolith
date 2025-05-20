@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-from core.utils.application.base_dto import BaseEntityDTO
+from core.utils.application.base_dto import BaseEntityDTO, BaseDTO
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductImage as ProductImageEntity, ProductSize as ProductSizeEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from core.utils.domain.value_objects.common import CommonNameField, CommonSlugField
@@ -226,4 +226,3 @@ class ProductDTO(BaseEntityDTO['ProductDTO']):
     @classmethod
     def from_entities(cls, entities: list[ProductEntity]) -> list['ProductDTO']:
         return [cls.from_entity(entity).populate_none_fields() for entity in entities]
-    

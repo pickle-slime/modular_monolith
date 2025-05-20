@@ -13,7 +13,7 @@ from core.shop_management.application.services.internal.shop_management import *
 
 from core.utils.application.base_view_mixin import BaseViewMixin
 from core.utils.application.base_factories import BaseServiceFactory
-from core.shop_management.infrastructure.repositories.shop_management import DjangoProductRepository, DjangoCategoryRepository, DjangoBrandRepository
+from core.shop_management.infrastructure.repositories.shop_management import DjangoProductRepository, DjangoCategoryRepository, DjangoBrandRepository, ProductReadModel
 from core.cart_management.presentation.cart_management.forms import AddToCartForm, AddToWishlistForm
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
 from core.user_management.presentation.acl_factory import UserManagementACLFactory
@@ -29,6 +29,7 @@ SERVICE_FACTORY = BaseServiceFactory(
     repositories={
         "category_repository": DjangoCategoryRepository,
         "product_repository": DjangoProductRepository,
+        "product_read_model": ProductReadModel,
         "brand_repository": DjangoBrandRepository,
     },
     adapters={

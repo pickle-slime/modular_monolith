@@ -3,14 +3,20 @@ from datetime import timedelta
 import uuid
 
 from django.db.models import Prefetch
+from django.db import transaction, connection
 from django.utils import timezone
 from django.http import Http404
+
 
 from core.shop_management.presentation.shop_management.models import Category as CategoryModel, Brand as BrandModel, Product as ProductModel, ProductSizes as ProductSizesModel, MultipleProductImages as MultipleProductImagesModel
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 from ...domain.interfaces.i_repositories.i_shop_management import *
+from ...application.interfaces.i_read_models.i_shop_management import IProductReadModel
 from ..exceptions import ProductNotFoundError, SizeNotFoundError
+
+from core.shop_management.application.dtos.acl_dtos import ACLWishlistItemDTO
+from core.shop_management.application.dtos.composition import WishlistItemDetailsDTO
 
 from ..mappers.shop_management import DjangoCategoryMapper, DjangoBrandMapper, DjangoProductMapper
 
@@ -184,3 +190,33 @@ class DjangoProductRepository(IProductRepository):
             raise SizeNotFoundError(f"Can't find size by uuid ({size_public_uuid})")
 
         return DjangoProductMapper.map_product_into_entity(product, sizes_queryset=size)
+
+class ProductReadModel(IProductReadModel):
+    @transaction.atomic()
+    def fetch_wishlist_items_details(self, items: list[ACLWishlistItemDTO]) -> list[WishlistItemDetailsDTO]:
+        public_uuids = [i.size for i in items]  
+
+        if not public_uuids:
+            return []
+
+        sql = '''
+            SELECT s.public_uuid, p.name, p.image, p.price, p.discount, c.slug, p.slug 
+            FROM shop_management_product p
+            INNER JOIN shop_management_productsizes s ON p.inner_uuid = s.product_id
+            INNER JOIN shop_management_category c ON c.inner_uuid = p.category_id
+            WHERE s.public_uuid = ANY(%s);
+        '''
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, [[public_uuids]])
+            rows: list[tuple] = cursor.fetchall()
+
+        return [WishlistItemDetailsDTO(
+            size=row[0], 
+            product_name=row[1], 
+            image=row[2], 
+            price=row[3], 
+            discount=row[4], 
+            category_slug=row[5], 
+            product_slug=row[6]) 
+                for row in rows]

@@ -22,9 +22,11 @@ class ACLCartItemDTO(BaseItemDTO['CartItemDTO']):
         )
 
 class ACLWishlistItemDTO(BaseItemDTO['WishlistItemDTO']):
+    pub_uuid: uuid.UUID | None = Field(default=None, title="Public UUID")
     @classmethod
     def from_dto(cls, dto: WishlistItemDTO) -> 'ACLWishlistItemDTO':
         return cls(
+            pub_uuid=dto.pub_uuid,
             color=dto.color,
             qty=dto.qty,
             size=dto.size,

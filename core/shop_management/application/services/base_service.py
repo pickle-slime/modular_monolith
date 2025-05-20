@@ -1,14 +1,17 @@
+from core.presentation.electro.settings import MEDIA_URL
 from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service, BaseService as BaseServiceProtocol, BaseTemplateService as BaseTemplateServiceProtocol
 
 from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
+from core.shop_management.application.dtos.composition import ProductWishlistDTO
 from core.shop_management.application.dtos.acl_dtos import ACLUserDTO, ACLCartDTO, ACLWishlistDTO
 
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
 
 from core.shop_management.domain.interfaces.i_repositories.i_shop_management import ICategoryRepository, IBrandRepository, IProductRepository
-from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL
+from core.shop_management.application.interfaces.i_read_models.i_shop_management import IProductReadModel
+from core.cart_management.domain.interfaces.i_acls import ICartACL, IWishlistACL 
 from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError, NotFoundCartACLError
 from core.user_management.domain.interfaces.i_acls import IUserACL
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
@@ -68,12 +71,14 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
 
         brand_repository: IBrandRepository,
         product_repository: IProductRepository,
+        product_read_model: IProductReadModel,
         url_mapping_adapter: URLHost,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.brand_rep = brand_repository
         self.product_rep = product_repository
+        self.product_read_model = product_read_model
         self.url_mapping = url_mapping_adapter
         self.category_rep = category_repository
         self.cart_acl = cart_acl
@@ -95,8 +100,11 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
                 self.context['cart_warning'] = "We couldn't load your cart. It may be empty or not initialized yet."
 
             try:
-                t = ACLWishlistDTO.from_dto(self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid))
-                self.context['wishlist'] =  t 
+                wishlist = ACLWishlistDTO.from_dto(self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid))
+                if wishlist.items:
+                    items = self.product_read_model.fetch_wishlist_items_details(wishlist.items)
+                    product_wishlist = ProductWishlistDTO.merge(wishlist, items, self.url_mapping, MEDIA_URL)
+                self.context['wishlist'] =  product_wishlist
             except NotFoundWishlistACLError:
                 self.context['wishlist'] = None
                 self.context['wishlist_warning'] = "We couldn't load your wishlist. It may be empty or not initialized yet."

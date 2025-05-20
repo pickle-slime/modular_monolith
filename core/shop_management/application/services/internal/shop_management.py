@@ -1,10 +1,11 @@
 from typing import Any
 import uuid
 
-from core.utils.application.base_cache_mixin import BaseCachingMixin
-from ..base_service import BaseTemplateService
+from core.utils.application.base_cache_mixin import BaseCachingMixin 
+from core.shop_management.application.services.base_service import BaseTemplateService
 
 from core.review_management.domain.interfaces.i_acl import IProductRatingACL
+from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError, NotFoundCartACLError
 from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO, ProductImageDTO
 
 class HomePageService(BaseTemplateService['HomePageService']):
@@ -139,7 +140,10 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
 
 
         if self.user.is_authenticated:
-            context['add_to_cart_and_wishlist'] = ProductDTO.from_entity(self.entity), self.cart_acl.fetch_cart().pub_uuid, self.wishlist_acl.fetch_wishlist()
+            try:
+                context['add_to_cart_and_wishlist'] = ProductDTO.from_entity(self.entity), self.cart_acl.fetch_cart().pub_uuid, self.wishlist_acl.fetch_wishlist(self.user.pub_uuid) if self.user.pub_uuid else None
+            except (NotFoundWishlistACLError, NotFoundCartACLError):
+                context["add_to_cart_and_wishlist"] = ProductDTO.from_entity(self.entity), None, None
 
         return {**header_and_footer, **context}
 
