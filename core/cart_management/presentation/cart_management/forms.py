@@ -10,6 +10,7 @@ class BaseProductForm(forms.Form):
 
     def _populate_product_fields(self):
         product_sizes = self.object_dto.sizes
+
         self.fields['size'].choices = [(option.pub_uuid, option.size) for option in product_sizes] if product_sizes else []
         self.fields['color'].choices = [(color, color) for color in self.object_dto.color] if self.object_dto.color else []
 

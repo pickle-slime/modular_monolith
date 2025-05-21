@@ -125,9 +125,12 @@ class ProductPage(DetailView, BaseViewMixin):
 
         service_context["search_bar"] = SearchForm(categories=service_context["search_bar"])
         if self.service.user.is_authenticated:
-            object_entity, cart_uuid, wishlist_uuid = service_context["add_to_cart_and_wishlist"]
-            service_context["add_to_cart"] = AddToCartForm(object_dto=object_entity, cart_uuid=cart_uuid)
-            service_context["add_to_wishlist"] = AddToWishlistForm(object_dto=object_entity, wishlist_uuid=wishlist_uuid)
+            cart_dto = service_context["add_cart"]
+            wishlist_dto = service_context["add_wishlist"]
+            if not service_context.get("cart_error", None):
+                service_context["add_to_cart"] = AddToCartForm(object_dto=self.object, cart_uuid=cart_dto.pub_uuid)
+            if not service_context.get("wishlist_errror", None):
+                service_context["add_to_wishlist"] = AddToWishlistForm(object_dto=self.object, wishlist_uuid=wishlist_dto.pub_uuid)
 
         return {**context, **service_context}
     

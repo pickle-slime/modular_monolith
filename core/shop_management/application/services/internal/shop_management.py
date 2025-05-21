@@ -141,9 +141,16 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
 
         if self.user.is_authenticated:
             try:
-                context['add_to_cart_and_wishlist'] = ProductDTO.from_entity(self.entity), self.cart_acl.fetch_cart().pub_uuid, self.wishlist_acl.fetch_wishlist(self.user.pub_uuid) if self.user.pub_uuid else None
-            except (NotFoundWishlistACLError, NotFoundCartACLError):
-                context["add_to_cart_and_wishlist"] = ProductDTO.from_entity(self.entity), None, None
+                context['add_wishlist'] = self.wishlist_acl.fetch_wishlist(self.user.pub_uuid) if self.user.pub_uuid else None
+            except (NotFoundWishlistACLError):
+                context["add_wishlist"] = None
+                context["wishlist_error"] = "We couldn't load your wishlist. It may be empty or not initialized yet."
+            
+            try:
+                context['add_cart'] = self.cart_acl.fetch_cart().pub_uuid
+            except (NotFoundCartACLError):
+                context["add_cart"] = None
+                context["cart_error"] = "We couldn't load your cart. It may be empty or not initialized yet."
 
         return {**header_and_footer, **context}
 

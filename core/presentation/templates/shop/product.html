@@ -68,6 +68,9 @@
 				{% if user.is_authenticated %}	
 				<form id="productForm" method="post">
 					{% csrf_token %}
+					{% if cart_error %}
+					<p class="alert alert-warning">{{ cart_error }}</p>
+					{% else %}
 					<div class="product-options">
 						{% if add_to_cart.size|length > 0 %}
 						<label>
@@ -82,22 +85,25 @@
 						</label>
 						{% endif %}
 					</div>
+					{% endif %}
 
 					<div class="add-to-cart">
 						<div class="qty-label">
 							Qty
 							<div class="input-number">
+								{% if add_to_cart %}
 								{{ add_to_cart.qty }}
+								{% else %}
+								<input type="number" value="1">
+								{% endif %}
 								<span class="qty-up">+</span>
 								<span class="qty-down">-</span>
 							</div>
 						</div>
-						<input id="object-pk" type="hidden" value="{{ object.pk }}">
+						<input id="object-pk" type="hidden" value="{{ object.pub_uuid }}">
 						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-						
 						<ul class="product-btns">
-							<button class="add-to-wishlist" default-color="{{i.color.0}}" default-size="{{i.sizes.0.pub_uuid}}" item-public-uuid="{{ i.pub_uuid }}" data-action-by-default="{% url 'add_to_wishlist' %}" csrf-token="{{ csrf_token }}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-							<li><button class="model-button" type-collection="WishListOrderProduct"  data-action="{% url 'add_to_wishlist' %}"><i class="fa fa-heart-o"></i> add to wishlist</button></li>
+							<li><button class="model-button" data-action="{% url 'add_to_wishlist' %}"><i class="fa fa-heart-o"></i> add to wishlist</button></li>
 							<li><button class="model-button add-to-compare" data-product-url="{{ object.get_absolute_url }}"><i class="fa fa-exchange"></i> add to compare</button></li>
 						</ul>
 
