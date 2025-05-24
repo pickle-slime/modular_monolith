@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import Any
+from typing import TypeVar, Any
 import uuid
+
+EntityType = TypeVar("EntityType", bound="Entity")
 
 @dataclass(kw_only=True, init=False)
 class Entity:

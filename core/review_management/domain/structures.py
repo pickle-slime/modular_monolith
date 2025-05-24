@@ -1,9 +1,22 @@
-from core.utils.domain.structures import BaseEntityList
 from core.review_management.domain.entities.review_management import Review as ReviewEntity, ReviewEntityType
+from core.review_management.domain.entity import EntityType
 
 from typing import Generic, Optional, Iterable
 
 MAX_REVIEWS = 100
+
+class BaseEntityList(Generic[EntityType]):
+    def __init__(self, entities: Iterable[EntityType]):
+        self._entities = list(entities)
+
+    def __len__(self):
+        return len(self._entities)
+
+    def __iter__(self):
+        return iter(self._entities)
+
+    def __getitem__(self, index):
+        return self._entities[index]
 
 class ReviewCollection(Generic[ReviewEntityType], BaseEntityList[ReviewEntity]):
     def __init__(self, entities: Iterable[ReviewEntity]):

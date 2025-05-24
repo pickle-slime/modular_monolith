@@ -2,7 +2,6 @@ from core.notification_management.domain.entities.notification_management import
 from core.notification_management.presentation.notification_management.models import CommonMailingList
 from core.notification_management.domain.value_objects.notification_management import CommonEmailField
 
-
 class NewsLetterMapper:
     @staticmethod
     def map_into_entity(model: CommonMailingList) -> NewsLetterEntity:

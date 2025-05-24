@@ -2,13 +2,25 @@ from typing import Optional, Iterable, Generic
 
 from core.shop_management.domain.entities.shop_management import ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity, ProductSizeType, ProductImageType
 
-from core.utils.domain.structures import BaseEntityList
-
+from core.shop_management.domain.entity import EntityType
 
 MIN_SIZES = 0
 MAX_SIZES = 5
 MIN_IMAGES = 0
 MAX_IMAGES = 10
+
+class BaseEntityList(Generic[EntityType]):
+    def __init__(self, entities: Iterable[EntityType]):
+        self._entities = list(entities)
+
+    def __len__(self):
+        return len(self._entities)
+
+    def __iter__(self):
+        return iter(self._entities)
+
+    def __getitem__(self, index):
+        return self._entities[index]
 
 class ProductSizesEntityList(Generic[ProductSizeType], BaseEntityList[ProductSizeEntity]):
     def __init__(self, entities: Iterable[ProductSizeType]):
