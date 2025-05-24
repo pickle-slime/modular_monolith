@@ -1,7 +1,7 @@
-from core.utils.domain.entity import *
 from ..value_objects.shop_management import *
-from core.utils.domain.value_objects.common import *
+from core.shop_management.domain.entity import Entity
 
+from typing import TypeVar
 from decimal import Decimal
 import uuid
 

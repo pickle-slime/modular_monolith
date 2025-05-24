@@ -1,4 +1,4 @@
-from core.utils.domain.entity import Entity
+from core.order_management.domain.entity import Entity
 
 from decimal import Decimal
 from dataclasses import dataclass

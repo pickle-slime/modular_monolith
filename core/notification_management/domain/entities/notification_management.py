@@ -1,5 +1,5 @@
-from core.utils.domain.entity import Entity
-from core.utils.domain.value_objects.common import CommonEmailField
+from core.notification_management.domain.entity import Entity
+from core.notification_management.domain.value_objects.notification_management import CommonEmailField
 
 from dataclasses import field
 from datetime import datetime

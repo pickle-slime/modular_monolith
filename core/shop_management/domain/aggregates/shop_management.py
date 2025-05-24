@@ -1,8 +1,7 @@
-from ....utils.domain.value_objects.common import CommonNameField, CommonSlugField, ForeignUUID
 from ..structures import ProductSizesEntityList, ProductImagesEntityList
-from ..value_objects.shop_management import ImageField, PercentageField
+from ..value_objects.shop_management import ImageField, PercentageField, CommonNameField, CommonSlugField, ForeignUUID
 from ..entities.shop_management import ProductSize, ProductImage
-from ....utils.domain.entity import Entity
+from ..entity import Entity
 
 from datetime import datetime
 from dataclasses import dataclass, field

@@ -73,6 +73,9 @@ class DjangoWishlistRepository(IWishlistRepository):
                 item_dicts.append(item_dict)
             self.bulk_insert_items(item_dicts)
 
+        if wishlist._removed_items:
+            self.bulk_delete_items(wishlist._removed_items)
+
     def bulk_insert_items(self, item_dicts: list[dict]):
         insert_sql = '''
             INSERT INTO cart_management_wishlistorderproduct (
@@ -117,3 +120,11 @@ class DjangoWishlistRepository(IWishlistRepository):
 
         with connection.cursor() as cursor:
             cursor.execute(sql, values)
+
+    def bulk_delete_items(self, uuids: set[uuid.UUID]):
+        delete_sql = '''
+            DELETE FROM cart_management_wishlistorderproduct
+            WHERE inner_uuid = ANY(%s)
+        '''
+        with connection.cursor() as cursor:
+            cursor.execute(delete_sql, (list(uuids),))

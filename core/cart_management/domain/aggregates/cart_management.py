@@ -1,4 +1,4 @@
-from core.utils.domain.entity import Entity
+from core.cart_management.domain.entity import Entity
 from ..entities.cart_management import WishlistItem
 from ..dtos.cart_management import AddToWishlistDomainDTO 
 
@@ -17,6 +17,7 @@ class Wishlist(Entity):
     items: dict[uuid.UUID, WishlistItem] | None = field(default=None)
 
     _item_cls: type[WishlistItem] = WishlistItem
+    _removed_items: set[uuid.UUID] = field(default_factory=set, init=False)
 
     def add_item(
         self, 
@@ -40,7 +41,7 @@ class Wishlist(Entity):
         self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
 
     def delete_item(self, item_uuid: uuid.UUID, price: Decimal, qty: int = 1):
-        if not self.items or item_uuid not in self.items:
+        if not self.items:
             raise ValueError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item uuid in self.items")
 
         item = self.items[item_uuid]
@@ -48,6 +49,7 @@ class Wishlist(Entity):
         if item.qty and qty >= item.qty:
             try:
                 del self.items[item_uuid]
+                self._removed_items.add(item_uuid)
             except KeyError:
                 raise KeyError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item by item_uuid")
             qty = item.qty

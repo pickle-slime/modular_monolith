@@ -1,4 +1,4 @@
-from core.utils.domain.entity import Entity
+from core.cart_management.domain.entity import Entity
 from ..value_objects.cart_management import CartItem as CartItemVO
 from ..dtos.cart_management import AddToWishlistDomainDTO
 

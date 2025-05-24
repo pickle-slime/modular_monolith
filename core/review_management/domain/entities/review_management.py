@@ -1,4 +1,4 @@
-from core.utils.domain.entity import Entity
+from core.review_management.domain.entity import Entity
 
 from dataclasses import dataclass, field
 from typing import TypeVar, Any

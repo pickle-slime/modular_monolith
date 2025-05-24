@@ -3,7 +3,7 @@ from django.db.models import QuerySet
 from core.shop_management.presentation.shop_management.models import Category as CategoryModel, Brand as BrandModel, Product as ProductModel, ProductSizes as ProductSizesModel, MultipleProductImages as MultipleProductImagesModel
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
-from core.utils.domain.value_objects.common import ForeignUUID
+from core.shop_management.domain.value_objects.shop_management import ForeignUUID
 from core.shop_management.domain.structures import ProductImagesEntityList, ProductSizesEntityList
 
 

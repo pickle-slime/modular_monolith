@@ -1,17 +1,11 @@
-from dataclasses import dataclass, field
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Protocol
 import uuid
 
-@dataclass(kw_only=True, init=False)
-class Entity:
-    inner_uuid: uuid.UUID = field(default_factory=uuid.uuid4)
-    public_uuid: uuid.UUID = field(default_factory=uuid.uuid4)
+EntityType = TypeVar("EntityType", covariant=True)
 
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, type(self)):
-            return self.inner_uuid == other.inner_uuid
-        else:
-            return False
+class Entity(Protocol[EntityType]):
+    inner_uuid: uuid.UUID
+    public_uuid: uuid.UUID
 
-EntityType = TypeVar("EntityType", bound=Entity)
+    def __eq__(self, other: Any) -> bool: ...
 

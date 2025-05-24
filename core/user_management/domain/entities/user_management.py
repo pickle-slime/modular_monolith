@@ -1,4 +1,4 @@
-from core.utils.domain.entity import Entity
+from core.user_management.domain.entity import Entity
 from core.user_management.domain.value_objects.user_management import RoleField
 from ..interfaces.hosts.password_hasher import PasswordHasherHost
 

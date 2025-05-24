@@ -1,4 +1,4 @@
-from core.utils.domain.entity import Entity
+from core.review_management.domain.entity import Entity
 from ..entities.review_management import Review
 from ..structures import ReviewCollection
 from ..exceptions import MissingFieldDataError
@@ -16,8 +16,8 @@ class ProductRating(Entity):
     product: uuid.UUID | None = field(default=None)
 
     #fields below are used for more efficient calculation and aren't a part of the aggregate
-    total_rating_sum: Decimal | None = field(default=Decimal("0.0"))
-    total_reviews_count: int | None = field(default=0)
+    total_rating_sum: Decimal | None = field(default=Decimal("0.0"), init=False)
+    total_reviews_count: int | None = field(default=0, init=False)
 
     review: type[Review] = Review
 

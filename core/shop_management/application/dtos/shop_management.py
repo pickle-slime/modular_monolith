@@ -4,10 +4,10 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-from core.utils.application.base_dto import BaseEntityDTO, BaseDTO
+from core.utils.application.base_dto import BaseEntityDTO
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductImage as ProductImageEntity, ProductSize as ProductSizeEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
-from core.utils.domain.value_objects.common import CommonNameField, CommonSlugField
+from core.shop_management.domain.value_objects.shop_management import CommonNameField, CommonSlugField
 from core.shop_management.domain.value_objects.shop_management import ImageField, PercentageField
 from core.shop_management.domain.structures import ProductImagesEntityList, ProductSizesEntityList
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
