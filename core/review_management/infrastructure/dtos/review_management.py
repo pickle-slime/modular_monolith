@@ -1,5 +1,4 @@
-from core.utils.application.base_dto import BaseDTO
-from core.review_management.domain.entities.review_management import Review as ReviewEntity
+from core.review_management.application.dtos.base_dto import BaseDTO
 
 from pydantic import Field
 from datetime import datetime

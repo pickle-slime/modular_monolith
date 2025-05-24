@@ -1,4 +1,4 @@
-from core.utils.application.base_dto import BaseDTO
+from core.cart_management.application.dtos.base_dto import BaseDTO
 
 from core.shop_management.application.dtos.shop_management import ProductSizeDTO, ProductImageDTO, ProductDTO as ExternalProductDTO
 from core.user_management.application.dtos.user_management import UserDTO

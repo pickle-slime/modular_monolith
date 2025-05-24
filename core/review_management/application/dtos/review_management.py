@@ -3,9 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-from stripe import Review
-
-from core.utils.application.base_dto import BaseEntityDTO, BaseDTO
+from core.review_management.application.dtos.base_dto import BaseEntityDTO, BaseDTO
 from core.review_management.domain.entities.review_management import Review as ReviewEntity
 from core.review_management.domain.aggregates.review_management import ProductRating as ProductRatingEntity
 from ...infrastructure.dtos.review_management import PaginatedReviewsDTO, PaginatedReviewItemDTO

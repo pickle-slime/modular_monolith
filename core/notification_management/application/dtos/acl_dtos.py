@@ -1,4 +1,4 @@
-from core.utils.application.base_dto import BaseDTO
+from core.notification_management.application.dtos.base_dto import BaseDTO
 
 from core.user_management.application.dtos.user_management import UserDTO
 

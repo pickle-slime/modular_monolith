@@ -1,4 +1,4 @@
-from core.utils.application.base_dto import BaseDTO, DTO
+from core.shop_management.application.dtos.base_dto import BaseDTO, DTO
 
 from core.user_management.application.dtos.user_management import UserDTO
 from core.cart_management.application.dtos.cart_management import CartDTO, WishlistDTO, CartItemDTO, WishlistItemDTO

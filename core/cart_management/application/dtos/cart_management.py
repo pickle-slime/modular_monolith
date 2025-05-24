@@ -1,4 +1,4 @@
-from core.utils.application.base_dto import BaseEntityDTO, BaseDTO, DTO
+from core.cart_management.application.dtos.base_dto import BaseEntityDTO, BaseDTO, DTO
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
 from core.cart_management.domain.value_objects.cart_management import CartItem as CartItemVO
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity

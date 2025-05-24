@@ -1,4 +1,4 @@
-from core.utils.application.base_dto import BaseEntityDTO
+from core.cart_management.application.dtos.base_dto import BaseEntityDTO
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 from core.cart_management.domain.value_objects.cart_management import CartItem as CartItemVO
 

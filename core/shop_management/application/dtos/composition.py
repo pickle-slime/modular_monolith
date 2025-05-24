@@ -1,7 +1,7 @@
 from core.shop_management.application.dtos.acl_dtos import ACLWishlistDTO
 from core.shop_management.application.dtos.read_models import WishlistItemDetailsDTO
 
-from core.utils.application.base_dto import BaseDTO
+from core.shop_management.application.dtos.base_dto import BaseDTO
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 from pydantic import Field

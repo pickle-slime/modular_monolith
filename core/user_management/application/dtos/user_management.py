@@ -1,7 +1,7 @@
 from ...domain.entities.user_management import User as UserEntity
 from ...domain.value_objects.user_management import RoleField
 
-from core.utils.application.base_dto import BaseEntityDTO
+from core.user_management.application.dtos.base_dto import BaseEntityDTO
 
 from pydantic import Field, model_validator, field_validator
 from typing import Literal

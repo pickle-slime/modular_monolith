@@ -1,4 +1,4 @@
-from core.utils.application.base_dto import BaseDTO
+from core.shop_management.application.dtos.base_dto import BaseDTO
 
 from pydantic import Field
 import uuid
