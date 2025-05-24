@@ -32,6 +32,8 @@ class DjangoCartMapper:
 
     def map_session_into_entity(self, session_cart: dict[str, Any]) -> CartEntity:
         return CartEntity(
+            inner_uuid=session_cart.get("inner_uuid"),
+            public_uuid=session_cart.get("public_uuid"),
             total_price=session_cart.get("total_price"),
             quantity=session_cart.get("quantity"),
             items=DjangoCartItemMapper.map_cart_items_into_entities(session_cart.get("items")),
@@ -42,6 +44,8 @@ class DjangoWishlistItemMapper:
     @staticmethod
     def map_wishlist_item_into_entity(item: WishlistItemModel) -> WishlistItemEntity:
         return WishlistItemEntity(
+            inner_uuid=item.inner_uuid,
+            public_uuid=item.public_uuid,
             color=item.color,
             qty=item.qty,
             size=item.size.public_uuid,
@@ -50,7 +54,7 @@ class DjangoWishlistItemMapper:
     @staticmethod
     def map_wishlist_items_into_entities(items: Manager[WishlistItemModel]) -> dict[uuid.UUID, WishlistItemEntity] | None:
         if items:
-            return {uuid.UUID(str(model.inner_uuid)): DjangoWishlistItemMapper.map_wishlist_item_into_entity(model) for model in items}
+            return {uuid.UUID(str(model.public_uuid)): DjangoWishlistItemMapper.map_wishlist_item_into_entity(model) for model in items}
         return None
 
 class DjangoWishlistMapper:

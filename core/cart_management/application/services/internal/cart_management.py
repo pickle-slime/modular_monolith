@@ -3,7 +3,7 @@ from core.cart_management.domain.entities.cart_management import Cart as CartEnt
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
 from core.cart_management.domain.dtos.cart_management import AddToWishlistDomainDTO
 from core.cart_management.application.dtos.acl_dtos import ProductDTO
-from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO
+from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO, DeleteWishlistItemRequestDTO
 from core.cart_management.application.exceptions import WishlistPriceValidationError, NotFoundWishlistError
 from ..base_service import BaseService
 
@@ -11,8 +11,6 @@ from core.shop_management.domain.interfaces.i_acls import IProductACL
 
 from typing import Any
 from decimal import Decimal
-import uuid
-
 
 class CartService(BaseService["CartService"]):
     def __init__(self, product_acl: IProductACL, cart_repository: ICartRepository, **kwargs):
@@ -88,16 +86,16 @@ class WishlistService(BaseService["WishlistService"]):
         self.product_acl = product_acl
         self.wishlist_repository = wishlist_repository
 
-    def delete_button_wishlist_service(self, data: dict[str, Any]) -> tuple[dict[str, Any], int]:
-        if not data:
-            raise ValueError(f"{self.__class__.__name__}.{self.delete_button_wishlist_service.__name__} didn't get data argument")
+    def delete_button_wishlist_service(self, request_dto: DeleteWishlistItemRequestDTO) -> tuple[dict[str, Any], int]:
+        if not self.user.is_authenticated:
+            return {"message": "You must register or log in to use this feature"}, 401
 
-        item_pub_uuid = data.get("item_public_uuid", None)
-        if not item_pub_uuid or not isinstance(item_pub_uuid, uuid.UUID):
-            raise ValueError(f"{self.__class__.__name__}.{self.delete_button_wishlist_service.__name__} didn't get item uuid")
+        try:
+            wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
+        except NotFoundWishlistError:
+            return {"message": "Sorry, we can't find your wishlist"}, 404
 
-        wishlist_entity = self.wishlist_repository.fetch_wishlist_by_user(self.user.pub_uuid)
-        wishlist_entity.delete_item(item_uuid=item_pub_uuid, qty=data.get("qty", 1))
+        wishlist_entity.delete_item(item_uuid=request_dto.item_public_uuid, price=request_dto.price, qty=request_dto.qty)
         self.wishlist_repository.save(wishlist_entity)
         return {'status': "success"}, 200
 

@@ -1,4 +1,3 @@
-from core.cart_management.application.dtos.cart_management import WishlistItemDTO
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, ICartRepository
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity

@@ -1,4 +1,4 @@
-from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO
+from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO, DeleteWishlistItemRequestDTO
 
 from django.shortcuts import redirect
 from django.http import JsonResponse
@@ -18,29 +18,39 @@ def delete_button_cart(request):
         JsonResponse(response, status=status)
 
     return redirect('home')
+
 def delete_button_wishlist(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax and request.method == 'PUT':
-        data = json.load(request)
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError:
+            return JsonResponse({"message": f"JSON decode error"}, status=403)
+
+        try:
+            request_dto = DeleteWishlistItemRequestDTO(**data)
+        except ValidationError:
+            return JsonResponse({"message": f"Validation error"}, status=403)
+
         service = initiate_wishlist_service(request)
-        response, status = service.delete_button_wishlist_service(data)
+        response, status = service.delete_button_wishlist_service(request_dto)
         return JsonResponse(response, status=status)
 
     return JsonResponse({"message": "Invalid data"}, status=403)
 
 def add_to_wishlist(request):
     if request.method == 'PUT' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        service = initiate_wishlist_service(request)
         try:
             data = json.loads(request.body.decode('utf-8'))
-        except json.JSONDecodeError as e:
-            return JsonResponse({"message": f"JSON decode error: {e}"}, status=403)
+        except json.JSONDecodeError:
+            return JsonResponse({"message": f"JSON decode error"}, status=403)
 
         try:
             validated_dto = AddWishlistItemRequestDTO(**data)
-        except ValidationError as e:
-            return JsonResponse({"message": f"Validation error: {e.errors()}"}, status=403)
+        except ValidationError:
+            return JsonResponse({"message": f"Validation error"}, status=403)
 
+        service = initiate_wishlist_service(request)
         response, status = service.add_to_wishlist(validated_dto)
         return JsonResponse(response, status=status)
 

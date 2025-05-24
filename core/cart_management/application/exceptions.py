@@ -45,7 +45,6 @@ class ValidationError(ApplicationException):
 class WishlistPriceValidationError(ValidationError):
     pass
 
-
 class InfrastructureAppError(ApplicationException):
     '''
     Infrastructure raise - application handles

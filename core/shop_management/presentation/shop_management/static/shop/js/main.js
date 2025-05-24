@@ -253,14 +253,17 @@
 			e.preventDefault();
 	
 			var form = $(this);
-			var item_pk = form.find('input[name=item-pk]').val();
+			var item_public_uuid = form.find('input[name=item-public-uuid]').val();
+			var price = form.find('input[name=item-price]').val();
+			var qty = form.find('input[name=item-qty]').val();
 			var request = form.attr('action');
 			var csrf = $('input[name=csrfmiddlewaretoken]').val();
 	
 			var data = {
 				csrfmiddlewaretoken: csrf,
-				item: item_pk,
-				//reqdata: request,
+				item_public_uuid: item_public_uuid,
+				price: price,
+				qty: qty
 			}
 	
 			$.ajax({
@@ -289,13 +292,17 @@
 			e.preventDefault();
 	
 			var form = $(this);
-			var item_pk = form.find('input[name=item-pk]').val();
+			var item_public_uuid = form.find('input[name=item-public-uuid]').val();
+			var price = form.find('input[name=item-price]').val();
+			var qty = form.find('input[name=item-qty]').val();
 			var request = form.attr('action');
 			var csrf = $('input[name=csrfmiddlewaretoken]').val();
 	
 			var data = {
 				csrfmiddlewaretoken: csrf,
-				item: item_pk,
+				item_public_uuid: item_public_uuid,
+				price: price,
+				qty: qty
 			}
 	
 			$.ajax({
