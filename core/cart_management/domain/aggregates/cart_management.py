@@ -19,7 +19,7 @@ class Wishlist(Entity):
     _item_cls: type[WishlistItem] = WishlistItem
     _removed_items: set[uuid.UUID] = field(default_factory=set, init=False)
 
-    @Entity.require_fields
+    @Entity.require_fields()
     def add_item(
         self, 
         raw_wishlist_item: AddToWishlistDomainDTO,
@@ -41,7 +41,7 @@ class Wishlist(Entity):
         self.quantity = (self.quantity or 0) + qty
         self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
 
-    @Entity.require_fields
+    @Entity.require_fields()
     def delete_item(self, item_uuid: uuid.UUID, price: Decimal, qty: int = 1):
         if not self.items:
             raise ValueError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item uuid in self.items")
@@ -50,8 +50,9 @@ class Wishlist(Entity):
 
         if item.qty and qty >= item.qty:
             try:
+                inner_uuid = self.items[item_uuid].inner_uuid
+                self._removed_items.add(inner_uuid)
                 del self.items[item_uuid]
-                self._removed_items.add(item_uuid)
             except KeyError:
                 raise KeyError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item by item_uuid")
             qty = item.qty

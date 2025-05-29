@@ -103,8 +103,8 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
                 wishlist = ACLWishlistDTO.from_dto(self.wishlist_acl.fetch_wishlist(public_uuid=self.user.pub_uuid))
                 if wishlist.items:
                     items = self.product_read_model.fetch_wishlist_items_details(wishlist.items)
-                    product_wishlist = ProductWishlistDTO.merge(wishlist, items, self.url_mapping, MEDIA_URL)
-                self.context['wishlist'] =  product_wishlist
+                    wishlist = ProductWishlistDTO.merge(wishlist, items, self.url_mapping, MEDIA_URL)
+                self.context['wishlist'] =  wishlist.populate_none_fields()
             except NotFoundWishlistACLError:
                 self.context['wishlist'] = None
                 self.context['wishlist_warning'] = "We couldn't load your wishlist. It may be empty or not initialized yet."

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, fields, is_dataclass
+from functools import wraps
 from typing import Any
 import uuid
 
@@ -16,6 +17,7 @@ class Entity:
     @classmethod
     def require_fields(cls, *required_fields):
         def decorator(func):
+            @wraps(func)
             def wrapper(self, *args, **kwargs):
 
                 if not is_dataclass(self):

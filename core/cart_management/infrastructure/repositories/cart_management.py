@@ -1,10 +1,10 @@
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, ICartRepository
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
+from core.cart_management.domain.entities.cart_management import  WishlistItem as WishlistItemEntity
 from core.cart_management.domain.entities.cart_management import Cart as CartEntity
-from core.cart_management.presentation.cart_management.models import WishList as WishlistModel
 from core.cart_management.application.exceptions import NotFoundWishlistError, NotFoundCartError
 from ..dtos.cart_management import RedisCartDTO
-from ..mappers.cart_management import DjangoWishlistMapper
+from ..mappers.cart_management import DjangoWishlistMapper, DjangoWishlistItemMapper
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 
 from django.db import transaction, connection
@@ -33,32 +33,64 @@ class DjangoCartRepository(ICartRepository):
 
 class DjangoWishlistRepository(IWishlistRepository):
     def fetch_wishlist_by_user(self, public_uuid: uuid.UUID | None = None) -> WishlistEntity:
-        wishlist = WishlistModel.objects.filter(customer__public_uuid=public_uuid).first()
-        items = wishlist.orderproduct_set.all()
-            
-        if wishlist:
-            return DjangoWishlistMapper.map_wishlist_into_entity(wishlist, items)
-        else:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    w."inner_uuid",
+                    w."public_uuid",
+                    w."customer_id",
+                    COALESCE(SUM(
+                        (
+                            wp."qty" * p."price"
+                        ) * (
+                            1 - (p."discount" / 100.0)
+                        )
+                    ), 0.0) AS total_price,
+                    COALESCE(SUM(wp."qty"), 0) AS quantity
+                FROM "cart_management_wishlist" w
+                LEFT OUTER JOIN "cart_management_wishlistorderproduct" wp
+                    ON w."inner_uuid" = wp."wishlist_id"
+                LEFT OUTER JOIN "shop_management_productsizes" ps
+                    ON wp."size_id" = ps."public_uuid"
+                LEFT OUTER JOIN "shop_management_product" p
+                    ON ps."product_id" = p."inner_uuid"
+                WHERE w."customer_id" = %s
+                GROUP BY w."inner_uuid", w."public_uuid", w."customer_id"
+                LIMIT 1;
+                """,
+                [str(public_uuid)]
+            )
+            row = cursor.fetchone()
+
+        if not row:
             raise NotFoundWishlistError(f"didn't find wishlist by customer__public_uuid ({public_uuid})")
 
-#    @transaction.atomic  
-#    def _save(self, wishlist: WishlistEntity | None = None, wishlist_items: list[WishlistItemEntity] | None = None) -> None:
-#        if wishlist:
-#            wishlist_data = dict(wishlist)
-#            wishlist_model, created = WishlistModel.objects.update_or_create(
-#                public_uuid=wishlist_data.get("public_uuid"), defaults=wishlist_data
-#            )
-#
-#        if wishlist_items:
-#            wishlist_item_models = []
-#            for item in wishlist_items:
-#                item_data = dict(item)
-#                item_data["wishlist"] = wishlist_model.pk
-#                wishlist_item_models.append(WishlistItemModel(**item_data))
-#        
-#        WishlistItemModel.objects.bulk_create(wishlist_item_models, ignore_conflicts=True)
+        wishlist_inner_uuid = row[0]
 
-        
+        items = self._fetch_wishlist_items(wishlist_inner_uuid)
+
+        return DjangoWishlistMapper.map_raw_wishlist_into_entity(row, items)
+
+    def _fetch_wishlist_items(self, wishlist_inner_uuid: uuid.UUID) -> dict[uuid.UUID, WishlistItemEntity]:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    wp."inner_uuid",
+                    wp."public_uuid",
+                    wp."color",
+                    wp."qty",
+                    wp."size_id"
+                FROM "cart_management_wishlistorderproduct" wp
+                WHERE wp."wishlist_id" = %s
+                """,
+                [str(wishlist_inner_uuid)]
+            )
+            rows = cursor.fetchall()
+
+        return DjangoWishlistItemMapper.map_raw_items_into_entities(rows)
+
     @transaction.atomic()
     def save(self, wishlist: WishlistEntity):
         wishlist_dict = asdict(wishlist)
@@ -103,18 +135,16 @@ class DjangoWishlistRepository(IWishlistRepository):
     def insert_wishlist(self, wishlist: dict):
         sql = '''
             INSERT INTO cart_management_wishlist(
-                inner_uuid, public_uuid, total_price, quantity, customer_id
-            ) VALUES (%s, %s, %s, %s, %s)
+                inner_uuid, public_uuid, customer_id
+            ) VALUES (%s, %s, %s)
             ON CONFLICT (inner_uuid) DO UPDATE SET
-                total_price = EXCLUDED.total_price,
-                quantity = EXCLUDED.quantity
+                public_uuid = EXCLUDED.public_uuid,
+                customer_id = EXCLUDED.customer_id
         '''
 
         values = (
             wishlist["inner_uuid"],
             wishlist["public_uuid"],
-            wishlist["total_price"],
-            wishlist["quantity"],
             wishlist["user"],
         )
 
