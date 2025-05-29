@@ -1,8 +1,7 @@
 from abc import abstractmethod
 
 from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository
-from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
-from core.cart_management.domain.entities.cart_management import Cart as CartEntity
+from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, Cart as CartEntity
 
 import uuid
 

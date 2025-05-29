@@ -1,12 +1,11 @@
 from core.utils.domain.interfaces.hosts.redis import RedisHost, RedisSessionHost
+from core.utils.domain.interfaces.hosts.serializer import SerializeHost
 from config import SESSIONS_EXPIRY, HASH_NAME_EXPIRY
 
 from typing import Any
 from redis import Redis
 import secrets
 import hashlib
-import json
-import pickle
 
 class RedisAdapter(RedisHost):
     _instance = None
@@ -39,8 +38,9 @@ class RedisAdapter(RedisHost):
 
 
 class RedisSessionAdapter(RedisSessionHost):
-    def __init__(self, redis_adapter: RedisAdapter, session_key: str | None = None):
+    def __init__(self, redis_adapter: RedisHost, serialize_adapter: SerializeHost, session_key: str | None = None):
         self.redis_adapter = redis_adapter
+        self._serialize_adapter = serialize_adapter
         self._session_key = session_key
 
     @property
@@ -48,39 +48,37 @@ class RedisSessionAdapter(RedisSessionHost):
         if not self._session_key:
             self._session_key = secrets.token_hex(8)
         return self._session_key
+
+    @property
+    def serialize_adapter(self) -> SerializeHost:
+        if not self._serialize_adapter:
+            raise ValueError("")
+        return self._serialize_adapter
     
     def hand_over_session_key(self, session_key: str) -> None:
         self._session_key = session_key
 
-    def _deserialize_data(self, session_data):
-        """Helper method to deserialize JSON or Pickle data."""
-        try:
-            return json.loads(session_data.decode('utf-8'))
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            try:
-                return pickle.loads(session_data)
-            except Exception:
-                return None
+    def get(self, key: str, default: Any = None, deserialize: bool = True, *args, **kwargs) -> Any:
+        session_data = self.redis_adapter.hget(self._get_session_key(), key)
+        if not session_data:
+            return default
 
-    def get(self, key: str, default: Any = None) -> Any:
+        if deserialize:
+            session_data = self.serialize_adapter.deserialize(session_data, *args, **kwargs)
+        return session_data
+
+    def pop(self, key: str, default: Any = None, deserialize: bool = True, *args, **kwargs) -> Any:
         session_data = self.redis_adapter.hget(self._get_session_key(), key)
         if session_data:
-            return self._deserialize_data(session_data)
-        return default
-
-    def pop(self, key: str, default: Any = None) -> Any:
-        session_data = self.redis_adapter.hget(self._get_session_key(), key)
-        if session_data:
-            data = self._deserialize_data(session_data)
             self.redis_adapter.hdel(self._get_session_key(), key)
-            return data
+            if deserialize:
+                session_data = self.serialize_adapter.deserialize(session_data, *args, **kwargs)
+            return session_data
         return default
 
-    def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY):
-        if isinstance(data, dict):
-            data = json.dumps(data)
-        else:
-            data = pickle.dumps(data)
+    def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY, serialize: bool = True):
+        if serialize:
+            data = self.serialize_adapter.serialize(data)
         self.redis_adapter.hset(self._get_session_key(), key, data, expire*60)
 
     def delete(self, key):

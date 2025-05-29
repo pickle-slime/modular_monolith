@@ -1,17 +1,18 @@
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, ICartRepository
-from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity
+from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, Cart as CartEntity
 from core.cart_management.domain.entities.cart_management import  WishlistItem as WishlistItemEntity
-from core.cart_management.domain.entities.cart_management import Cart as CartEntity
 from core.cart_management.application.exceptions import NotFoundWishlistError, NotFoundCartError
 from ..dtos.cart_management import RedisCartDTO
 from ..mappers.cart_management import DjangoWishlistMapper, DjangoWishlistItemMapper
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
+from core.utils.infrastructure.serializers.json_decoder import PydanticJSONDecoder
+from core.utils.infrastructure.serializers.json_encoder import PydanticJSONEncoder
 
 from django.db import transaction, connection
 
 from dataclasses import asdict
 import uuid
-
+import json
 
 class DjangoCartRepository(ICartRepository):
     def __init__(self, session_adapter: RedisSessionHost):
@@ -20,13 +21,15 @@ class DjangoCartRepository(ICartRepository):
     def fetch_cart(self) -> CartEntity:
         raw_cart = self.session_adapter.get("cart")
         if raw_cart:
-            return RedisCartDTO(**raw_cart).to_entity()
+            deserialized_cart: RedisCartDTO = json.loads(raw_cart, object_hook=PydanticJSONDecoder.from_dict([RedisCartDTO]))
+            return deserialized_cart.to_entity()
         else:
             raise NotFoundCartError(f"didn't find wishlist by ({self.session_adapter.session_key})")
         
     def save(self, cart_entity: CartEntity) -> None:
         dto = RedisCartDTO.from_entity(cart_entity)
-        self.session_adapter.set("cart", dto.model_dump())
+        serialized_cart: str = json.dumps(dto, cls=PydanticJSONEncoder)
+        self.session_adapter.set("cart", serialized_cart)
 
     def session_key(self) -> str:
         return self.session_adapter.session_key

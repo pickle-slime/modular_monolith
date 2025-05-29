@@ -1,28 +1,28 @@
 from core.cart_management.application.dtos.base_dto import BaseEntityDTO, BaseDTO, DTO
-from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, WishlistItem as WishlistItemEntity
-from core.cart_management.domain.value_objects.cart_management import CartItem as CartItemVO
-from core.cart_management.domain.entities.cart_management import Cart as CartEntity
+from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, Cart as CartEntity
+from core.cart_management.domain.entities.cart_management import CartItem as CartItemEntity, WishlistItem as WishlistItemEntity
 
 from pydantic import Field, field_validator
 from decimal import Decimal
 import uuid
 
 class BaseItemDTO(BaseDTO[DTO]):
+    pub_uuid: uuid.UUID | None = Field(default=None, title="Public UUID")
     color: str | None = Field(default=None, min_length=3, max_length=100, title="Item Color")
     qty: int | None = Field(default=None, ge=0, lt=100, title="QTY", description="QTY per item")
     size: uuid.UUID | None = Field(default=None, title="Size", description="Represents a fereign key in the database")
 
 class CartItemDTO(BaseItemDTO['CartItemDTO']):
     @classmethod
-    def from_vo(cls, entity: CartItemVO) -> 'CartItemDTO':
+    def from_entity(cls, entity: CartItemEntity) -> 'CartItemDTO':
         return cls(
+            pub_uuid=entity.public_uuid,
             color=entity.color,
             qty=entity.qty,
             size=entity.size,
         )
 
 class WishlistItemDTO(BaseItemDTO['WishlistItemDTO']):
-    pub_uuid: uuid.UUID | None = Field(default=None, title="Public UUID")
     @classmethod
     def from_entity(cls, entity: WishlistItemEntity) -> 'WishlistItemDTO':
         return cls(
@@ -46,28 +46,28 @@ class BaseItemCollectionDTO(BaseEntityDTO):
         return v
 
 class CartDTO(BaseItemCollectionDTO):
-    items: list[CartItemDTO]| None = Field(default=None, title="Contains a list of item DTOs")
+    items: dict[uuid.UUID, CartItemDTO] | None = Field(default=None, title="Contains a list of item DTOs")
 
     @classmethod
     def from_entity(cls, entity: CartEntity) -> 'CartDTO':
         return cls(
             total_price=float(entity.total_price) if entity.total_price else None,
             quantity=entity.quantity,
-            items=[CartItemDTO.from_vo(item) for item in entity.items] if entity.items else [],
+            items={key: CartItemDTO.from_entity(value) for key, value in entity.items.items()} if entity.items else dict(),
             user=entity.user,
             pub_uuid=entity.public_uuid,
         )
     
 
 class WishlistDTO(BaseItemCollectionDTO):
-    items: list[WishlistItemDTO] | None = Field(default=None, title="Contains a list of item DTOs")
+    items: dict[uuid.UUID, WishlistItemDTO] | None = Field(default=None, title="Contains a list of item DTOs")
 
     @classmethod
     def from_entity(cls, entity: WishlistEntity) -> 'WishlistDTO':
         return cls(
             total_price=float(entity.total_price) if entity.total_price is not None else None,
             quantity=entity.quantity,
-            items=[WishlistItemDTO.from_entity(entity.items[pub_uuid]) for pub_uuid in entity.items] if entity.items else [],
+            items={key: WishlistItemDTO.from_entity(value) for key, value in entity.items.items()} if entity.items else dict(),
             user=entity.user,
             pub_uuid=entity.public_uuid,
         )

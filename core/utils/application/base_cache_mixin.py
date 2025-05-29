@@ -1,7 +1,5 @@
 from .base_dto import DTO
 from ..domain.interfaces.hosts.redis import RedisSessionHost
-from ..infrastructure.serializers.json_decoder import PydanticJSONDecoder
-from ..infrastructure.serializers.json_encoder import PydanticJSONEncoder
 
 from typing import Callable
 from functools import wraps
@@ -46,10 +44,10 @@ class BaseCachingMixin:
                 _prefix = prefix.format(self=instance, func=func, **bound_arguments)
                 cache_key = cls.session_adapter.cache_key(_key, _prefix)
                 
-                cached_data = cls.session_adapter.get(cache_key)
+                cached_data = cls.session_adapter.get(cache_key, dtos) if dtos else cls.session_adapter.get(cache_key)
                 if not cached_data:
-                    cached_data = json.dumps(func(instance, *args, **kwargs), cls=PydanticJSONEncoder)
+                    cached_data = func(instance, *args, **kwargs) #actually raw data
                     cls.session_adapter.set(cache_key, cached_data)
-                return json.loads(cached_data, object_hook=PydanticJSONDecoder.from_dict(dtos)) if dtos else json.loads(cached_data)
+                return cached_data
             return wrapper
         return decorator

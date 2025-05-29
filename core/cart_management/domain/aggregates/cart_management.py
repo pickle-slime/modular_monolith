@@ -1,10 +1,66 @@
 from core.cart_management.domain.entity import Entity
-from ..entities.cart_management import WishlistItem
-from ..dtos.cart_management import AddToWishlistDomainDTO 
+from ..entities.cart_management import WishlistItem, CartItem
+from ..dtos.cart_management import AddToWishlistDomainDTO, AddToCartDomainDTO
 
 from decimal import Decimal
 from dataclasses import dataclass, field
 import uuid
+
+
+@dataclass(kw_only=True)
+class Cart(Entity):
+    total_price: Decimal | None = field(default=None)
+    quantity: int | None = field(default=None)
+
+    user: uuid.UUID | None = field(default=None)
+
+    items: dict[uuid.UUID, CartItem] | None = field(default=None)
+
+    _item_cls: type[CartItem] = CartItem
+
+    @Entity.require_fields()
+    def add_item(
+        self, 
+        domain_dto: AddToCartDomainDTO,
+        qty: int,
+        price: Decimal,
+        item_uuid: uuid.UUID | None = None,
+    ):
+        if self.items is None:
+            self.items = {}
+
+        item_uuid = item_uuid if item_uuid else uuid.uuid4()
+
+        if item_uuid in self.items:
+            existing_item = self.items[item_uuid]
+            existing_item.qty = (existing_item.qty or 0) + qty
+        else:
+            self.items[item_uuid] = self._item_cls.map_domain_dto(domain_dto)
+
+        self.quantity = (self.quantity or 0) + qty
+        self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
+
+    @Entity.require_fields()
+    def delete_item(self, item_uuid: uuid.UUID, price: Decimal, qty: int = 1):
+        if not self.items:
+            raise ValueError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item uuid in self.items")
+
+        item = self.items[item_uuid]
+
+        if item.qty and qty >= item.qty:
+            try:
+                del self.items[item_uuid]
+            except KeyError:
+                raise KeyError(f"{self.__class__.__name__}.{self.delete_item.__name__} can't find an item by item_uuid")
+            qty = item.qty
+        else:
+            if isinstance(item.qty, int):
+                item.qty -= qty
+            else:
+                item.qty = qty
+
+        self.quantity = max((self.quantity or 0) - qty, 0)
+        self.total_price = max((self.total_price or Decimal(0)) - (price * qty), Decimal(0))
 
 
 @dataclass(kw_only=True)

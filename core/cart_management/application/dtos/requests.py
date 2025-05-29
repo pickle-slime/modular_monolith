@@ -1,5 +1,5 @@
 from decimal import Decimal
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 import uuid
 
 class AddWishlistItemRequestDTO(BaseModel):
@@ -13,10 +13,13 @@ class DeleteWishlistItemRequestDTO(BaseModel):
     price: Decimal
     qty: int
 
-#    @field_validator("price", mode="before")
-#    def validate_price(cls, value):
-#        if isinstance(value, str):
-#            value = Decimal(value)
-#        return value
+class AddCartItemRequestDTO(BaseModel):
+    product: uuid.UUID
+    qty: int
+    color: str
+    size: uuid.UUID
 
-    
+class DeleteCartItemRequestDTO(BaseModel):
+    item_public_uuid: uuid.UUID
+    price: Decimal
+    qty: int

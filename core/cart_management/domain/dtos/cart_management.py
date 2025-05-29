@@ -7,3 +7,9 @@ class AddToWishlistDomainDTO:
     qty: int | None
     size: uuid.UUID | None 
 
+@dataclass(frozen=True)
+class AddToCartDomainDTO:
+    color: str | None
+    qty: int | None
+    size: uuid.UUID | None 
+
