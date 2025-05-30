@@ -35,18 +35,18 @@ class RedisSessionHost(BaseHost):
     @property
     @abstractmethod
     def session_key(self) -> str:
-        ...
+        pass
 
     @abstractmethod
     def hand_over_session_key(self, session_key: str) -> None:
         pass
 
     @abstractmethod
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(self, key: str, default: Any = None, deserialize: bool = True, *args, **kwargs) -> Any:
         pass
 
     @abstractmethod
-    def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY):
+    def set(self, key: str, data: Any, expire: int = SESSIONS_EXPIRY, serialize: bool = True):
         pass
 
     @abstractmethod
@@ -54,7 +54,7 @@ class RedisSessionHost(BaseHost):
         pass
 
     @abstractmethod
-    def pop(self, key: str, default: Any = None) -> Any:
+    def pop(self, key: str, default: Any = None, deserialize: bool = True, *args, **kwargs) -> Any:
         pass
 
     @abstractmethod

@@ -12,7 +12,7 @@ class BaseItemDTO(BaseDTO[DTO]):
     qty: int | None = Field(default=None, ge=0, lt=100, title="QTY", description="QTY per item")
     size: uuid.UUID | None = Field(default=None, title="Size", description="Represents a fereign key in the database")
 
-class ACLCartItemDTO(BaseItemDTO['CartItemDTO']):
+class ACLCartItemDTO(BaseItemDTO['ACLCartItemDTO']):
     @classmethod
     def from_dto(cls, dto: CartItemDTO) -> 'ACLCartItemDTO':
         return cls(
@@ -21,7 +21,7 @@ class ACLCartItemDTO(BaseItemDTO['CartItemDTO']):
             size=dto.size,
         )
 
-class ACLWishlistItemDTO(BaseItemDTO['WishlistItemDTO']):
+class ACLWishlistItemDTO(BaseItemDTO['ACLWishlistItemDTO']):
     pub_uuid: uuid.UUID | None = Field(default=None, title="Public UUID")
     @classmethod
     def from_dto(cls, dto: WishlistItemDTO) -> 'ACLWishlistItemDTO':
@@ -47,7 +47,7 @@ class ACLCartDTO(BaseItemCollectionDTO):
         return cls(
             total_price=float(dto.total_price) if dto.total_price else None,
             quantity=dto.quantity,
-            items=[ACLCartItemDTO.from_dto(item) for item in dto.items] if dto.items else [],
+            items=[ACLCartItemDTO.from_dto(value) for key, value in dto.items.items()] if dto.items else [],
             user=dto.user,
             pub_uuid=dto.pub_uuid,
         )
@@ -61,7 +61,7 @@ class ACLWishlistDTO(BaseItemCollectionDTO):
         return cls(
             total_price=float(dto.total_price) if dto.total_price is not None else None,
             quantity=dto.quantity,
-            items=[ACLWishlistItemDTO.from_dto(item) for item in dto.items] if dto.items else [],
+            items=[ACLWishlistItemDTO.from_dto(value) for key, value in dto.items.items()] if dto.items else [],
             user=dto.user,
             pub_uuid=dto.pub_uuid,
         )

@@ -1,5 +1,5 @@
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import ICartRepository, IWishlistRepository
-from core.cart_management.domain.dtos.cart_management import AddToWishlistDomainDTO
+from core.cart_management.domain.dtos.cart_management import AddToWishlistDomainDTO, AddToCartDomainDTO
 from core.cart_management.application.dtos.acl_dtos import ProductDTO
 from core.cart_management.application.dtos.requests import AddWishlistItemRequestDTO, AddCartItemRequestDTO, DeleteWishlistItemRequestDTO, DeleteCartItemRequestDTO
 from core.cart_management.application.exceptions import WishlistPriceValidationError, NotFoundWishlistError
@@ -17,28 +17,14 @@ class CartService(BaseService["CartService"]):
         self.cart_repository = cart_repository
 
     def delete_button_cart_service(self, request_dto: DeleteCartItemRequestDTO) -> tuple[dict[str, Any], int]:
-        item_pub_uuid = raw_cart.get('product')
-        
-        cart_entity = self.cart_repository.fetch_cart()
+        try:
+            cart_entity = self.cart_repository.fetch_cart()
+        except NotFoundWishlistError:
+            return {"message": "Sorry, we can't find your cart"}, 404
 
-        if cart_entity is None:
-            return {'status': 'error', 'message': 'Cart not found'}, 404
-
-        # Compute the price and quantity changes
-        cart_entity.remove_item()
-        #qty = item_collection.quantity - order_product.qty
-        #price = order_product.size.product.get_price_with_discount() * order_product.qty
-        response_data = {
-            'qty': str(qty),
-            'qty-2': f'{qty} Item(s) selected',
-            'subtotal': f'SUBTOTAL: ${item_collection.total_price - price}',
-        }
-
-        # Delete the item from the collection
-        
-        item_collection._meta.model.objects.delete_item(item_collection, item_id)
-
-        return response_data, 200
+        cart_entity.delete_item(item_uuid=request_dto.item_public_uuid, price=request_dto.price, qty=request_dto.qty)
+        self.cart_repository.save(cart_entity)
+        return {'status': "success"}, 200
 
     def add_to_cart(self, request_dto: AddCartItemRequestDTO) -> tuple[dict[str, Any], int]:
         try:
@@ -52,7 +38,7 @@ class CartService(BaseService["CartService"]):
         self.cart_repository.save(cart_entity)
         return {'message': "success"}, 200
 
-    def compile_wishlist_item_data(self, request_dto: AddCartItemRequestDTO, product: ProductDTO) -> tuple[AddToWishlistDomainDTO, int, Decimal]:
+    def compile_wishlist_item_data(self, request_dto: AddCartItemRequestDTO, product: ProductDTO) -> tuple[AddToCartDomainDTO, int, Decimal]:
         if product.price is None:
             raise WishlistPriceValidationError("Product price is required to add to wishlist.")
 
@@ -61,7 +47,7 @@ class CartService(BaseService["CartService"]):
         except (ValueError, TypeError):
             raise WishlistPriceValidationError(f"Invalid price value: {product.price}")
 
-        return AddToWishlistDomainDTO(
+        return AddToCartDomainDTO(
                 color=request_dto.color or "Black",
                 qty=request_dto.qty or 1,
                 size=product.sizes[0].pub_uuid if product.sizes and product.sizes[0] else None

@@ -4,7 +4,6 @@ from ..domain.interfaces.hosts.redis import RedisSessionHost
 from typing import Callable
 from functools import wraps
 import inspect
-import json
 
 class BaseCachingMixin:
     session_adapter: RedisSessionHost
@@ -44,7 +43,7 @@ class BaseCachingMixin:
                 _prefix = prefix.format(self=instance, func=func, **bound_arguments)
                 cache_key = cls.session_adapter.cache_key(_key, _prefix)
                 
-                cached_data = cls.session_adapter.get(cache_key, dtos) if dtos else cls.session_adapter.get(cache_key)
+                cached_data = cls.session_adapter.get(cache_key, dtos=dtos) if dtos else cls.session_adapter.get(cache_key)
                 if not cached_data:
                     cached_data = func(instance, *args, **kwargs) #actually raw data
                     cls.session_adapter.set(cache_key, cached_data)

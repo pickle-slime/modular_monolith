@@ -5,31 +5,26 @@ from core.cart_management.application.exceptions import NotFoundWishlistError, N
 from ..dtos.cart_management import RedisCartDTO
 from ..mappers.cart_management import DjangoWishlistMapper, DjangoWishlistItemMapper
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
-from core.utils.infrastructure.serializers.json_decoder import PydanticJSONDecoder
-from core.utils.infrastructure.serializers.json_encoder import PydanticJSONEncoder
 
 from django.db import transaction, connection
 
 from dataclasses import asdict
 import uuid
-import json
 
 class DjangoCartRepository(ICartRepository):
     def __init__(self, session_adapter: RedisSessionHost):
         self.session_adapter = session_adapter
 
     def fetch_cart(self) -> CartEntity:
-        raw_cart = self.session_adapter.get("cart")
-        if raw_cart:
-            deserialized_cart: RedisCartDTO = json.loads(raw_cart, object_hook=PydanticJSONDecoder.from_dict([RedisCartDTO]))
-            return deserialized_cart.to_entity()
+        cart = self.session_adapter.get("cart", dtos=[RedisCartDTO])
+        if cart:
+            return cart.to_entity()
         else:
             raise NotFoundCartError(f"didn't find wishlist by ({self.session_adapter.session_key})")
         
     def save(self, cart_entity: CartEntity) -> None:
-        dto = RedisCartDTO.from_entity(cart_entity)
-        serialized_cart: str = json.dumps(dto, cls=PydanticJSONEncoder)
-        self.session_adapter.set("cart", serialized_cart)
+        cart = RedisCartDTO.from_entity(cart_entity)
+        self.session_adapter.set("cart", cart)
 
     def session_key(self) -> str:
         return self.session_adapter.session_key

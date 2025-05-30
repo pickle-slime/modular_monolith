@@ -9,7 +9,7 @@ import uuid
 
 class DjangoNewsLetterRepsoitory(INewsLetterRepository):
     def fetch_iterator(self) -> Iterator[NewsLetterEntity]:
-        pass
+        ...
 
     def create(self, email: str, user_public_uuid: uuid.UUID | None = None) -> NewsLetterEntity | None:
         if not email:

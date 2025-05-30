@@ -1,6 +1,7 @@
 # myapp/middleware.py
 from core.user_management.infrastructure.adapters.jwtoken import JWTokenAdapter
 from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
+from core.utils.infrastructure.adapters.serializer import SerializeAdapter
 from core.user_management.application.services.internal.user_management import AuthenticationUserMiddlewareService
 from config import JWT_SECRET_KEY, ACCESS_JWTOKEN_EXPIRY, REFRESH_JWTOKEN_EXPIRY
 from django.utils.deprecation import MiddlewareMixin
@@ -87,12 +88,10 @@ class JWTMiddleware:
                 samesite="Strict"
             )
 
-
-
 class SessionPopulatedMiddleware(MiddlewareMixin):
     def __init__(self, get_response):
         self.get_response = get_response
-        self.session_adapter = RedisSessionAdapter(RedisAdapter())
+        self.session_adapter = RedisSessionAdapter(RedisAdapter(), SerializeAdapter())
 
     def __call__(self, request):
         self._process_request(request)

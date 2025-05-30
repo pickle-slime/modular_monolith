@@ -11,7 +11,7 @@ import requests
 class NewsLetterService:
     mailchimp = MailchipService()
 
-    def __init__(self, session_adapter: RedisSessionHost, user_acl: IUserACL, newsletter_repository = INewsLetterRepository):
+    def __init__(self, session_adapter: RedisSessionHost, user_acl: IUserACL, newsletter_repository: INewsLetterRepository):
         self.session = session_adapter
         self.user_acl = user_acl
         self.newsletter_rep = newsletter_repository
