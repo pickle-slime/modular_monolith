@@ -130,8 +130,7 @@
 												<form method="post" class="delete-wishlist-item-form" action="{% url 'delete_button_wishlist' %}">
 												{% csrf_token %}
 												<input type="hidden" name="item-public-uuid" value="{{i.pub_uuid}}">
-												<input type="hidden" name="item-price" value="{{i.price}}">
-												<input type="hidden" name="item-qty" value="{{i.qty}}">
+												<input type="hidden" name="product-public-uuid" value="{{i.product_pub_uuid}}">
 												<button class="delete" id="delete-wishlist-item-button" type="submit"><i class="fa fa-close"></i></button>
 												</form>
 											</div>
@@ -187,7 +186,7 @@
 												<form method="post" class="delete-cart-item-form" action="{% url 'delete_button_cart' %}">
 												{% csrf_token %}
 												<input type="hidden" name="item-public-uuid" value="{{i.pub_uuid}}">
-												<input type="hidden" name="item-price" value="{{i.price}}">
+												<input type="hidden" name="product-public-uuid" value="{{i.product_pub_uuid}}">
 												<button class="delete" id="delete-cart-item-button" type="submit"><i class="fa fa-close"></i></button>
 												</form>
 											</div>

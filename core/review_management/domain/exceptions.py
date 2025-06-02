@@ -5,6 +5,7 @@ class DomainException(Exception):
     prefix: str = "[DOMAIN ERROR]"
 
     def __init__(self, msg: str):
+        self.raw_msg = msg
         cls_name, method_name = self._handle_error_context()
         super().__init__(f"{self.prefix} {cls_name}.{method_name}: {msg} {self.prefix}")
 

@@ -5,6 +5,7 @@ class ApplicationException(Exception):
     prefix: str = "[APPLICATION ERROR]"
 
     def __init__(self, msg: str):
+        self.raw_msg = msg
         cls_name, method_name = self._handle_error_context()
         super().__init__(f"{self.prefix} {cls_name}.{method_name}: {msg} {self.prefix}")
 
@@ -39,11 +40,18 @@ class ApplicationException(Exception):
 
         return None
 
+#   ValidationErrors
+
 class ValidationError(ApplicationException):
     prefix: str = "[APPLICATION VALIDATION ERROR]"
 
-class WishlistPriceValidationError(ValidationError):
+class ProductValidationError(ValidationError):
     pass
+
+class ProductPriceValidationError(ProductValidationError):
+    pass
+
+#   InfrastructureAppErrors
 
 class InfrastructureAppError(ApplicationException):
     '''
@@ -56,6 +64,4 @@ class NotFoundWishlistError(InfrastructureAppError):
 
 class NotFoundCartError(InfrastructureAppError):
     pass
-
-
 

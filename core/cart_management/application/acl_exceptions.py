@@ -8,3 +8,4 @@ class NotFoundWishlistACLError(ACLException):
 
 class NotFoundCartACLError(ACLException):
     pass
+

@@ -254,16 +254,14 @@
 	
 			var form = $(this);
 			var item_public_uuid = form.find('input[name=item-public-uuid]').val();
-			var price = form.find('input[name=item-price]').val();
-			var qty = form.find('input[name=item-qty]').val();
+			var product = form.find('input[name=product-public-uuid]').val();
 			var request = form.attr('action');
 			var csrf = $('input[name=csrfmiddlewaretoken]').val();
 	
 			var data = {
 				csrfmiddlewaretoken: csrf,
 				item_public_uuid: item_public_uuid,
-				price: price,
-				qty: qty
+				product: product
 			}
 	
 			$.ajax({
@@ -276,8 +274,8 @@
 				},
 				success: function(responseData) {
 					$('#qty-wish').html(responseData['qty']);
-					$('#qty-2-wish').html(responseData['qty-2']);
-					$('#subtotal-wish').html(responseData['subtotal']);
+					$('#qty-2-wish').html(responseData['qty'] + ' Item(s) selected');
+					$('#subtotal-wish').html('SUBTOTAL: ' + responseData['subtotal']);
 					form.closest('.product-widget').remove();
 				},
 				error: function() {
@@ -293,16 +291,14 @@
 	
 			var form = $(this);
 			var item_public_uuid = form.find('input[name=item-public-uuid]').val();
-			var price = form.find('input[name=item-price]').val();
-			var qty = form.find('input[name=item-qty]').val();
+			var product = form.find('input[name=product-public-uuid]').val();
 			var request = form.attr('action');
 			var csrf = $('input[name=csrfmiddlewaretoken]').val();
 	
 			var data = {
 				csrfmiddlewaretoken: csrf,
 				item_public_uuid: item_public_uuid,
-				price: price,
-				qty: qty
+				product: product
 			}
 	
 			$.ajax({
@@ -315,8 +311,8 @@
 				},
 				success: function(responseData) {
 					$('#qty').html(responseData['qty']);
-					$('#qty-2').html(responseData['qty-2']);
-					$('#subtotal').html(responseData['subtotal']);
+					$('#qty-2').html(responseData['qty'] + ' Item(s) selected');
+					$('#subtotal').html('SUBTOTAL: ' + responseData['subtotal']);
 					form.closest('.product-widget').remove();
 				},
 				error: function() {
@@ -371,9 +367,6 @@
 
 			let data = {
 				'csrfmiddlewaretoken': [csrfToken],
-				'qty': '1',
-				'color': $(this).attr('default-color'),
-				'size': $(this).attr('default-size'),
 				'product': $(this).attr("item-public-uuid"),
 			};
 
@@ -407,9 +400,6 @@
 
 			let data = {
 				'csrfmiddlewaretoken': [csrfToken],
-				'color': $(this).attr('default-color'),
-				'size': $(this).attr('default-size'),
-				'qty': '1',
 				'product': $(this).attr("item-public-uuid"),
 			};
 

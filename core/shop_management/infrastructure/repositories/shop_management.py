@@ -11,9 +11,9 @@ from django.http import Http404
 from core.shop_management.presentation.shop_management.models import Category as CategoryModel, Brand as BrandModel, Product as ProductModel, ProductSizes as ProductSizesModel, MultipleProductImages as MultipleProductImagesModel
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
-from ...domain.interfaces.i_repositories.i_shop_management import *
-from ...application.interfaces.i_read_models.i_shop_management import IProductReadModel
-from ..exceptions import ProductNotFoundError, SizeNotFoundError
+from core.shop_management.domain.interfaces.i_repositories.i_shop_management import *
+from core.shop_management.application.interfaces.i_read_models.i_shop_management import IProductReadModel
+from core.shop_management.application.exceptions import ProductNotFoundError, SizeNotFoundError
 
 from core.shop_management.application.dtos.acl_dtos import ACLWishlistItemDTO
 from core.shop_management.application.dtos.composition import WishlistItemDetailsDTO
@@ -200,7 +200,7 @@ class ProductReadModel(IProductReadModel):
             return []
 
         sql = '''
-            SELECT s.public_uuid, p.name, p.image, p.price, p.discount, c.slug, p.slug 
+            SELECT s.public_uuid, p.public_uuid, p.name, p.image, p.price, p.discount, c.slug, p.slug 
             FROM shop_management_product p
             INNER JOIN shop_management_productsizes s ON p.inner_uuid = s.product_id
             INNER JOIN shop_management_category c ON c.inner_uuid = p.category_id
@@ -213,10 +213,11 @@ class ProductReadModel(IProductReadModel):
 
         return [WishlistItemDetailsDTO(
             size=row[0], 
-            product_name=row[1], 
-            image=row[2], 
-            price=row[3], 
-            discount=row[4], 
-            category_slug=row[5], 
-            product_slug=row[6]) 
+            product_pub_uuid=row[1],
+            product_name=row[2], 
+            image=row[3], 
+            price=row[4], 
+            discount=row[5], 
+            category_slug=row[6], 
+            product_slug=row[7]) 
                 for row in rows]

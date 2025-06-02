@@ -9,6 +9,7 @@ import uuid
 
 class ProductWishlistItemDTO(BaseDTO["ProductWishlistItemDTO"]):
     pub_uuid: uuid.UUID | None = Field(default=None, title="Public UUID")
+    product_pub_uuid: uuid.UUID | None = Field(default=None, title="Prdouct Public UUID")
     color: str = Field(default="-", min_length=3, max_length=100, title="Item Color")
     qty: int = Field(default=0, ge=0, lt=100, title="QTY", description="QTY per item")
     size: uuid.UUID = Field(title="Size", description="Represents a fereign key in the database")
@@ -16,7 +17,7 @@ class ProductWishlistItemDTO(BaseDTO["ProductWishlistItemDTO"]):
     price: float = Field(default=0.0, title="Product Price", description="The price of the product")
     discount: float = Field(default=0.0, title="Product Discount", description="Percentage of the product discount")
     product_name: str = Field(default="missing", min_length=2, max_length=100, title="Product Name")
-    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page", alias="absoluteUrl")
+    get_absolute_url: str | None = Field(default=None, title="Absolute Url", description="Contains a path to the dedicated web page")
 
 class ProductWishlistDTO(BaseDTO["ProductWishlistDTO"]):
     pub_uuid: uuid.UUID
@@ -58,6 +59,7 @@ class ProductWishlistDTO(BaseDTO["ProductWishlistDTO"]):
             product_absolute_url = url_mapping_adapter.get_absolute_url_of_product(details.category_slug, details.product_slug) if url_mapping_adapter else None
             merged_items.append(ProductWishlistItemDTO(
                 pub_uuid=acl_item.pub_uuid,
+                product_pub_uuid=details.product_pub_uuid,
                 color=acl_item.color,
                 qty=acl_item.qty,
                 size=acl_item.size,

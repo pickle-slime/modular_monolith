@@ -1,10 +1,11 @@
 from types import FrameType
 import inspect
 
-class InfrastructureException(Exception):
-    prefix: str = "[INFRASTRUCTURE ERROR]"
+class ApplicationException(Exception):
+    prefix: str = "[APPLICATION ERROR]"
 
     def __init__(self, msg: str):
+        self.raw_msg = msg
         cls_name, method_name = self._handle_error_context()
         super().__init__(f"{self.prefix} {cls_name}.{method_name}: {msg} {self.prefix}")
 
@@ -33,16 +34,22 @@ class InfrastructureException(Exception):
             f_locals = frame.f_locals
             self_obj = f_locals.get("self")
 
-            if not isinstance(self_obj, InfrastructureException):
+            if not isinstance(self_obj, ApplicationException):
                 return frame
             frame = frame.f_back
 
-class ModelNotFoundError(InfrastructureException):
-    prefix: str = "[INFRASTRUCTURE NOTFOUND ERROR]"
+        return None
+
+# Infrastructure-Application errors
+
+class InfrastructureAppError(ApplicationException):
+    prefix: str = "[INFRASTRUCTURE ERROR]"
+
+class ModelNotFoundError(InfrastructureAppError):
+    pass 
 
 class ProductNotFoundError(ModelNotFoundError):
     pass
 
 class SizeNotFoundError(ModelNotFoundError):
     pass
-

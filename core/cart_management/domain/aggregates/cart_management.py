@@ -2,7 +2,7 @@ from core.cart_management.domain.entity import Entity
 from ..entities.cart_management import WishlistItem, CartItem
 from ..dtos.cart_management import AddToWishlistDomainDTO, AddToCartDomainDTO
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from dataclasses import dataclass, field
 import uuid
 
@@ -17,6 +17,11 @@ class Cart(Entity):
     items: dict[uuid.UUID, CartItem] | None = field(default=None)
 
     _item_cls: type[CartItem] = CartItem
+
+    @property
+    def _total_price(self) -> Decimal | None:
+        if isinstance(self.total_price, Decimal):
+            return self.total_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     @Entity.require_fields()
     def add_item(
@@ -38,7 +43,7 @@ class Cart(Entity):
             self.items[item_uuid] = self._item_cls.map_domain_dto(domain_dto)
 
         self.quantity = (self.quantity or 0) + qty
-        self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
+        self.total_price = (self._total_price or Decimal(0)) + Decimal(price * qty)
 
     @Entity.require_fields()
     def delete_item(self, item_uuid: uuid.UUID, price: Decimal, qty: int = 1):
@@ -60,7 +65,7 @@ class Cart(Entity):
                 item.qty = qty
 
         self.quantity = max((self.quantity or 0) - qty, 0)
-        self.total_price = max((self.total_price or Decimal(0)) - (price * qty), Decimal(0))
+        self.total_price = max((self._total_price or Decimal(0)) - (price * qty), Decimal(0))
 
 
 @dataclass(kw_only=True)
@@ -74,6 +79,11 @@ class Wishlist(Entity):
 
     _item_cls: type[WishlistItem] = WishlistItem
     _removed_items: set[uuid.UUID] = field(default_factory=set, init=False)
+
+    @property
+    def _total_price(self) -> Decimal | None:
+        if isinstance(self.total_price, Decimal):
+            return self.total_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     @Entity.require_fields()
     def add_item(
@@ -95,7 +105,7 @@ class Wishlist(Entity):
             self.items[item_uuid] = self._item_cls.map_domain_dto(raw_wishlist_item)
 
         self.quantity = (self.quantity or 0) + qty
-        self.total_price = (self.total_price or Decimal(0)) + Decimal(price * qty)
+        self.total_price = (self._total_price or Decimal(0)) + Decimal(price * qty)
 
     @Entity.require_fields()
     def delete_item(self, item_uuid: uuid.UUID, price: Decimal, qty: int = 1):
@@ -119,7 +129,7 @@ class Wishlist(Entity):
                 item.qty = qty
 
         self.quantity = max((self.quantity or 0) - qty, 0)
-        self.total_price = max((self.total_price or Decimal(0)) - (price * qty), Decimal(0))
+        self.total_price = max((self._total_price or Decimal(0)) - Decimal(price * qty), Decimal(0))
 
 
     # def get_list_of_parcels(self, item_collection):
