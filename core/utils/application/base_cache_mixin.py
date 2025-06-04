@@ -1,3 +1,4 @@
+from core.utils.exceptions import InvalidDependencyException
 from .base_dto import DTO
 from ..domain.interfaces.hosts.redis import RedisSessionHost
 
@@ -11,8 +12,10 @@ class BaseCachingMixin:
     def __init__(self, session_adapter: RedisSessionHost | type[RedisSessionHost]):
         BaseCachingMixin.set_session_adapter(self._resolve_dependency(session_adapter))
 
-    def _resolve_dependency(self, dependency):
+    def _resolve_dependency(self, dependency) -> RedisSessionHost:
         """Helper method to instantiate class if type is passed"""
+        if not isinstance(dependency, RedisSessionHost) and not issubclass(dependency, RedisSessionHost):
+            raise InvalidDependencyException(f"{dependency} isn't a {RedisSessionHost.__name__} nor it's instance")
         return dependency() if isinstance(dependency, type) else dependency
 
     @classmethod

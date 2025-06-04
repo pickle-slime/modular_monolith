@@ -1,10 +1,10 @@
 from core.user_management.domain.interfaces.i_repositories.i_user_management import IUserRepository
 from core.user_management.domain.entities.user_management import User as UserEntity
 from core.user_management.presentation.user_management.models import CustomUser as UserModel
+from core.user_management.application.exceptions import UserAlreadyExistsError
 
 from ..mappers.user_management import DjangoUserMapper
 
-from core.exceptions import UserAlreadyExistsError
 import uuid
 
 class DjangoUserRepository(IUserRepository):    

@@ -1,7 +1,7 @@
 from core.review_management.domain.interfaces.i_repositories.i_review_management import IProductRatingRepository, IReviewReadModel
 from core.review_management.application.dtos.review_management import ReviewCollectionDTO
 
-from core.exceptions import MissingProductRatingError
+from core.review_management.application.exceptions import MissingProductRatingError
 
 from typing import Any
 import uuid
