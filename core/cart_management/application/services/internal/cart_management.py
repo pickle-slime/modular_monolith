@@ -48,7 +48,7 @@ class CartService(BaseService["CartService"]):
     def add_to_cart(self, request_dto: AddCartItemRequestDTO) -> tuple[dict[str, Any], int]:
         try:
             cart_entity = self.cart_repository.fetch_cart()
-        except NotFoundWishlistError:
+        except NotFoundCartError:
             return {"message": "Sorry, we can't find your cart"}, 400
 
         try:

@@ -14,9 +14,19 @@ class BaseCachingMixin:
 
     def _resolve_dependency(self, dependency) -> RedisSessionHost:
         """Helper method to instantiate class if type is passed"""
-        if not isinstance(dependency, RedisSessionHost) and not issubclass(dependency, RedisSessionHost):
-            raise InvalidDependencyException(f"{dependency} isn't a {RedisSessionHost.__name__} nor it's instance")
-        return dependency() if isinstance(dependency, type) else dependency
+        if isinstance(dependency, RedisSessionHost):
+            return dependency
+        elif isinstance(dependency, type) and issubclass(dependency, RedisSessionHost):
+            return dependency()
+        else:
+            dep_type_name = (
+                dependency.__name__
+                if isinstance(dependency, type)
+                else type(dependency).__name__
+            )
+            raise InvalidDependencyException(
+                f"Expected RedisSessionHost instance or class, got {dep_type_name}"
+            )
 
     @classmethod
     def set_session_adapter(cls, session_adapter: RedisSessionHost):

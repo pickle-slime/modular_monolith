@@ -20,7 +20,7 @@ class DjangoCartRepository(ICartRepository):
         if cart:
             return cart.to_entity()
         else:
-            raise NotFoundCartError(f"didn't find wishlist by ({self.session_adapter.session_key})")
+            raise NotFoundCartError(f"didn't find cart with ({self.session_adapter.session_key})")
         
     def save(self, cart_entity: CartEntity) -> None:
         cart = RedisCartDTO.from_entity(cart_entity)
