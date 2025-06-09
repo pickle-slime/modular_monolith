@@ -8,7 +8,6 @@ dotenv_file = os.path.join(BASE_DIR, '.env')
 
 if os.path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
-
 #API's
 
 MAILCHIMP_API_KEY = os.environ['MAILCHIMP_SECRET_KEY']

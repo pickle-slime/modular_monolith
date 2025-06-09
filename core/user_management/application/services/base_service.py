@@ -7,7 +7,8 @@ from core.user_management.domain.interfaces.i_repositories.i_user_management imp
 from core.user_management.domain.entities.user_management import User as UserEntity
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
-
+from core.utils.domain.interfaces.hosts.event_bus import CeleryEventBusHost
+from core.user_management.application.events.acl_events import UserLoggedInACLEvent
 from core.user_management.domain.interfaces.hosts.jwtoken import TokenHost
 from core.user_management.domain.interfaces.hosts.password_hasher import PasswordHasherHost
 
@@ -65,6 +66,7 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         password_hasher_adapter: PasswordHasherHost,
         token_adapter: TokenHost,
         url_mapping_adapter: URLHost,
+        event_bus: CeleryEventBusHost,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -76,6 +78,7 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         self.password_hasher = password_hasher_adapter
         self.token_adapter = token_adapter
         self.url_mapping_adapter = url_mapping_adapter
+        self.event_bus = event_bus
 
     def get_header_and_footer(self) -> dict:
         navigation_and_search_bar = self.category_acl.fetch_categories(10, 'count_of_deals', url_mapping_adapter=self.url_mapping_adapter)
@@ -97,6 +100,8 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
             raise ValueError("Invalid credentials")
         refresh_token = self.token_adapter.refresh_token(user.public_uuid)
         access_token = self.token_adapter.generate_access_token(user.public_uuid)
+
+        self.event_bus.publish(event=UserLoggedInACLEvent(pub_uuid=user.public_uuid))
         return refresh_token, access_token
     
     def get_context_data(self, context: dict[str, Any]) -> dict[str, Any]:

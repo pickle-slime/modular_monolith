@@ -2,24 +2,26 @@ from core.utils.domain.interfaces.hosts.redis import RedisHost, RedisSessionHost
 from core.utils.domain.interfaces.hosts.serializer import SerializeHost
 from config import SESSIONS_EXPIRY, HASH_NAME_EXPIRY
 
-from typing import Any
+from threading import Lock
+from typing import ClassVar, Optional, Any
 from redis import Redis
 import secrets
 import hashlib
 
 class RedisAdapter(RedisHost):
-    _instance = None
-    _initialized = False
+    _instance: ClassVar[Optional['RedisAdapter']] = None
+    _lock: ClassVar[Lock] = Lock()
+    redis_client: ClassVar[Redis]
 
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
+    def __new__(cls, redis_url: str = 'redis://127.0.0.1:6379/2'):
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = super().__new__(cls)
+                object.__setattr__(cls._instance, "redis_client", Redis.from_url(redis_url))
         return cls._instance
-    
-    def __init__(self, redis_url: str = 'redis://127.0.0.1:6379/1'):
-        if not type(self)._initialized:
-            self.redis_client = Redis.from_url(redis_url)
-            type(self)._initialized = True
+
+    def __init__(self, redis_url: str = 'redis://127.0.0.1:6379/2'):
+        pass
 
     def hget(self, hash_name: str, key: str):
         return self.redis_client.hget(hash_name, key)

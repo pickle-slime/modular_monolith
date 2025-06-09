@@ -42,3 +42,9 @@ class UtilsException(Exception):
 
 class InvalidDependencyException(UtilsException):
     ...
+
+class CeleryException(UtilsException):
+    ...
+
+class MissingCeleryAppException(CeleryException):
+    ...

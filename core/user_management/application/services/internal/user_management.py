@@ -1,6 +1,8 @@
 from core.user_management.domain.interfaces.hosts.jwtoken import TokenHost
 from core.user_management.domain.entities.user_management import User as UserEntity
 from core.user_management.application.dtos.user_management import UserDTO
+from core.user_management.domain.events.event_registry import DomainEventRegistry
+from core.user_management.application.events.acl_events import NewUserACLEvent
 from ..base_service import BaseTemplateService
 
 from core.utils.application.base_service import Service
@@ -41,16 +43,26 @@ class AuthenticationRegisterUserService(BaseTemplateService['AuthenticationRegis
         return UserDTO.from_entity(user_entity), refresh_token, access_token
 
     def create_user_entity(self, user_data: dict[str, Any]) -> UserEntity:
-        return UserEntity(
-                username=user_data["username"],
-                email=user_data["email"],
-                hashed_password=user_data["password"],
-                first_name=user_data["first_name"],
-                last_name=user_data["last_name"],
-                date_joined=datetime.now(),
-                last_login=datetime.now(),
-                role="user",
-            )
+        with DomainEventRegistry.scope():
+            entity = UserEntity(
+                    username=user_data["username"],
+                    email=user_data["email"],
+                    hashed_password=user_data["password"],
+                    first_name=user_data["first_name"],
+                    last_name=user_data["last_name"],
+                    date_joined=datetime.now(),
+                    last_login=datetime.now(),
+                    role="user",
+                )
+            events = DomainEventRegistry.pop_events()
+            if not events:
+                raise RuntimeError("UserEntity did not emit any events")
+            if len(events) > 1:
+                raise RuntimeError("UserEntity emitted multiple events; only processing the first")
+
+            self.event_bus.publish(NewUserACLEvent.from_domain_event(events[0]))
+            return entity
+            
 
 class AuthenticationLoginUserService(BaseTemplateService['AuthenticationLoginUserService']):
     pass

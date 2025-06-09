@@ -1,5 +1,7 @@
 from core.user_management.domain.entity import Entity
 from core.user_management.domain.value_objects.user_management import RoleField
+from core.user_management.domain.events.event_registry import DomainEventRegistry
+from core.user_management.domain.events.events import NewUserDomainEvent
 from ..interfaces.hosts.password_hasher import PasswordHasherHost
 
 from dataclasses import dataclass, field
@@ -19,6 +21,8 @@ class User(Entity):
     def __post_init__(self):
         if isinstance(self.role, str):
             object.__setattr__(self, 'role', RoleField(self.role))
+
+        DomainEventRegistry.emit(NewUserDomainEvent(pub_uuid=self.public_uuid))
 
     def check_password(self, password: str, password_hasher: PasswordHasherHost):
         if self.hashed_password:

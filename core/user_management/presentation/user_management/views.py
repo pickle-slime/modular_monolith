@@ -17,6 +17,7 @@ from core.user_management.infrastructure.repositories.user_management import Dja
 from core.user_management.infrastructure.adapters.jwtoken import JWTokenAdapter
 from core.utils.application.base_view_mixin import BaseViewMixin
 from core.utils.infrastructure.adapters.redis import RedisSessionAdapter, RedisAdapter
+from core.utils.infrastructure.adapters.event_bus import CeleryEventBusAdapter
 from core.shop_management.presentation.acl_factory import ShopManagementACLFactory
 from core.shop_management.presentation.shop_management.forms import SearchForm
 from core.cart_management.presentation.acl_factory import CartManagementACLFactory
@@ -37,6 +38,7 @@ class RegisterUser(CreateView, BaseViewMixin):
         "token_adapter": JWTokenAdapter,
         "session_adapter": None,
         "url_mapping_adapter": DjangoURLAdapter,
+        "event_bus": CeleryEventBusAdapter,
     }
     repository_classes = {
         "user_repository": DjangoUserRepository,
@@ -103,6 +105,7 @@ class LoginUser(LoginView, BaseViewMixin):
         "token_adapter": JWTokenAdapter,
         "session_adapter": None,
         "url_mapping_adapter": DjangoURLAdapter,
+        "event_bus": CeleryEventBusAdapter,
     }
     repository_classes = {
         "user_repository": DjangoUserRepository,
