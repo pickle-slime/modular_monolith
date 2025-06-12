@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from config import *
+from core.utils.infrastructure.celery.event_subscriptions import register_event_handlers
 
 from celery import Celery
 from celery.schedules import crontab
@@ -18,6 +19,8 @@ app = Celery(
 app.conf.broker_connection_retry_on_startup = True 
 
 app.autodiscover_tasks()
+
+register_event_handlers()
 
 app.conf.beat_schedule = {
     'send-monthly-email-task': {

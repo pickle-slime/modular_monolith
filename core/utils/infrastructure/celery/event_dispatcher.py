@@ -1,4 +1,3 @@
-from core.utils.domain.events import BaseDomainEvent
 from core.utils.infrastructure.celery.celery import app
 from core.utils.exceptions import CeleryException
 import importlib
@@ -8,7 +7,7 @@ def event_dispatcher(self, event_type: str, event_data: dict):
     try:
         module_path, class_name = event_type.rsplit(".", 1)
         module = importlib.import_module(module_path)    
-        event_cls: BaseDomainEvent = getattr(module, class_name)
+        event_cls = getattr(module, class_name)
 
         event = event_cls.from_dict(event_data)
         handlers = app.conf.event_handlers.get(event_type, [])

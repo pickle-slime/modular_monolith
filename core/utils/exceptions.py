@@ -43,8 +43,21 @@ class UtilsException(Exception):
 class InvalidDependencyException(UtilsException):
     ...
 
+# CeleryExceptions
+
 class CeleryException(UtilsException):
     ...
 
 class MissingCeleryAppException(CeleryException):
+    ...
+
+# RedisExceptions
+
+class RedisException(UtilsException):
+    ...
+
+class MissingSerializeAdapter(RedisException):
+    ...
+
+class MissingSessionKey(RedisException):
     ...

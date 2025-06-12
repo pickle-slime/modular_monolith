@@ -65,3 +65,13 @@ class NotFoundWishlistError(InfrastructureAppError):
 class NotFoundCartError(InfrastructureAppError):
     pass
 
+class InvalidSessionAdapter(InfrastructureAppError):
+    pass
+
+# EventDrivenServiceErrors
+
+class EventDrivenServiceError(ApplicationException):
+    pass
+
+class FailedCartInitializationError(EventDrivenServiceError):
+    pass

@@ -1,5 +1,6 @@
 from core.utils.domain.interfaces.hosts.redis import RedisHost, RedisSessionHost
 from core.utils.domain.interfaces.hosts.serializer import SerializeHost
+from core.utils.exceptions import MissingSerializeAdapter, MissingSessionKey
 from config import SESSIONS_EXPIRY, HASH_NAME_EXPIRY
 
 from threading import Lock
@@ -54,7 +55,7 @@ class RedisSessionAdapter(RedisSessionHost):
     @property
     def serialize_adapter(self) -> SerializeHost:
         if not self._serialize_adapter:
-            raise ValueError("")
+            raise MissingSerializeAdapter("Missing serialize_adapter")
         return self._serialize_adapter
     
     def hand_over_session_key(self, session_key: str) -> None:
@@ -88,7 +89,7 @@ class RedisSessionAdapter(RedisSessionHost):
 
     def _get_session_key(self):
         if not self.session_key:
-            raise ValueError("Session key is not initialized. Ensure the session is created.")
+            raise MissingSessionKey("Session key is not initialized. Ensure the session is created.")
         return f"electro:user:session:{self.session_key}"
     
     def cache_key(self, key: str, prefix: str = "cache") -> str:

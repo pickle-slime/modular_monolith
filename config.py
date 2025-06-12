@@ -8,6 +8,19 @@ dotenv_file = os.path.join(BASE_DIR, '.env')
 
 if os.path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
+
+# Bounded-contexts
+
+BOUNDED_CONTEXTS = [
+        'shop_management', 
+        'user_management', 
+        'cart_management',
+        'review_management', 
+        'notification_management', 
+        'order_management', 
+        'payment_management'
+]
+
 #API's
 
 MAILCHIMP_API_KEY = os.environ['MAILCHIMP_SECRET_KEY']

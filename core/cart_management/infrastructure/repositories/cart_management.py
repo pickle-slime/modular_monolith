@@ -1,10 +1,11 @@
 from core.cart_management.domain.interfaces.i_repositories.i_cart_management import IWishlistRepository, ICartRepository
 from core.cart_management.domain.aggregates.cart_management import Wishlist as WishlistEntity, Cart as CartEntity
 from core.cart_management.domain.entities.cart_management import  WishlistItem as WishlistItemEntity
-from core.cart_management.application.exceptions import NotFoundWishlistError, NotFoundCartError
+from core.cart_management.application.exceptions import NotFoundWishlistError, NotFoundCartError, InvalidSessionAdapter
 from ..dtos.cart_management import RedisCartDTO
 from ..mappers.cart_management import DjangoWishlistMapper, DjangoWishlistItemMapper
 from core.utils.domain.interfaces.hosts.redis import RedisSessionHost
+from core.utils.exceptions import RedisException
 
 from django.db import transaction, connection
 
@@ -23,8 +24,11 @@ class DjangoCartRepository(ICartRepository):
             raise NotFoundCartError(f"didn't find cart with ({self.session_adapter.session_key})")
         
     def save(self, cart_entity: CartEntity) -> None:
-        cart = RedisCartDTO.from_entity(cart_entity)
-        self.session_adapter.set("cart", cart)
+        try:
+            cart = RedisCartDTO.from_entity(cart_entity)
+            self.session_adapter.set("cart", cart)
+        except RedisException as e:
+            raise InvalidSessionAdapter(e.raw_msg)
 
     def session_key(self) -> str:
         return self.session_adapter.session_key
