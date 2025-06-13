@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'core.review_management.presentation.review_management.apps.ReviewManagementConfig',
     'core.payment_management.presentation.payment_management.apps.PaymentManagementConfig',
     'core.shop_management.presentation.shop_management.apps.ShopConfig',
+    'core.utils.presentation.bootstrap.UtilsAppConfig',
 ]
 
 MIDDLEWARE = [

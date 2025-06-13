@@ -1,6 +1,5 @@
 from core.utils.domain.interfaces.hosts.event_bus import CeleryEventBusHost
 from core.utils.application.base_event import ACLEventType
-from core.utils.infrastructure.celery.celery import app
 from core.utils.exceptions import MissingCeleryAppException
 
 from threading import Lock
@@ -10,20 +9,26 @@ from typing import Callable, Generic, Optional, ClassVar
 class CeleryEventBusAdapter(CeleryEventBusHost, Generic[ACLEventType]):
     _instance: ClassVar[Optional['CeleryEventBusAdapter']] = None
     _lock: ClassVar[Lock] = Lock()
-    celery: Celery
+    _celery: Celery | None = None
 
     def __init__(self, celery_app: Celery | None = None):
-       pass 
+        ...
 
-    def __new__(cls, celery_app: Celery | None = None):
+    def __new__(cls, celery_app: Celery | None = None, *args, **kwargs):
         with cls._lock:
-            if not cls._instance:
+            if cls._instance is None:
                 cls._instance = super().__new__(cls)
                 if isinstance(celery_app, Celery):
-                    object.__setattr__(cls._instance, "celery", celery_app)
+                    cls._celery = celery_app
                 else:
                     raise MissingCeleryAppException("celery_app must be provided on first initialization")
         return cls._instance
+    
+    @property
+    def celery(self) -> Celery:
+        if self._celery is None:
+            raise MissingCeleryAppException("Celery app has not been initialized.")
+        return self._celery
 
     def publish(self, event: ACLEventType):
         '''Publish event to Celery'''
@@ -43,5 +48,3 @@ class CeleryEventBusAdapter(CeleryEventBusHost, Generic[ACLEventType]):
 
         key = f"{event_cls.__module__}.{event_cls.__name__}"
         self.celery.conf.event_handlers.setdefault(key, []).append(event_handler)
-
-CeleryEventBusAdapter(app)

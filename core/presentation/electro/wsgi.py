@@ -24,6 +24,7 @@ sys.path.append(os.path.join(BASE_DIR, 'core', 'presentation'))
 
 # Add each bounded context's 'presentation' directory to sys.path
 bounded_contexts = os.getenv("BOUNDED_CONTEXTS", 'shop_management,user_management,cart_management,review_management,notification_management,order_management,payment_management').split(",")
+
 for context in bounded_contexts:
     presentation_path = os.path.join(BASE_DIR, 'core', context, 'presentation')
     sys.path.append(presentation_path)

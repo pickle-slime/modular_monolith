@@ -1,10 +1,13 @@
 from __future__ import absolute_import, unicode_literals
 
-from config import *
+from config import MAILCHIMP_AUDIENCE_ID
 from core.utils.infrastructure.celery.event_subscriptions import register_event_handlers
+from core.utils.infrastructure.adapters.event_bus import CeleryEventBusAdapter
+
+from celery.schedules import crontab
+from config import *
 
 from celery import Celery
-from celery.schedules import crontab
 
 app = Celery(
     'electro',
@@ -20,7 +23,9 @@ app.conf.broker_connection_retry_on_startup = True
 
 app.autodiscover_tasks()
 
-register_event_handlers()
+bus = CeleryEventBusAdapter(celery_app=app)
+
+register_event_handlers(bus)
 
 app.conf.beat_schedule = {
     'send-monthly-email-task': {
