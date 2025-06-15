@@ -99,6 +99,7 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
                     items = self.product_read_model.fetch_cart_items_details(cart.items)
                     cart = ProductCartDTO.merge(cart, items, self.url_mapping, MEDIA_URL)
                 self.context['cart'] = cart.populate_none_fields()
+                self.context['cart_warning'] = None
             except NotFoundCartACLError:
                 self.context['cart'] = None
                 self.context['cart_warning'] = "We couldn't load your cart. It may be empty or not initialized yet."
@@ -109,6 +110,7 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
                     items = self.product_read_model.fetch_wishlist_items_details(wishlist.items)
                     wishlist = ProductWishlistDTO.merge(wishlist, items, self.url_mapping, MEDIA_URL)
                 self.context['wishlist'] =  wishlist.populate_none_fields()
+                self.context['wishlist_warning'] = None
             except NotFoundWishlistACLError:
                 self.context['wishlist'] = None
                 self.context['wishlist_warning'] = "We couldn't load your wishlist. It may be empty or not initialized yet."

@@ -1,3 +1,4 @@
+from debugpy import public_api
 from core.shop_management.application.dtos.base_dto import BaseDTO, DTO
 
 from core.user_management.application.dtos.user_management import UserDTO
@@ -17,6 +18,7 @@ class ACLCartItemDTO(BaseItemDTO['ACLCartItemDTO']):
     @classmethod
     def from_dto(cls, dto: CartItemDTO) -> 'ACLCartItemDTO':
         return cls(
+            pub_uuid=dto.pub_uuid,
             color=dto.color,
             qty=dto.qty,
             size=dto.size,

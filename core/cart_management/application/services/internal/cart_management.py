@@ -21,11 +21,11 @@ class CartService(BaseService["CartService"]):
         try:
             cart_entity = self.cart_repository.fetch_cart()
             if cart_entity.items is None:
-                raise NotFoundWishlistError("missing items")
+                raise NotFoundCartError("missing items")
             item = cart_entity.items[request_dto.item_public_uuid]
             if item.qty is None:
-                raise NotFoundWishlistError("missing qty")
-        except NotFoundCartError:
+                raise NotFoundCartError("missing qty")
+        except (NotFoundCartError, KeyError):
             return {"message": "Sorry, we can't find your cart"}, 400
 
         try:
@@ -93,7 +93,7 @@ class WishlistService(BaseService["WishlistService"]):
             item = wishlist_entity.items[request_dto.item_public_uuid]
             if item.qty is None:
                 raise NotFoundWishlistError("missing qty")
-        except NotFoundWishlistError:
+        except (NotFoundWishlistError, KeyError):
             return {"message": "Sorry, we can't find your wishlist"}, 400
 
         try:

@@ -177,11 +177,11 @@
 											{% for i in cart.items %}
 											<div class="product-widget">
 												<div class="product-img">
-													<img src="{{ i.size.product.image.url }}" alt="">
+													<img src="{{ i.image }}" alt="">
 												</div>
 												<div class="product-body">
-													<h3 class="product-name"><a href="{{ i.product.get_absolute_url }}">{{ i.size.product.name }}</a></h3>
-													<h4 class="product-price"><span class="qty">{{ i.qty }}x</span>${% get_price_with_discount i.size.product.price i.size.product.discount %}  <del class="product-old-price">${{ i.product.price }}</del></h4>
+													<h3 class="product-name"><a href="{{ i.get_absolute_url }}">{{ i.product_name }}</a></h3>
+													<h4 class="product-price"><span class="qty">{{ i.qty }}x</span>${% get_price_with_discount i.price i.discount %}  <del class="product-old-price">${{ i.price }}</del></h4>
 												</div>
 												<form method="post" class="delete-cart-item-form" action="{% url 'delete_button_cart' %}">
 												{% csrf_token %}

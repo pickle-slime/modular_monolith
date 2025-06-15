@@ -9,12 +9,12 @@ import uuid
 
 @dataclass(kw_only=True)
 class Cart(Entity):
-    total_price: Decimal | None = field(default=None)
-    quantity: int | None = field(default=None)
+    total_price: Decimal = field(default=Decimal("0.0"))
+    quantity: int = field(default=0)
 
-    user: uuid.UUID | None = field(default=None)
+    user: uuid.UUID
 
-    items: dict[uuid.UUID, CartItem] | None = field(default=None)
+    items: dict[uuid.UUID, CartItem] = field(default_factory=dict)
 
     _item_cls: type[CartItem] = CartItem
 

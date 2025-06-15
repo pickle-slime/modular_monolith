@@ -1,4 +1,5 @@
 from core.cart_management.domain.entity import Entity
+from core.cart_management.domain.exceptions import ValidationError
 from ..dtos.cart_management import AddToWishlistDomainDTO, AddToCartDomainDTO
 
 from typing import Any
@@ -7,16 +8,19 @@ import uuid
 
 @dataclass(kw_only=True)
 class CartItem(Entity):
-    color: str | None = field(default=None)
-    qty: int | None = field(default=None)
-    size: uuid.UUID | None = field(default=None)
+    color: str = field(default="Black")
+    qty: int = field(default=0)
+    size: uuid.UUID
 
     @classmethod
     def map_raw_data(cls, raw_data: dict[str, Any]) -> "CartItem":
+        size = raw_data.get("size")
+        if not isinstance(size, uuid.UUID):
+            raise ValidationError("Missing size")
         return cls._build(
-                color=raw_data.get("color", None),
-                qty=raw_data.get("qty", None),
-                size=raw_data.get("size", None)
+                color=raw_data.get("color", "Black"),
+                qty=raw_data.get("qty", 0),
+                size=size,
             )
     
     @classmethod
@@ -30,14 +34,14 @@ class CartItem(Entity):
     @classmethod
     def _build(
                 cls,
-                color: str | None, 
-                qty: int | None,
-                size: uuid.UUID | None
+                color: str, 
+                qty: int ,
+                size: uuid.UUID
             ) -> "CartItem":
         return cls(
                 color=color or "Black",
                 qty=qty or 1,
-                size=size or None,
+                size=size,
             )
    
  

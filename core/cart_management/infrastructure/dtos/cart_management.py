@@ -11,13 +11,17 @@ The DTOs below represent data from external storages.
 '''
 
 class RedisCartItemDTO(BaseEntityDTO):
-    color: str | None = Field(default='Black')
-    qty: int | None = Field(default=0)
-    size: uuid.UUID | None = Field(default=None)
+    inner_uuid: uuid.UUID
+    public_uuid: uuid.UUID
+    color: str = Field(default='Black')
+    qty: int = Field(default=0)
+    size: uuid.UUID
 
     @classmethod
     def from_entity(cls, entity: CartItemEntity) -> 'RedisCartItemDTO':
         return cls(
+            inner_uuid=entity.inner_uuid,
+            public_uuid=entity.public_uuid,
             color=entity.color,
             qty=entity.qty,
             size=entity.size,
@@ -25,6 +29,8 @@ class RedisCartItemDTO(BaseEntityDTO):
     
     def to_entity(self) -> CartItemEntity:
         return CartItemEntity(
+            inner_uuid=self.inner_uuid,
+            public_uuid=self.public_uuid,
             color=self.color,
             qty=self.qty,
             size=self.size,
@@ -36,16 +42,16 @@ class RedisCartDTO(BaseEntityDTO):
     total_price: float = Field(default=0.0)
     quantity: int = Field(default=0)
 
-    items: dict[uuid.UUID, RedisCartItemDTO] = Field(default_factory=dict)
+    items: list[RedisCartItemDTO] = Field(default_factory=list)
 
-    user: uuid.UUID | None = Field(default=None)
+    user: uuid.UUID
 
     @classmethod
     def from_entity(cls, entity: CartEntity) -> 'RedisCartDTO':
         return cls(
             total_price=float(entity.total_price) if entity.total_price is not None else 0.0,
             quantity=entity.quantity or 0,
-            items={key: RedisCartItemDTO.from_entity(value) for key, value in entity.items.items()} if entity.items else dict(),
+            items=[RedisCartItemDTO.from_entity(value) for value in entity.items.values()] if entity.items else list(),
             user=entity.user,
             inner_uuid=entity.inner_uuid,
             public_uuid=entity.public_uuid,
@@ -58,5 +64,5 @@ class RedisCartDTO(BaseEntityDTO):
             total_price=Decimal(self.total_price) if self.total_price else Decimal("0.0"),
             quantity=self.quantity,
             user=self.user,
-            items={key: value.to_entity() for key, value in self.items.items()} if self.items else dict(),
+            items={item.public_uuid: item.to_entity() for item in self.items} if self.items else dict(),
         )
