@@ -15,14 +15,12 @@ class RedisAdapter(RedisHost):
     redis_client: ClassVar[Redis]
 
     def __new__(cls, redis_url: str = 'redis://127.0.0.1:6379/2'):
-        with cls._lock:
-            if not cls._instance:
-                cls._instance = super().__new__(cls)
-                object.__setattr__(cls._instance, "redis_client", Redis.from_url(redis_url))
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+                    object.__setattr__(cls._instance, "redis_client", Redis.from_url(redis_url))
         return cls._instance
-
-    def __init__(self, redis_url: str = 'redis://127.0.0.1:6379/2'):
-        pass
 
     def hget(self, hash_name: str, key: str):
         return self.redis_client.hget(hash_name, key)
@@ -30,8 +28,8 @@ class RedisAdapter(RedisHost):
     def hset(self, hash_name: str, key: str, value, expire: int | None = None):
         self.redis_client.hset(hash_name, key, value)
 
-        if expire: self.expire(hash_name, expire)
-        else: self.expire(hash_name, HASH_NAME_EXPIRY)
+        if self.redis_client.ttl(hash_name) == -1:
+            self.expire(hash_name, expire or HASH_NAME_EXPIRY)
 
     def hdel(self, hash_name: str, key: str):
         self.redis_client.hdel(hash_name, key)

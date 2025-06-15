@@ -7,10 +7,6 @@ from typing import Any
 
 class RedisHost(BaseHost):
     @abstractmethod
-    def __init__(self, redis_url: str = 'redis://127.0.0.1:6379/0'):
-        pass
-
-    @abstractmethod
     def hget(self, hash_name: str, key: str):
         pass
 

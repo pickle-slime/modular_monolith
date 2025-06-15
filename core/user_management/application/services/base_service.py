@@ -101,7 +101,7 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         refresh_token = self.token_adapter.refresh_token(user.public_uuid)
         access_token = self.token_adapter.generate_access_token(user.public_uuid)
 
-        self.event_bus.publish(event=UserLoggedInACLEvent(pub_uuid=user.public_uuid))
+        self.event_bus.publish(event=UserLoggedInACLEvent(pub_uuid=user.public_uuid, session_key=self.session.session_key))
         return refresh_token, access_token
     
     def get_context_data(self, context: dict[str, Any]) -> dict[str, Any]:

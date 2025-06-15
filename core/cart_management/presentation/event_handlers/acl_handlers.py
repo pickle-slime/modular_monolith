@@ -19,11 +19,19 @@ def handle_logged_user(self, event_data: UserLoggedInACLEvent):
     try:
         dto = LoggedUserEventDTO.from_event(event_data)
     except ValidationError:
-       logger.log(1, "Failed validation") 
+       logger.error("Failed validation") 
        return
 
     try:
-        service = UserManagementService(DjangoCartRepository(RedisSessionAdapter(RedisAdapter(), SerializeAdapter())))
+        service = UserManagementService(
+                DjangoCartRepository(
+                    RedisSessionAdapter(
+                        redis_adapter=RedisAdapter(), 
+                        serialize_adapter=SerializeAdapter(), 
+                        session_key=dto.session_key
+                        )
+                    )
+                )
         service.handle_logged_user(dto)   
     except FailedCartInitializationError as e:
         logger.log(1, f"Failed service initialization: {e.raw_msg}")

@@ -9,7 +9,7 @@ import uuid
 
 DTO = TypeVar("DTO", bound="BaseDTO")
 
-class BaseDTO(BaseModel, ABC, Generic[DTO]):
+class BaseDTO(BaseModel, Generic[DTO]):
     '''
     The BaseDTO represents DTOs with bloated responsibilities. All DTOs inherited from the BaseDTO 
     are supposed to align with a BaseDTO convention: DTO might be used as a Python object, a JSON object, or
@@ -77,7 +77,7 @@ class BaseDTO(BaseModel, ABC, Generic[DTO]):
             bool: False,
         }
 
-class BaseEntityDTO(BaseDTO[DTO]):
+class BaseEntityDTO(BaseDTO[DTO], ABC):
     @classmethod
     @abstractmethod
     def from_entity(cls: type["BaseEntityDTO"], entity: EntityType) -> DTO:

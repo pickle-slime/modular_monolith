@@ -14,4 +14,5 @@ class NewUserACLEvent(BaseACLEvent):
 
 class UserLoggedInACLEvent(BaseACLEvent):
     pub_uuid: uuid.UUID
+    session_key: str
 

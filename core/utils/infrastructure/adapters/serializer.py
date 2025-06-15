@@ -16,24 +16,27 @@ class SerializeAdapter(SerializeHost):
                     if "__class__" in d:
                         for dto in dtos:
                             if d["__class__"] == dto.__name__:
-                                dto_data = {k: decode(v) for k, v in d.items() if k != "__class__"}
+                                dto_data = {k: decode(v) for k, v in d.items() if k != "__class__"} or {}
                                 return dto(**dto_data)
-                    return {k: decode(v) for k, v in d.items()}
+                    return {k: decode(v) for k, v in d.items()} or {}
                 elif isinstance(d, list):
-                    return [decode(item) for item in d]
+                    return [decode(item) for item in d] or []
                 return d
     
             return decode
 
     class _Encoder(json.JSONEncoder):
         def default(self, obj):
+            return self._encode(obj)
+
+        def _encode(self, obj):
             if isinstance(obj, BaseModel):
                 # Recursively encode DTOs while preserving structure
-                return {key: self.default(value) for key, value in obj.model_dump().items()} | {"__class__": obj.__class__.__name__}
+                return {str(key): self._encode(getattr(obj, key)) for key in obj.model_fields} | {"__class__": obj.__class__.__name__}
             if isinstance(obj, list):
-                return [self.default(item) for item in obj] 
+                return [self._encode(item) for item in obj] 
             if isinstance(obj, dict):
-                return {key: self.default(value) for key, value in obj.items()}
+                return {str(key): self._encode(value) for key, value in obj.items()}
             if isinstance(obj, uuid.UUID):
                 return str(obj)
             if isinstance(obj, datetime):

@@ -31,12 +31,12 @@ class RedisCartItemDTO(BaseEntityDTO):
         )
 
 class RedisCartDTO(BaseEntityDTO):
-    inner_uuid: uuid.UUID = Field(default=None)
-    public_uuid: uuid.UUID = Field(default=None)
-    total_price: float | None = Field(default=0)
-    quantity: int | None = Field(default=0)
+    inner_uuid: uuid.UUID
+    public_uuid: uuid.UUID
+    total_price: float = Field(default=0.0)
+    quantity: int = Field(default=0)
 
-    items: dict[uuid.UUID, RedisCartItemDTO] | None = Field(default_factory=dict)
+    items: dict[uuid.UUID, RedisCartItemDTO] = Field(default_factory=dict)
 
     user: uuid.UUID | None = Field(default=None)
 
@@ -44,7 +44,7 @@ class RedisCartDTO(BaseEntityDTO):
     def from_entity(cls, entity: CartEntity) -> 'RedisCartDTO':
         return cls(
             total_price=float(entity.total_price) if entity.total_price is not None else 0.0,
-            quantity=entity.quantity,
+            quantity=entity.quantity or 0,
             items={key: RedisCartItemDTO.from_entity(value) for key, value in entity.items.items()} if entity.items else dict(),
             user=entity.user,
             inner_uuid=entity.inner_uuid,
@@ -55,8 +55,8 @@ class RedisCartDTO(BaseEntityDTO):
         return CartEntity(
             inner_uuid=self.inner_uuid,
             public_uuid=self.public_uuid,
-            total_price=Decimal(self.total_price) if self.total_price else None,
+            total_price=Decimal(self.total_price) if self.total_price else Decimal("0.0"),
             quantity=self.quantity,
             user=self.user,
-            items={key: value.to_entity() for key, value in self.items.items()} if self.items else None,
+            items={key: value.to_entity() for key, value in self.items.items()} if self.items else dict(),
         )

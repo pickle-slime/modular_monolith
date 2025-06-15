@@ -12,6 +12,12 @@ from config import (
 from celery import Celery
 import django
 
+if os.environ.get("DEBUG_CELERY", "") == "1":
+    import debugpy
+    debugpy.listen(("127.0.0.1", 5678))
+    print("Waiting for debugger to attach on port 5678...")
+    debugpy.wait_for_client()
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.presentation.electro.settings')
 django.setup()
             

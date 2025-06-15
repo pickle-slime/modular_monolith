@@ -15,8 +15,8 @@ from core.shop_management.domain.interfaces.i_repositories.i_shop_management imp
 from core.shop_management.application.interfaces.i_read_models.i_shop_management import IProductReadModel
 from core.shop_management.application.exceptions import ProductNotFoundError, SizeNotFoundError
 
-from core.shop_management.application.dtos.acl_dtos import ACLWishlistItemDTO
-from core.shop_management.application.dtos.composition import WishlistItemDetailsDTO
+from core.shop_management.application.dtos.acl_dtos import ACLWishlistItemDTO, ACLCartItemDTO
+from core.shop_management.application.dtos.composition import WishlistItemDetailsDTO, CartItemDetailsDTO
 
 from ..mappers.shop_management import DjangoCategoryMapper, DjangoBrandMapper, DjangoProductMapper
 
@@ -212,6 +212,36 @@ class ProductReadModel(IProductReadModel):
             rows: list[tuple] = cursor.fetchall()
 
         return [WishlistItemDetailsDTO(
+            size=row[0], 
+            product_pub_uuid=row[1],
+            product_name=row[2], 
+            image=row[3], 
+            price=row[4], 
+            discount=row[5], 
+            category_slug=row[6], 
+            product_slug=row[7]) 
+                for row in rows]
+
+    @transaction.atomic()
+    def fetch_cart_items_details(self, items: list[ACLCartItemDTO]) -> list[CartItemDetailsDTO]:
+        public_uuids = [i.size for i in items]  
+
+        if not public_uuids:
+            return []
+
+        sql = '''
+            SELECT s.public_uuid, p.public_uuid, p.name, p.image, p.price, p.discount, c.slug, p.slug 
+            FROM shop_management_product p
+            INNER JOIN shop_management_productsizes s ON p.inner_uuid = s.product_id
+            INNER JOIN shop_management_category c ON c.inner_uuid = p.category_id
+            WHERE s.public_uuid = ANY(%s);
+        '''
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, [[public_uuids]])
+            rows: list[tuple] = cursor.fetchall()
+
+        return [CartItemDetailsDTO(
             size=row[0], 
             product_pub_uuid=row[1],
             product_name=row[2], 

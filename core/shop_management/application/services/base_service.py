@@ -3,7 +3,7 @@ from core.utils.application.base_cache_mixin import BaseCachingMixin
 from core.utils.application.base_service import Service, BaseService as BaseServiceProtocol, BaseTemplateService as BaseTemplateServiceProtocol
 
 from core.shop_management.application.dtos.shop_management import CategoryDTO, ProductDTO
-from core.shop_management.application.dtos.composition import ProductWishlistDTO
+from core.shop_management.application.dtos.composition import ProductWishlistDTO, ProductCartDTO
 from core.shop_management.application.dtos.acl_dtos import ACLUserDTO, ACLCartDTO, ACLWishlistDTO
 
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
@@ -94,7 +94,11 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         
         if self.is_authorized:
             try:
-                self.context['cart'] = self.cart_acl.fetch_cart()
+                cart = ACLCartDTO.from_dto(self.cart_acl.fetch_cart())
+                if cart.items:
+                    items = self.product_read_model.fetch_cart_items_details(cart.items)
+                    cart = ProductCartDTO.merge(cart, items, self.url_mapping, MEDIA_URL)
+                self.context['cart'] = cart.populate_none_fields()
             except NotFoundCartACLError:
                 self.context['cart'] = None
                 self.context['cart_warning'] = "We couldn't load your cart. It may be empty or not initialized yet."
