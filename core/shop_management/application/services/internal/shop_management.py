@@ -147,7 +147,7 @@ class ProductPageService(BaseTemplateService['ProductPageService']):
                 context["wishlist_error"] = "We couldn't load your wishlist. It may be empty or not initialized yet."
             
             try:
-                context['add_cart'] = self.cart_acl.fetch_cart().pub_uuid
+                context['add_cart'] = self.cart_acl.fetch_cart()
             except (NotFoundCartACLError):
                 context["add_cart"] = None
                 context["cart_error"] = "We couldn't load your cart. It may be empty or not initialized yet."

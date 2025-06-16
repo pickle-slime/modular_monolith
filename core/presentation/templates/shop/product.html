@@ -101,7 +101,7 @@
 							</div>
 						</div>
 						<input id="object-pk" type="hidden" value="{{ object.pub_uuid }}">
-						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+						<button class="add-to-cart-btn model-button" data-action={% url 'add_to_cart' %}><i class="fa fa-shopping-cart"></i> add to cart</button>
 						<ul class="product-btns">
 							<li><button class="model-button" data-action="{% url 'add_to_wishlist' %}"><i class="fa fa-heart-o"></i> add to wishlist</button></li>
 							<li><button class="model-button add-to-compare" data-product-url="{{ object.get_absolute_url }}"><i class="fa fa-exchange"></i> add to compare</button></li>
