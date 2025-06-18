@@ -10,7 +10,7 @@ class BaseCachingMixin:
     session_adapter: RedisSessionHost
 
     def __init__(self, session_adapter: RedisSessionHost | type[RedisSessionHost]):
-        BaseCachingMixin.set_session_adapter(self._resolve_dependency(session_adapter))
+        self.__class__.session_adapter = self._resolve_dependency(session_adapter)
 
     def _resolve_dependency(self, dependency) -> RedisSessionHost:
         """Helper method to instantiate class if type is passed"""
@@ -27,10 +27,6 @@ class BaseCachingMixin:
             raise InvalidDependencyException(
                 f"Expected RedisSessionHost instance or class, got {dep_type_name}"
             )
-
-    @classmethod
-    def set_session_adapter(cls, session_adapter: RedisSessionHost):
-        cls.session_adapter = session_adapter
 
     @classmethod
     def cache_result(cls, key_template: str, prefix: str = "{self.__class__.__name__}.{func.__name__}", dtos: list[type[DTO]] | None = None) -> Callable:

@@ -1,15 +1,18 @@
-from core.utils.domain.interfaces.i_repositories.base_repository import Repository
+from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository, Repository
 from core.utils.domain.interfaces.hosts.base_host import BaseHost, Host
 from .base_factories import BaseServiceFactory
 from .base_service import Service, BaseService
 
-from typing import Any, Union, Generic
+from typing import Any, Union
+import logging
 
 TRepository = Union[Repository | type[Repository]]
 THost = Union[Host | type[Host]]
 TService = Union[Service | type[Service]]
 
-class BaseViewMixin(Generic[Service, Repository]):
+logger = logging.getLogger(__name__)
+
+class BaseViewMixin:
     service_class: type[BaseService] | None = None
 
     repository_classes: dict[str, TRepository] = {}
@@ -29,15 +32,15 @@ class BaseViewMixin(Generic[Service, Repository]):
             if self.service_factory: 
                 self._service_instance = self.update_factory()
             elif self.service_class:
-                services = self.update_services() or {}
-                repositories = self.update_repositories() or {}
-                adapters = self.update_adapters() or {}
+                services = self.update_services()
+                repositories = self.update_repositories()
+                adapters = self.update_adapters()
                 self._service_instance = self.service_class(**services, **repositories, **adapters)
             else: TypeError(f"{self.__class__.__name__}: The service class is neither defined nor implemented with repository classes or a service factory.")
 
         return self._service_instance
 
-    def update_services(self) -> dict[str, Service] | None:
+    def update_services(self) -> dict[str, Service]:
         if not hasattr(self, "_service_instances"):
             self._service_instances = {}
             for name, repo_class in self.service_classes.items():
@@ -48,7 +51,7 @@ class BaseViewMixin(Generic[Service, Repository]):
 
             return self._service_instances
 
-    def update_repositories(self) -> dict[str, Repository] | None:  
+    def update_repositories(self) -> dict[str, Repository]:  
         if not hasattr(self, "_repository_instances"):
             self._repository_instances = {}
             for name, repo_class in self.repository_classes.items():
@@ -59,7 +62,7 @@ class BaseViewMixin(Generic[Service, Repository]):
 
             return self._repository_instances
         
-    def update_adapters(self) -> dict[str, BaseHost] | None:    
+    def update_adapters(self) -> dict[str, BaseHost]:    
         if not hasattr(self, "_adapter_instances"):
             self._adapter_instances = {}
             for name, repo_class in self.adapter_classes.items():
@@ -72,7 +75,8 @@ class BaseViewMixin(Generic[Service, Repository]):
     
     def update_factory(self) -> type[BaseService]:
         if self.service_class is None:
-            raise ValueError(f"{self.__class__.__name__}: View should define his own service")
+            logger.warning(f"{self.__class__.__name__}: View should define his own service")
+            return None
         
         if not self.service_factory:
             raise ValueError(f"{self.__class__.__name__}: Service factory is not defined.")

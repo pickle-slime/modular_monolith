@@ -198,3 +198,37 @@ def test_empty_key_components():
         "TestService.empty_key_method.",
         "TestService.empty_key_method"
     )
+
+def test_result_passes_through_dto_on_cache_miss():
+    mock_adapter = create_autospec(RedisSessionAdapter)
+    DummyService.set_session_adapter(mock_adapter)
+    
+    dto_data = {"field_1": 42, "field_2": "dto-value"}
+    mock_adapter.get.return_value = None
+    mock_adapter.cache_key.return_value = "DummyService.service_method.key"
+    
+    service = DummyService(mock_adapter)
+    result = service.service_method(dto_data)
+
+    assert isinstance(result, DummyDTO)
+    assert result.field_1 == 42
+    assert result.field_2 == "dto-value"
+    mock_adapter.set.assert_called_once()
+
+def test_cache_result_without_dto_list():
+    mock_adapter = create_autospec(RedisSessionAdapter)
+    
+    class NoDtoService(BaseCachingMixin):
+        @BaseCachingMixin.cache_result(key_template='no_dto_key', dtos=[])
+        def method(self, val):
+            return {"value": val}
+
+    mock_adapter.get.return_value = None
+    mock_adapter.cache_key.return_value = "NoDtoService.method.no_dto_key"
+
+    service = NoDtoService(mock_adapter)
+    result = service.method("something")
+
+    assert result == {"value": "something"}
+    mock_adapter.set.assert_called_once_with("NoDtoService.method.no_dto_key", {"value": "something"})
+
