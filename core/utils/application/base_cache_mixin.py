@@ -10,7 +10,7 @@ class BaseCachingMixin:
     session_adapter: RedisSessionHost
 
     def __init__(self, session_adapter: RedisSessionHost | type[RedisSessionHost]):
-        self.__class__.session_adapter = self._resolve_dependency(session_adapter)
+        BaseCachingMixin.session_adapter = self._resolve_dependency(session_adapter)
 
     def _resolve_dependency(self, dependency) -> RedisSessionHost:
         """Helper method to instantiate class if type is passed"""

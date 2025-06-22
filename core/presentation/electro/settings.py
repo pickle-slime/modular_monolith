@@ -10,18 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from config import *
+
 from pathlib import Path
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+#BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&9&1+#6c*t0l4xbz*4c9@qvntlczo%553)r(!39ozav02bmfi7'
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,7 +86,7 @@ ROOT_URLCONF = 'core.presentation.electro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'presentation', 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'core', 'presentation', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,14 +155,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'presentation', 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'core', 'presentation', 'static')
 
 # STATICFILES_DIRS = [
 #     BASE_DIR / 'presentation' / 'shop' / 'static', 
 # ]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'core', 'presentation', 'media')
 
 AUTH_USER_MODEL = 'user_management.CustomUser'
 
@@ -169,16 +171,9 @@ AUTH_USER_MODEL = 'user_management.CustomUser'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#REDIS
-
-#redis-server
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
 
