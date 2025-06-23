@@ -8,13 +8,14 @@ from typing import ClassVar, Optional, Any
 from redis import Redis
 import secrets
 import hashlib
+import os
 
 class RedisAdapter(RedisHost):
     _instance: ClassVar[Optional['RedisAdapter']] = None
     _lock: ClassVar[Lock] = Lock()
     redis_client: ClassVar[Redis]
 
-    def __new__(cls, redis_url: str = 'redis://127.0.0.1:6379/2'):
+    def __new__(cls, redis_url: str = f'redis://{os.environ["REDIS_HOST"]}:{os.environ["REDIS_PORT"]}/2'):
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:

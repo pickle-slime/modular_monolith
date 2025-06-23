@@ -52,7 +52,7 @@ class AuthenticationRegisterUserService(BaseTemplateService['AuthenticationRegis
                     last_name=user_data["last_name"],
                     date_joined=datetime.now(),
                     last_login=datetime.now(),
-                    role="user",
+                    role="customer",
                 )
             events = DomainEventRegistry.pop_events()
             if not events:
