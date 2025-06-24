@@ -62,7 +62,7 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
     service_factory = SERVICE_FACTORY
     template_name = 'shop/store.html'
     slug_url_kwargs = 'category'
-    paginate_by = 9
+    paginate_by = None
     form_class = FiltersAside
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -84,18 +84,20 @@ class StorePage(ListView, FormMixin, BaseViewMixin):
         return self._handle_get_request()
 
     def _handle_post_request(self):
+        page = self.request.POST.get("page", 1)
         form = self.form_class(self.request.POST)
         if form.is_valid():
-            return self.service.filter_products(form.cleaned_data)
-        return self.service.get_top_selling()
+            return self.service.filter_products(form.cleaned_data, page)
+        return self.service.get_paginated_top_selling(page)
 
     def _handle_get_request(self):
+        page = self.request.GET.get("page", 1)
         navigation = True if self.request.GET.get("navigation", "false").lower() == "true" else False
         category = self.request.GET.get("category", None)
         query = self.request.GET.get("query", None)
-        return self.service.handle_get_request(category, query, navigation, self.kwargs.get("category", None))
+        return self.service.handle_get_request(page, category, query, navigation, self.kwargs.get("category", None))
    
-    def post(self):
+    def post(self, *args, **kwargs):
         self.object_list = self.get_queryset()
         context = self.get_context_data()
 

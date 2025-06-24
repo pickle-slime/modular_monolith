@@ -4,6 +4,7 @@ import uuid
 
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
+from core.shop_management.application.dtos.infrastructure import PaginatedProductsInfDTO
 from core.utils.domain.interfaces.i_repositories.base_repository import BaseRepository
 
 class ICategoryRepository(BaseRepository):
@@ -47,17 +48,19 @@ class IProductRepository(BaseRepository):
 
     @abstractmethod
     def filter_products(
-            self,
-            price_min: float,
-            price_max: float,
-            sort_by: Literal['count_of_selled', 'price', '-time_updated'],
-            category_pubs: list[uuid.UUID] | None = None,
-            brand_pubs: list[uuid.UUID] | None = None,
-        ) -> list[ProductEntity]:
+        self,
+        price_min: float,
+        price_max: float,
+        sort_by: Literal['count_of_selled', 'price', '-time_updated'],
+        page: int,
+        per_page: int,
+        category_pubs: list[uuid.UUID] | None = None,
+        brand_pubs: list[uuid.UUID] | None = None,
+    ) -> PaginatedProductsInfDTO:
         pass
 
     @abstractmethod
-    def filter_by_category_slug(self, category_slug: str | None) -> list[ProductEntity]:
+    def filter_by_category_slug(self, page: int, per_page: int, category_slug: str | None) -> PaginatedProductsInfDTO:
         pass
 
     @abstractmethod
@@ -65,7 +68,7 @@ class IProductRepository(BaseRepository):
         pass
 
     @abstractmethod
-    def searching_products(self, query: str | None = None, category_pub: uuid.UUID | None = None) -> list[ProductEntity]:
+    def searching_products(self, page: int, per_page: int, query: str | None = None, category_pub: uuid.UUID | None = None) -> PaginatedProductsInfDTO:
         pass
 
     @abstractmethod
@@ -76,6 +79,10 @@ class IProductRepository(BaseRepository):
     def fetch_top_selling(self, amount: int, indent: int = 0) -> list[ProductEntity]:
         pass
 
+    @abstractmethod
+    def fetch_paginated_top_selling(self, page: int, per_page: int) -> PaginatedProductsInfDTO:
+        pass
+    
     @abstractmethod 
     def fetch_related_products(
         self,

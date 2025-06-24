@@ -80,5 +80,8 @@ class BaseDTO(BaseModel, Generic[DTO]):
 class BaseEntityDTO(BaseDTO[DTO], ABC):
     @classmethod
     @abstractmethod
-    def from_entity(cls: type["BaseEntityDTO"], entity: EntityType) -> DTO:
+    def from_entity(cls: type["BaseEntityDTO"], entity: EntityType) -> "BaseEntityDTO":
         pass
+
+class BaseInfDTO(BaseModel, Generic[EntityType]):
+    pass

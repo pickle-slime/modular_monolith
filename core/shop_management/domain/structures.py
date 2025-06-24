@@ -1,4 +1,7 @@
-from typing import Optional, Iterable, Generic
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
+
+from typing import Optional, Iterable, Generic, Any
 
 from core.shop_management.domain.entities.shop_management import ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity, ProductSizeType, ProductImageType
 
@@ -33,6 +36,17 @@ class ProductSizesEntityList(Generic[ProductSizeType], BaseEntityList[ProductSiz
         if max_length is not None and len(self._entities) > max_length:
             raise ValueError(f"{self.__class__.__name__}  contains more than {max_length} entities.")
 
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, 
+        source_type: Any, 
+        handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        inner_type = source_type.__args__[0]
+        return core_schema.list_schema(
+            handler.generate_schema(inner_type)
+        )
+
 class ProductImagesEntityList(Generic[ProductImageType], BaseEntityList[ProductImageEntity]):
     def __init__(self, entities: Iterable[ProductImageType]):
         super().__init__(entities)
@@ -43,3 +57,14 @@ class ProductImagesEntityList(Generic[ProductImageType], BaseEntityList[ProductI
             raise ValueError(f"{self.__class__.__name__} contains fewer than {min_length} entities.")
         if max_length is not None and len(self._entities) > max_length:
             raise ValueError(f"{self.__class__.__name__} contains more than {max_length} entities.")
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, 
+        source_type: Any, 
+        handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        inner_type = source_type.__args__[0]
+        return core_schema.list_schema(
+            handler.generate_schema(inner_type)
+        )

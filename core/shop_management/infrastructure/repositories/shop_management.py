@@ -6,8 +6,10 @@ from django.db.models import Prefetch
 from django.db import transaction, connection
 from django.utils import timezone
 from django.http import Http404
+from django.core.paginator import Paginator
 
 
+from core.shop_management.application.dtos.infrastructure import PaginatedProductsInfDTO
 from core.shop_management.presentation.shop_management.models import Category as CategoryModel, Brand as BrandModel, Product as ProductModel, ProductSizes as ProductSizesModel, MultipleProductImages as MultipleProductImagesModel
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
@@ -91,10 +93,12 @@ class DjangoProductRepository(IProductRepository):
         price_min: float,
         price_max: float,
         sort_by: Literal['count_of_selled', 'price', '-time_updated'],
+        page: int,
+        per_page: int,
         category_pubs: list[uuid.UUID] | None = None,
         brand_pubs: list[uuid.UUID] | None = None,
-    ) -> list[ProductEntity]:
-        queryset = ProductModel.objects.all().order_by((sort_by if isinstance(sort_by, str) else "id"))
+    ) -> PaginatedProductsInfDTO:
+        queryset = ProductModel.objects.all().order_by((sort_by if isinstance(sort_by, str) else "inner_uuid"))
         queryset = queryset.filter(price__gt=price_min, price__lt=price_max).order_by(sort_by)
 
         if category_pubs:
@@ -104,10 +108,12 @@ class DjangoProductRepository(IProductRepository):
             
         queryset = queryset.select_related('category', 'brand')
 
-        return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
 
+        return DjangoProductMapper.map_entities_to_paginated_dto(page_obj) 
 
-    def searching_products(self, query: str | None = None, category_pub: uuid.UUID | None = None) -> list[ProductEntity]:
+    def searching_products(self, page: int, per_page: int, query: str | None = None, category_pub: uuid.UUID | None = None) -> PaginatedProductsInfDTO:
         queryset = ProductModel.objects.all()
 
         if query:
@@ -116,7 +122,10 @@ class DjangoProductRepository(IProductRepository):
         if category_pub:
             queryset = queryset.filter(category__public_uuid=category_pub)
 
-        return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+
+        return DjangoProductMapper.map_entities_to_paginated_dto(page_obj)
     
 
     def fetch_hot_deals(self, days: int) -> list[ProductEntity]:
@@ -124,13 +133,16 @@ class DjangoProductRepository(IProductRepository):
         queryset = ProductModel.objects.filter(time_created__gte=hot_week)
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
 
-    def filter_by_category_slug(self, category_slug: str | None) -> list[ProductEntity]:
+    def filter_by_category_slug(self, page: int, per_page: int, category_slug: str | None) -> PaginatedProductsInfDTO:
         if category_slug:
             queryset = ProductModel.objects.filter(category__slug=category_slug)
         else:
             queryset = ProductModel.objects.all()
 
-        return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+
+        return DjangoProductMapper.map_entities_to_paginated_dto(page_obj)
     
     def fetch_by_slugs(self, category_slug: str, product_slug: str) -> ProductEntity:
         try:
@@ -168,6 +180,16 @@ class DjangoProductRepository(IProductRepository):
             queryset = queryset.distinct()
 
         return [DjangoProductMapper.map_product_into_entity(model) for model in queryset]
+
+    def fetch_paginated_top_selling(self, page: int, per_page: int) -> PaginatedProductsInfDTO:
+        queryset = ProductModel.objects.select_related('category').prefetch_related(
+            Prefetch('product_sizes', queryset=ProductSizesModel.objects.all().distinct())
+        )
+       
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+
+        return DjangoProductMapper.map_entities_to_paginated_dto(page_obj)
     
     def fetch_sample_of_size(
         self,

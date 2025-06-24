@@ -127,14 +127,14 @@ class BaseTemplateService(BaseService, BaseTemplateServiceProtocol[Service]):
         '''
         dtos = []
         for entity in entities:
-            category = self._fetch_category(entity.category.public_uuid)
-            brand = self._fetch_brand(entity.brand.public_uuid)
+            category = self.fetch_category(entity.category.public_uuid)
+            brand = self.fetch_brand(entity.brand.public_uuid)
             dto = ProductDTO.from_entity(entity, category=category, brand=brand, url_mapping_adapter=self.url_mapping).populate_none_fields()
             dtos.append(dto)
         return dtos
     
-    def _fetch_category(self, public_uuid: uuid.UUID) -> CategoryEntity | None:
+    def fetch_category(self, public_uuid: uuid.UUID) -> CategoryEntity:
         return self.category_rep.fetch_by_uuid(public_uuid) 
 
-    def _fetch_brand(self, public_uuid: uuid.UUID) -> BrandEntity | None:
+    def fetch_brand(self, public_uuid: uuid.UUID) -> BrandEntity:
         return self.brand_rep.fetch_by_uuid(public_uuid)

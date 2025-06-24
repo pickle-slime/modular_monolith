@@ -235,8 +235,8 @@
 					<!-- NAV -->
 					<ul class="main-nav nav navbar-nav">
 						<li class="active"><a href="{% url 'home' %}">Home</a></li>
-						<li><a href="{% url 'store' %}?navigation=true">Hot Deals</a></li>
-						<li><a href="{% url 'store' %}?navigation=true">Categories</a></li>
+						<li><a href="{% url 'store' %}">Hot Deals</a></li>
+						<li><a href="{% url 'store' %}">Categories</a></li>
 						{% for i in navigation %}
 						<li><a href="{{ i.get_absolute_url }}?navigation=true">{{ i.name }}</a></li>
 						{% endfor %}

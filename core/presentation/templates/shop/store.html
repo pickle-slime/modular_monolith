@@ -116,7 +116,7 @@
 				
 				<!-- store products -->
 				<div class="row">
-					{% for i in object_list %}
+					{% for i in object_list.products %}
 					<!-- product -->
 					<div class="col-md-4 col-xs-6">
 						<div class="product">
@@ -177,18 +177,18 @@
 				<div class="store-filter clearfix">
 					<span class="store-qty">Showing 20-100 products</span>
 					<ul class="store-pagination">
-						{% if page_obj.has_previous %}
-						<li><a href="?page={{page_obj.previous_page_number}}"><i class="fa fa-angle-left"></i></a></li>
+						{% if object_list.has_previous %}
+						<li><a href="?page={{object_list.previous_page_number}}"><i class="fa fa-angle-left"></i></a></li>
 						{% endif %}
-						{% for p in paginator.page_range %}
-							{% if page_obj.number == p %}
+						{% for p in object_list.page_range %}
+							{% if object_list.current_page == p %}
 							<li class="active">{{p}}</li>
-							{% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %} 
+							{% elif p >= object_list.current_page|add:-2 and p <= object_list.current_page|add:2 %} 
 							<li><a href="?page={{p}}">{{p}}</a></li>  
 							{% endif %}
 						{% endfor %}
-						{% if page_obj.has_next %}
-						<li><a href="?page={{page_obj.next_page_number}}"><i class="fa fa-angle-right"></i></a></li>
+						{% if object_list.has_next %}
+						<li><a href="?page={{object_list.next_page_number}}"><i class="fa fa-angle-right"></i></a></li>
 						{% endif %}
 					</ul> 
 				</div>

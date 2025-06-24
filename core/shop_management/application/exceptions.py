@@ -40,6 +40,9 @@ class ApplicationException(Exception):
 
         return None
 
+class InvalidFiltersError(ApplicationException):
+    pass
+
 # Infrastructure-Application errors
 
 class InfrastructureAppError(ApplicationException):

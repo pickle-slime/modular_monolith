@@ -1,12 +1,15 @@
-from typing import Any
+from time import perf_counter
+from typing import Any, Literal
 import uuid
 
+from core.shop_management.application.dtos.infrastructure import PaginatedProductsInfDTO
 from core.utils.application.base_cache_mixin import BaseCachingMixin 
 from core.shop_management.application.services.base_service import BaseTemplateService
 
 from core.review_management.domain.interfaces.i_acl import IProductRatingACL
 from core.cart_management.application.acl_exceptions import NotFoundWishlistACLError, NotFoundCartACLError
-from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO, ProductImageDTO
+from core.shop_management.application.exceptions import InvalidFiltersError
+from core.shop_management.application.dtos.shop_management import ProductDTO, CategoryDTO, BrandDTO, ProductImageDTO, PaginatedProductsDTO
 
 class HomePageService(BaseTemplateService['HomePageService']):
     def __init__(self, **kwargs):
@@ -36,6 +39,8 @@ class HomePageService(BaseTemplateService['HomePageService']):
         return {**self.get_header_and_footer(), **self._get_context_data()}
 
 class StorePageService(BaseTemplateService['StorePageService']):
+    paginate_by = 9
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
@@ -63,33 +68,58 @@ class StorePageService(BaseTemplateService['StorePageService']):
             }
         return {}
 
-    def handle_get_request(self, category: str | None, query: str | None, navigation: bool = False, category_slug: str | None = None) -> list[ProductDTO]:
+    def handle_get_request(self, page: int, category: str | None, query: str | None, navigation: bool = False, category_slug: str | None = None) -> PaginatedProductsDTO:
         if navigation:
-            return self._filter_products_by_slug_of_category(category_slug)
+            return self.filter_products_by_slug_of_category(page, category_slug)
         elif category or query:
-            return self.handle_search(self._resolve_category_uuid(category), query)
-        return self.get_top_selling()
+            return self.handle_search(page, self._resolve_category_uuid(category), query)
+        return self.get_paginated_products(page)
 
-    def handle_search(self, category: uuid.UUID | None, query: str | None) -> list[ProductDTO]:
-        return self.create_product_dtos(self.product_rep.searching_products(query=query, category_pub=category))
+    def handle_search(self, page: int, category: uuid.UUID | None, query: str | None) -> PaginatedProductsDTO:
+        return self.create_paginated_product_dtos(self.product_rep.searching_products(page=page, per_page=self.paginate_by, query=query, category_pub=category))
+
+    def filter_products_by_slug_of_category(self, page: int, category: str | None) -> PaginatedProductsDTO:
+        return self.create_paginated_product_dtos(self.product_rep.filter_by_category_slug(page=page, per_page=self.paginate_by, category_slug=category))
+
+    def get_paginated_products(self, page: int) -> PaginatedProductsDTO:
+        data = self.get_filters_from_sessions()
+        dto: PaginatedProductsDTO = self.filter_products(data, page)
+        return dto or self.create_paginated_product_dtos(self.product_rep.fetch_paginated_top_selling(page, per_page=self.paginate_by))
     
     #@BaseCachingMixin.cache_result("{data.category}.{data.brand}", prefix="filter_products", dtos=[ProductDTO])
-    def filter_products(self, data: dict[str, Any]) -> list[ProductDTO]:
+    def filter_products(self, data: dict[str, Any], page: int) -> PaginatedProductsDTO:
         entities = None
         if data['category'] and data['brand']:
-            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], category_pubs=data['category'], brand_pubs=data['brand'])
+            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], page=page, per_page=self.paginate_by, category_pubs=data['category'], brand_pubs=data['brand'])
         elif not data['category'] and not data['brand']:
-            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'])
+            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], page=page, per_page=self.paginate_by)
         elif not data['category']:
-            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], brand_pubs=data['brand'])
+            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], page=page, per_page=self.paginate_by, brand_pubs=data['brand'])
         elif not data['brand']:
-            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], category_pubs=data['category'])
+            entities = self.product_rep.filter_products(price_min=data['price__min'], price_max=data['price__max'], sort_by=data['sort_by'], page=page, per_page=self.paginate_by, category_pubs=data['category'])
 
-        return self.create_product_dtos(entities) if entities else []
+        self.set_filters_in_sessions(data)
 
-    def _filter_products_by_slug_of_category(self, category: str | None) -> list[ProductDTO]:
-        return self.create_product_dtos(self.product_rep.filter_by_category_slug(category_slug=category))
+        if entities:
+            return self.create_paginated_product_dtos(entities)
+        else:
+            raise InvalidFiltersError("incorrect filters")
 
+    def set_filters_in_sessions(self, data: dict[str, Any]):
+        self.session_adapter.set("price_min", data['price__min'] or 1.00)
+        self.session_adapter.set("price_max", data['price__max'] or 9999.00)
+        self.session_adapter.set("sort_by", data['sort_by'] or 'count_of_selled')
+        self.session_adapter.set("brand", data['brand'] or None)
+        self.session_adapter.set("category", data['category'] or None)
+
+    def get_filters_from_sessions(self) -> dict[str, Any]:
+        data = dict()
+        data["price__min"] = self.session_adapter.get("price_min", default=1.00)
+        data["price__max"] = self.session_adapter.get("price_max", default=9999.00)
+        data["sort_by"] = self.session_adapter.get("sort_by", default='count_of_selled')
+        data["brand"] = self.session_adapter.get("brand", default=None)
+        data["category"] = self.session_adapter.get("category", default=None)
+        return data
 
     def post(self):
         """Whole workflow goes through get_context_data and get_queryset"""
@@ -104,6 +134,18 @@ class StorePageService(BaseTemplateService['StorePageService']):
         except ValueError:
             return None
 
+    def create_paginated_product_dtos(self, inf_dto: PaginatedProductsInfDTO) -> PaginatedProductsDTO:
+        '''
+        Creates a PaginatedProductsDTO with populated product DTOs
+        Populates these instances with a CategoryDTO and a BrandDTO
+        '''
+        dtos = []
+        for entity in inf_dto.products:
+            category = self.fetch_category(entity.category.public_uuid)
+            brand = self.fetch_brand(entity.brand.public_uuid)
+            dto = ProductDTO.from_entity(entity, category=category, brand=brand, url_mapping_adapter=self.url_mapping).populate_none_fields()
+            dtos.append(dto)
+        return PaginatedProductsDTO.from_populated_dtos(inf_dto, dtos)
     
 class ProductPageService(BaseTemplateService['ProductPageService']):
     def __init__(

@@ -1,4 +1,4 @@
-from core.review_management.application.dtos.base_dto import BaseDTO
+from core.utils.application.base_dto import BaseDTO
 
 from pydantic import Field
 from datetime import datetime

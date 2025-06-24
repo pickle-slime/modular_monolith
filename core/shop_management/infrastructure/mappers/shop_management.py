@@ -1,5 +1,7 @@
 from django.db.models import QuerySet
+from django.core.paginator import Page
 
+from core.shop_management.application.dtos.infrastructure import PaginatedProductsInfDTO
 from core.shop_management.presentation.shop_management.models import Category as CategoryModel, Brand as BrandModel, Product as ProductModel, ProductSizes as ProductSizesModel, MultipleProductImages as MultipleProductImagesModel
 from core.shop_management.domain.entities.shop_management import Category as CategoryEntity, Brand as BrandEntity, ProductSize as ProductSizeEntity, ProductImage as ProductImageEntity
 from core.shop_management.domain.aggregates.shop_management import Product as ProductEntity
@@ -120,3 +122,15 @@ class DjangoProductMapper:
         if isinstance(images_queryset, MultipleProductImagesModel):
             return DjangoProductImagesMapper.map_image_into_entity(images_queryset)
         return ProductImagesEntityList(DjangoProductImagesMapper.map_images_into_entities(images_queryset))
+
+    @staticmethod
+    def map_entities_to_paginated_dto(page_obj: Page) -> PaginatedProductsInfDTO:
+        return PaginatedProductsInfDTO(
+            products=[DjangoProductMapper.map_product_into_entity(model) for model in page_obj.object_list],
+            has_previous=page_obj.has_previous(),
+            has_next=page_obj.has_next(),
+            previous_page_number=page_obj.previous_page_number() if page_obj.has_previous() else 1,
+            next_page_number=page_obj.next_page_number() if page_obj.has_next() else 1,
+            current_page=page_obj.number,
+            page_range=list(page_obj.paginator.page_range),
+        )

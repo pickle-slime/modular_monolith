@@ -10,6 +10,8 @@ from core.shop_management.domain.aggregates.shop_management import Product as Pr
 from core.shop_management.domain.value_objects.shop_management import CommonNameField, CommonSlugField
 from core.shop_management.domain.value_objects.shop_management import ImageField, PercentageField
 from core.shop_management.domain.structures import ProductImagesEntityList, ProductSizesEntityList
+from core.shop_management.application.dtos.base_dto import BaseDTO
+from core.shop_management.application.dtos.infrastructure import PaginatedProductsInfDTO
 from core.utils.domain.interfaces.hosts.url_mapping import URLHost
 
 class CategoryDTO(BaseEntityDTO):
@@ -226,3 +228,50 @@ class ProductDTO(BaseEntityDTO['ProductDTO']):
     @classmethod
     def from_entities(cls, entities: list[ProductEntity]) -> list['ProductDTO']:
         return [cls.from_entity(entity).populate_none_fields() for entity in entities]
+
+class PaginatedProductsDTO(BaseDTO[ProductDTO]):
+    '''
+    It would be better to make a dedicated DTO for infrastructure layer
+    '''
+    products: list[ProductDTO]
+    has_previous: bool
+    has_next: bool
+    previous_page_number: int
+    next_page_number: int
+    current_page: int
+    page_range: list[int]
+
+    @classmethod
+    def from_inf_dto(cls, inf_dto: PaginatedProductsInfDTO) -> "PaginatedProductsDTO":
+        return cls(
+            products=[ProductDTO.from_entity(entity).populate_none_fields() for entity in inf_dto.products],
+            has_previous=inf_dto.has_previous,
+            has_next=inf_dto.has_next,
+            previous_page_number=inf_dto.previous_page_number,
+            next_page_number=inf_dto.next_page_number,
+            current_page=inf_dto.current_page,
+            page_range=inf_dto.page_range,
+        )
+
+    @classmethod
+    def from_populated_dtos(cls, inf_dto: PaginatedProductsInfDTO, dtos: list[ProductDTO]) -> "PaginatedProductsDTO":
+        return cls(
+            products=dtos,
+            has_previous=inf_dto.has_previous,
+            has_next=inf_dto.has_next,
+            previous_page_number=inf_dto.previous_page_number,
+            next_page_number=inf_dto.next_page_number,
+            current_page=inf_dto.current_page,
+            page_range=inf_dto.page_range,
+        )
+
+    def __iter__(self):
+        return iter(self.products)
+    
+    @property
+    def object_list(self):
+        """Django template compatibility"""
+        return self
+
+    def __len__(self):
+        return len(self.products)
