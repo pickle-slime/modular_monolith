@@ -4,6 +4,7 @@ from ..structures import ReviewCollection
 from ..exceptions import MissingFieldDataError
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 from decimal import Decimal
 import uuid
@@ -16,8 +17,8 @@ class ProductRating(Entity):
     product: uuid.UUID | None = field(default=None)
 
     #fields below are used for more efficient calculation and aren't a part of the aggregate
-    total_rating_sum: Decimal | None = field(default=Decimal("0.0"), init=False)
-    total_reviews_count: int | None = field(default=0, init=False)
+    total_rating_sum: Decimal | None = field(default=Decimal("0.0"))
+    total_reviews_count: int | None = field(default=0)
 
     review: type[Review] = Review
 
@@ -26,6 +27,7 @@ class ProductRating(Entity):
             self.reviews = ReviewCollection([])
 
         review = self.review.map(raw_review)
+        review.date_created = datetime.now()
         self.reviews.append(review)
 
         if review.rating is not None:

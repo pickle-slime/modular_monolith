@@ -75,3 +75,6 @@ class EventDrivenServiceError(ApplicationException):
 
 class FailedCartInitializationError(EventDrivenServiceError):
     pass
+
+class FailedWishlistInitializationError(EventDrivenServiceError):
+    pass

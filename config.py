@@ -3,6 +3,7 @@ import os
 import dotenv
 
 BASE_DIR = Path(__file__).parent.resolve()
+PROJECT_ROOT = Path(__file__).parent.parent.resolve()
 
 dotenv_file = os.path.join(BASE_DIR, '.env')
 

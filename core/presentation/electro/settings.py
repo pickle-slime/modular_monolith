@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from celery.utils.deprecated import Property
 from config import *
 
 import os
@@ -154,14 +155,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'core', 'presentation', 'static')
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 
 # STATICFILES_DIRS = [
 #     BASE_DIR / 'presentation' / 'shop' / 'static', 
 # ]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'core', 'presentation', 'media')
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 
 AUTH_USER_MODEL = 'user_management.CustomUser'
 

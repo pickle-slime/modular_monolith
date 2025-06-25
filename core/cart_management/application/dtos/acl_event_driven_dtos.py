@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 import uuid
 
-from core.user_management.application.events.acl_events import UserLoggedInACLEvent
+from core.user_management.application.events.acl_events import NewUserACLEvent, UserLoggedInACLEvent
 
 class LoggedUserEventDTO(BaseModel):
     pub_uuid: uuid.UUID = Field(description="User's public uuid")
@@ -14,3 +14,11 @@ class LoggedUserEventDTO(BaseModel):
                 session_key=event.session_key,
             )
 
+class SignedUPUserEventDTO(BaseModel):
+    pub_uuid: uuid.UUID = Field(description="User's public uuid")
+
+    @classmethod
+    def from_event(cls, event: NewUserACLEvent) -> "SignedUPUserEventDTO":
+        return cls(
+                pub_uuid=event.pub_uuid,
+            )
