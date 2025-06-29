@@ -123,5 +123,52 @@ approach. In other words, this flaw was designed into the project from the very 
 
 ### Running the project
 
+Clone the docker_setup branch:
+```bash
+git clone -b docker_setup https://github.com/pickle-slime/modular_monolith.git
+```
+Make sure there are no other Redis, PostgreSQL, or Nginx instances running locally. Stop or disable them as needed.
+
+Then navigate to the project root and create the .env file, along with RSA keys:
+```bash
+cd modular_monolith
+touch .env
+```
+
+#### .env
+```bash
+BOUNDED_CONTEXTS="shop_management,user_management,cart_management,review_management,notification_management,order_management,payment_management"
+
+# Postgres
+POSTGRES_DB="electro"
+POSTGRES_USER="electro_admin"
+POSTGRES_PASSWORD="electro299792458"
+POSTGRES_HOST="postgres"
+POSTGRES_PORT="5432"
+
+# Redis
+REDIS_HOST="redis"
+REDIS_PORT="6379"
+
+# APIs
+SECRET_KEY="django-insecure-somekey"  # any random string
+
+# JWT Keys
+JWT_SECRET_KEY=""
+```
+
+#### RSA Key Generation
+```bash
+openssl genpkey -algorithm RSA -out private.key -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in private.key -out public.key
+```
+
+#### Running the App
+```bash
+cd ../docker
+docker compose build
+docker compose up -d
+```
+
 ### License
 - MIT License
