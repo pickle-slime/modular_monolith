@@ -155,7 +155,10 @@ SECRET_KEY="django-insecure-somekey"  # any random string
 
 # JWT Keys
 JWT_SECRET_KEY=""
+JWT_PUBLIC_KEY=""
 ```
+
+Insert the contents of private.key and public.key into JWT_SECRET_KEY and JWT_PUBLIC_KEY in .env accordingly.
 
 #### RSA Key Generation
 ```bash
