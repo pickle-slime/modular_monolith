@@ -1,0 +1,10 @@
+{
+    "venvPath": "/home/pickle_slime/div_of_projects/python_folder/online_shop/market-place/modular_monolith",
+    "venv": "venv",
+    "pythonVersion": "3.12",
+    "pythonPlatform": "Linux",
+    "typeCheckingMode": "basic",
+    "diagnosticMode": "workspace",  
+    "useLibraryCodeForTypes": true,
+    "pydanticV2Support": true
+}
