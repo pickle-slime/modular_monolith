@@ -49,13 +49,7 @@ CELERY_TIMEZONE = 'UTC'
 JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
 
 #openssl rsa -in private_encrypted.key -out private.key
-JWT_PUBLIC_KEY = """MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0XfbwnAICqX2XYVUNyDR
-                    nip5K+16Veb+sS9lBkKb7QgWfft6cucaC1XLq5FwLuD8N3ZjL/XFw6BFgLAQlgez
-                    PMZ+FHA76NTR6LqFjR1IfmjK/9azQWE1mXiP3epDwWPeHRsF4D0jzbIlKJlNFFym
-                    f0KI4wA31GEnmzmnqE5MkYCpznsOJGguKX39G2qdz6jA0JsPym80hNHLVn+ER2VS
-                    rBTygv8woveKZB36WaNI+8HhmNNPwU1pHgmOKTgauZQRCkTn1phZwqcmWuJk63xj
-                    W+R6TL6AZdkMyo4veUEyqokxUKOu6NHRdc0xDSz/cKvdBag5Fm599yrQHP/Wzp6N
-                    LwIDAQAB"""
+JWT_PUBLIC_KEY = os.environ['JWT_PUBLIC_KEY']
 
 #set expiry of json web tokens by mins
 ACCESS_JWTOKEN_EXPIRY = 10
